@@ -1,0 +1,49 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* base_import_ux
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-22 20:17+0000\n"
+"PO-Revision-Date: 2026-07-22 20:17+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: base_import_ux
+#: model:ir.model,name:base_import_ux.model_base_import_import
+msgid "Base Import"
+msgstr "Importación base"
+
+#. module: base_import_ux
+#: model:ir.model.fields,field_description:base_import_ux.field_base_import_import__display_name
+msgid "Display Name"
+msgstr "Nombre en pantalla"
+
+#. module: base_import_ux
+#. odoo-javascript
+#: code:addons/base_import_ux/static/src/base_import_model_patch.js:0
+#: code:addons/base_import_ux/static/src/import_data_sidepanel_patch.xml:0
+msgid "Header rows to skip:"
+msgstr "Filas de cabecera a omitir:"
+
+#. module: base_import_ux
+#: model:ir.model.fields,field_description:base_import_ux.field_base_import_import__id
+msgid "ID"
+msgstr "ID"
+
+#. module: base_import_ux
+#. odoo-javascript
+#: code:addons/base_import_ux/static/src/base_import_model_patch.js:0
+msgid ""
+"Number of raw lines to discard from the top of the CSV file before parsing "
+"(e.g. summary or metadata rows preceding the real header)."
+msgstr ""
+"Cantidad de líneas crudas a descartar del comienzo del archivo CSV antes de "
+"procesarlo (por ej. filas de resumen o metadatos que preceden al encabezado "
+"real)."

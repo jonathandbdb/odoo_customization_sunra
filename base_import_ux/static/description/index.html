@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+<body>
+    <section style="max-width: 980px; margin: 0 auto; padding: 32px 24px; font-family: Arial, Helvetica, sans-serif; color-scheme: var(--o-webclient-color-scheme, normal); color: CanvasText; line-height: 1.55; background: transparent;">
+        <div style="padding: 28px 30px; border: 1px solid ButtonBorder; border-radius: 8px; background: Canvas;">
+            <p style="margin: 0 0 8px; color: LinkText; font-size: 13px; font-weight: 700; text-transform: uppercase;">Contabilidad - Importacion de datos</p>
+            <h1 style="margin: 0 0 12px; color: CanvasText; font-size: 32px; line-height: 1.2;">base_import_ux</h1>
+            <p style="margin: 0; max-width: 760px; color: GrayText; font-size: 16px;">Agrega dos ajustes puntuales al asistente de importacion nativo de Odoo para poder cargar el estado de cuenta CSV de Mercado Pago como extracto bancario sin editar el archivo a mano.</p>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 10px; color: LinkText; font-size: 23px;">Objetivo</h2>
+            <p style="margin: 0;">El estado de cuenta que exporta Mercado Pago trae, antes del encabezado real, filas de resumen (titulo, totales y una fila en blanco) que el asistente nativo no puede saltear, obligando a editar el CSV a mano antes de cada conciliacion. Este modulo agrega dos ajustes de UX sobre el wizard de import existente, sin crear modelos, tablas ni pantallas nuevas.</p>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 12px; color: LinkText; font-size: 23px;">Funcionalidades principales</h2>
+            <table style="width: 100%; border-collapse: collapse; border: 1px solid ButtonBorder; background: Canvas;">
+                <tbody>
+                    <tr>
+                        <td style="width: 28%; padding: 14px 16px; border-bottom: 1px solid ButtonBorder; font-weight: 700; background: ButtonFace; color: ButtonText;">Filas de cabecera a saltear</td>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">Nuevo input "Header rows to skip" junto al checkbox "Use first row as header": descarta las primeras N lineas crudas del archivo CSV (incluida una fila en blanco) antes de parsear. Default 0 (comportamiento nativo intacto).</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; font-weight: 700; background: ButtonFace; color: ButtonText;">Fecha DD-MM-YYYY en extractos</td>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">Al importar transacciones bancarias ("Importar transacciones" de un diario), el "Formato de fecha" abre prefijado en DD-MM-YYYY. Queda editable y, si el archivo no matchea, la autodeteccion nativa sigue funcionando como respaldo.</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; font-weight: 700; background: ButtonFace; color: ButtonText;">Alcance: solo CSV</td>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">El recorte de filas aplica unicamente a archivos CSV. Para xlsx/xls/ods la opcion queda visible pero es no-op: el import se comporta igual que el asistente nativo.</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 14px 16px; font-weight: 700; background: ButtonFace; color: ButtonText;">Sin datos persistentes</td>
+                        <td style="padding: 14px 16px; color: CanvasText;">Ambos ajustes son opciones del wizard de import (no campos ORM ni configuracion en Ajustes): no agregan columnas ni tablas a la base de datos.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 12px; color: LinkText; font-size: 23px;">Configuracion: receta para el extracto de Mercado Pago</h2>
+            <ol style="margin: 0; padding-left: 22px;">
+                <li style="margin-bottom: 8px;">Ir al diario correspondiente -&gt; <strong>Importar transacciones</strong> -&gt; seleccionar el CSV exportado por Mercado Pago tal cual, sin editarlo.</li>
+                <li style="margin-bottom: 8px;">En las opciones del asistente: <strong>Header rows to skip = 3</strong> (2 filas de resumen + la fila en blanco que las separa del encabezado), separador <strong>;</strong>, formato de miles <strong>.</strong>, formato de decimales <strong>,</strong>. El "Formato de fecha" ya abre prefijado en <strong>DD-MM-YYYY</strong>.</li>
+                <li style="margin-bottom: 8px;">Mapear columnas: <strong>RELEASE_DATE</strong> -&gt; Fecha, <strong>TRANSACTION_TYPE</strong> -&gt; Etiqueta, <strong>TRANSACTION_NET_AMOUNT</strong> -&gt; Importe, <strong>PARTIAL_BALANCE</strong> -&gt; Cumulative Balance.</li>
+                <li>Mapear <strong>REFERENCE_ID</strong> a Referencia, o dejarlo sin mapear. <strong>Nunca mapear a "ID externo"</strong>: Mercado Pago repite ese identificador de forma legitima en varias filas, y usarlo como ID externo hace que las filas se pisen entre si.</li>
+            </ol>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 10px; color: LinkText; font-size: 23px;">Detalle tecnico</h2>
+            <p style="margin: 0 0 14px;">El modulo extiende el modelo transient <code>base_import.import</code> (override de <code>_read_csv</code>, sin decorador especial) que recorta las primeras N lineas crudas del archivo antes de delegar en el parser nativo, evitando que el core cuente mal la fila en blanco o se confunda con anchos de columna disparejos. En el cliente, un unico patch OWL (<code>patch()</code> sobre <code>BaseImportModel.prototype</code>, en <code>init()</code> y <code>updateData()</code>) registra la opcion "Header rows to skip" y prefija la fecha DD-MM-YYYY solo cuando el import es de extractos bancarios; un patch de template (<code>t-inherit</code>) agrega el input numerico junto al checkbox de encabezado.</p>
+            <p style="margin: 0; padding: 14px 16px; border-left: 4px solid Highlight; background: color-mix(in srgb, Highlight 14%, Canvas); color: CanvasText;">El recorte solo aplica a CSV con encoding compatible ASCII/UTF-8 (utf-8, latin1, windows-1252, etc.). Encodings multi-byte como UTF-16/UTF-32 no estan soportados: para esos casos hay que convertir o editar el archivo antes de importar.</p>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 10px; color: LinkText; font-size: 23px;">Dependencias</h2>
+            <ul style="margin: 0; padding-left: 22px;">
+                <li><code>base_import</code> (core) - asistente de importacion generico que se extiende.</li>
+                <li><code>account_bank_statement_import_csv</code> (Enterprise) - flujo de "Importar transacciones" de extractos bancarios sobre el que aplica el default de fecha.</li>
+            </ul>
+        </div>
+
+        <p style="margin: 34px 0 0; padding-top: 18px; border-top: 1px solid ButtonBorder; color: GrayText; font-size: 14px;">Desarrollado por Sunra - https://github.com/sunraargsh</p>
+    </section>
+</body>
+</html>

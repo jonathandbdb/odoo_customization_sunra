@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+    <!-- Agrega el input 'header_skip_rows' justo despues del checkbox "Use first
+         row as header". Xpath anclado al atributo 'value' del CheckBox (unico en
+         el template, a diferencia de los otros 2 CheckBox del bloque "Advanced")
+         para no depender de la posicion/estructura del contenedor. -->
+    <t t-inherit="ImportDataSidepanel" t-inherit-mode="extension">
+        <xpath expr="//CheckBox[@value='props.options.has_headers']" position="after">
+            <div t-if="fileExtension.toLowerCase() === '.csv'" class="o_import_header_skip_rows mt-2">
+                <label for="o_import_header_skip_rows">Header rows to skip:</label>
+                <input
+                    type="number"
+                    id="o_import_header_skip_rows"
+                    min="0"
+                    class="o_import_header_skip_rows_input w-100 mb-3"
+                    t-att-value="props.options.header_skip_rows"
+                    t-on-change="(ev) => this.setOptionValue('header_skip_rows', ev.target.value)"
+                />
+            </div>
+        </xpath>
+    </t>
+</templates>
+<!-- vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4-->
