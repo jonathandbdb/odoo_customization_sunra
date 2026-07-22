@@ -1,0 +1,271 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* sk_customer_product_warranty
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-03-13 22:02+0000\n"
+"PO-Revision-Date: 2026-03-13 22:02+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: sk_customer_product_warranty
+#: model:ir.model.fields.selection,name:sk_customer_product_warranty.selection__product_product__warranty_type__custom
+#: model:ir.model.fields.selection,name:sk_customer_product_warranty.selection__product_template__warranty_type__custom
+msgid "Custom Warranty"
+msgstr "Özel Garanti"
+
+#. module: sk_customer_product_warranty
+#. odoo-python
+#: code:addons/sk_customer_product_warranty/models/warranty_mixin.py:0
+#: model:ir.model.fields.selection,name:sk_customer_product_warranty.selection__product_category__warranty_unit__day
+#: model:ir.model.fields.selection,name:sk_customer_product_warranty.selection__product_product__warranty_unit__day
+#: model:ir.model.fields.selection,name:sk_customer_product_warranty.selection__product_template__warranty_unit__day
+#: model:ir.model.fields.selection,name:sk_customer_product_warranty.selection__warranty_mixin__warranty_unit__day
+msgid "Day"
+msgstr "Gün"
+
+#. module: sk_customer_product_warranty
+#. odoo-python
+#: code:addons/sk_customer_product_warranty/models/warranty_mixin.py:0
+msgid "Days"
+msgstr "Gün"
+
+#. module: sk_customer_product_warranty
+#: model_terms:ir.ui.view,arch_db:sk_customer_product_warranty.product_category_form_view_inherit_warranty
+msgid "Default Warranty Information"
+msgstr "Varsayılan Garanti Bilgileri"
+
+#. module: sk_customer_product_warranty
+#: model:ir.model.fields,field_description:sk_customer_product_warranty.field_product_category__display_name
+#: model:ir.model.fields,field_description:sk_customer_product_warranty.field_product_product__display_name
+#: model:ir.model.fields,field_description:sk_customer_product_warranty.field_product_template__display_name
+#: model:ir.model.fields,field_description:sk_customer_product_warranty.field_stock_lot__display_name
+#: model:ir.model.fields,field_description:sk_customer_product_warranty.field_stock_move_line__display_name
+#: model:ir.model.fields,field_description:sk_customer_product_warranty.field_warranty_mixin__display_name
+msgid "Display Name"
+msgstr "İsim Göster"
+
+#. module: sk_customer_product_warranty
+#: model:ir.model.fields,field_description:sk_customer_product_warranty.field_product_product__effective_warranty
+#: model:ir.model.fields,field_description:sk_customer_product_warranty.field_product_template__effective_warranty
+msgid "Effective Warranty"
+msgstr "Geçerli Garanti"
+
+#. module: sk_customer_product_warranty
+#: model:ir.model.fields,help:sk_customer_product_warranty.field_product_template__warranty_tracking
+msgid "Enable warranty tracking for this product"
+msgstr "Bu ürün için garanti takibini etkinleştir"
+
+#. module: sk_customer_product_warranty
+#: model:ir.model.fields,help:sk_customer_product_warranty.field_product_product__warranty_tracking
+msgid "Enable warranty tracking for this variant"
+msgstr "Bu varyant için garanti takibini etkinleştir"
+
+#. module: sk_customer_product_warranty
+#. odoo-python
+#: code:addons/sk_customer_product_warranty/models/warranty_mixin.py:0
+#: model:ir.model.fields.selection,name:sk_customer_product_warranty.selection__product_category__warranty_start_type__first_sale
+#: model:ir.model.fields.selection,name:sk_customer_product_warranty.selection__product_product__warranty_start_type__first_sale
+#: model:ir.model.fields.selection,name:sk_customer_product_warranty.selection__product_template__warranty_start_type__first_sale
+#: model:ir.model.fields.selection,name:sk_customer_product_warranty.selection__warranty_mixin__warranty_start_type__first_sale
+msgid "First Sale"
+msgstr "İlk Satış"
+
+#. module: sk_customer_product_warranty
+#: model:ir.model.fields,field_description:sk_customer_product_warranty.field_product_category__id
+#: model:ir.model.fields,field_description:sk_customer_product_warranty.field_product_product__id
+#: model:ir.model.fields,field_description:sk_customer_product_warranty.field_product_template__id
+#: model:ir.model.fields,field_description:sk_customer_product_warranty.field_stock_lot__id
+#: model:ir.model.fields,field_description:sk_customer_product_warranty.field_stock_move_line__id
+#: model:ir.model.fields,field_description:sk_customer_product_warranty.field_warranty_mixin__id
+msgid "ID"
+msgstr "ID"
+
+#. module: sk_customer_product_warranty
+#. odoo-python
+#: code:addons/sk_customer_product_warranty/models/warranty_mixin.py:0
+#: model:ir.model.fields.selection,name:sk_customer_product_warranty.selection__product_category__warranty_start_type__last_sale
+#: model:ir.model.fields.selection,name:sk_customer_product_warranty.selection__product_product__warranty_start_type__last_sale
+#: model:ir.model.fields.selection,name:sk_customer_product_warranty.selection__product_template__warranty_start_type__last_sale
+#: model:ir.model.fields.selection,name:sk_customer_product_warranty.selection__warranty_mixin__warranty_start_type__last_sale
+msgid "Last Sale"
+msgstr "Son Satış"
+
+#. module: sk_customer_product_warranty
+#: model:ir.model,name:sk_customer_product_warranty.model_stock_lot
+msgid "Lot/Serial"
+msgstr "Lot/Seri"
+
+#. module: sk_customer_product_warranty
+#. odoo-python
+#: code:addons/sk_customer_product_warranty/models/warranty_mixin.py:0
+#: model:ir.model.fields.selection,name:sk_customer_product_warranty.selection__product_category__warranty_start_type__manufacture
+#: model:ir.model.fields.selection,name:sk_customer_product_warranty.selection__product_product__warranty_start_type__manufacture
+#: model:ir.model.fields.selection,name:sk_customer_product_warranty.selection__product_template__warranty_start_type__manufacture
+#: model:ir.model.fields.selection,name:sk_customer_product_warranty.selection__warranty_mixin__warranty_start_type__manufacture
+msgid "Manufacturing"
+msgstr "Üretim"
+
+#. module: sk_customer_product_warranty
+#. odoo-python
+#: code:addons/sk_customer_product_warranty/models/warranty_mixin.py:0
+#: model:ir.model.fields.selection,name:sk_customer_product_warranty.selection__product_category__warranty_unit__month
+#: model:ir.model.fields.selection,name:sk_customer_product_warranty.selection__product_product__warranty_unit__month
+#: model:ir.model.fields.selection,name:sk_customer_product_warranty.selection__product_template__warranty_unit__month
+#: model:ir.model.fields.selection,name:sk_customer_product_warranty.selection__warranty_mixin__warranty_unit__month
+msgid "Month"
+msgstr "Ay"
+
+#. module: sk_customer_product_warranty
+#. odoo-python
+#: code:addons/sk_customer_product_warranty/models/warranty_mixin.py:0
+msgid "Months"
+msgstr "Ay"
+
+#. module: sk_customer_product_warranty
+#: model:ir.model,name:sk_customer_product_warranty.model_product_template
+msgid "Product"
+msgstr "Ürün"
+
+#. module: sk_customer_product_warranty
+#: model:ir.model,name:sk_customer_product_warranty.model_product_category
+msgid "Product Category"
+msgstr "Ürün Kategorisi"
+
+#. module: sk_customer_product_warranty
+#: model:ir.model,name:sk_customer_product_warranty.model_stock_move_line
+msgid "Product Moves (Stock Move Line)"
+msgstr "Ürün Harketleri (Stok Hareket Satırları)"
+
+#. module: sk_customer_product_warranty
+#: model:ir.model,name:sk_customer_product_warranty.model_product_product
+msgid "Product Variant"
+msgstr "Ürün Varyantı"
+
+#. module: sk_customer_product_warranty
+#: model:ir.model.fields.selection,name:sk_customer_product_warranty.selection__product_product__warranty_type__category
+#: model:ir.model.fields.selection,name:sk_customer_product_warranty.selection__product_template__warranty_type__category
+msgid "Use Category Warranty"
+msgstr "Kategori Garantisini Kullan"
+
+#. module: sk_customer_product_warranty
+#: model:ir.model.fields.selection,name:sk_customer_product_warranty.selection__product_product__warranty_type__template
+msgid "Use Template Warranty"
+msgstr "Şablon Garantisini Kullan"
+
+#. module: sk_customer_product_warranty
+#: model_terms:ir.ui.view,arch_db:sk_customer_product_warranty.search_product_lot_filter_inherit_warranty
+msgid "Warranty"
+msgstr "Garanti"
+
+#. module: sk_customer_product_warranty
+#: model:ir.model.fields,field_description:sk_customer_product_warranty.field_product_category__warranty_duration
+#: model:ir.model.fields,field_description:sk_customer_product_warranty.field_product_product__warranty_duration
+#: model:ir.model.fields,field_description:sk_customer_product_warranty.field_product_template__warranty_duration
+#: model:ir.model.fields,field_description:sk_customer_product_warranty.field_warranty_mixin__warranty_duration
+#: model_terms:ir.ui.view,arch_db:sk_customer_product_warranty.product_category_form_view_inherit_warranty
+#: model_terms:ir.ui.view,arch_db:sk_customer_product_warranty.product_template_form_view_inherit_warranty
+#: model_terms:ir.ui.view,arch_db:sk_customer_product_warranty.product_variant_form_view_inherit_warranty
+msgid "Warranty Duration"
+msgstr "Garanti Süresi"
+
+#. module: sk_customer_product_warranty
+#: model:ir.model.fields,field_description:sk_customer_product_warranty.field_stock_lot__warranty_expiry_date
+#: model_terms:ir.ui.view,arch_db:sk_customer_product_warranty.search_product_lot_filter_inherit_warranty
+msgid "Warranty Expiry Date"
+msgstr "Garanti Bitiş Tarihi"
+
+#. module: sk_customer_product_warranty
+#: model_terms:ir.ui.view,arch_db:sk_customer_product_warranty.product_template_form_view_inherit_warranty
+#: model_terms:ir.ui.view,arch_db:sk_customer_product_warranty.product_variant_form_view_inherit_warranty
+msgid "Warranty Information"
+msgstr "Garanti Bilgileri"
+
+#. module: sk_customer_product_warranty
+#: model:ir.model,name:sk_customer_product_warranty.model_warranty_mixin
+msgid "Warranty Information Mixin"
+msgstr "Garanti Bilgileri Mixin"
+
+#. module: sk_customer_product_warranty
+#: model:ir.model.fields,field_description:sk_customer_product_warranty.field_product_category__warranty_start_type
+#: model:ir.model.fields,field_description:sk_customer_product_warranty.field_product_product__warranty_start_type
+#: model:ir.model.fields,field_description:sk_customer_product_warranty.field_product_template__warranty_start_type
+#: model:ir.model.fields,field_description:sk_customer_product_warranty.field_warranty_mixin__warranty_start_type
+msgid "Warranty Start Date"
+msgstr "Garanti Başlangıç Tarihi"
+
+#. module: sk_customer_product_warranty
+#: model:ir.model.fields,field_description:sk_customer_product_warranty.field_product_product__warranty_tracking
+#: model:ir.model.fields,field_description:sk_customer_product_warranty.field_product_template__warranty_tracking
+msgid "Warranty Tracking"
+msgstr "Garanti Takibi"
+
+#. module: sk_customer_product_warranty
+#: model:ir.model.fields,field_description:sk_customer_product_warranty.field_product_product__warranty_type
+#: model:ir.model.fields,field_description:sk_customer_product_warranty.field_product_template__warranty_type
+msgid "Warranty Type"
+msgstr "Garanti Tipi"
+
+#. module: sk_customer_product_warranty
+#: model:ir.model.fields,field_description:sk_customer_product_warranty.field_product_category__warranty_unit
+#: model:ir.model.fields,field_description:sk_customer_product_warranty.field_product_product__warranty_unit
+#: model:ir.model.fields,field_description:sk_customer_product_warranty.field_product_template__warranty_unit
+#: model:ir.model.fields,field_description:sk_customer_product_warranty.field_warranty_mixin__warranty_unit
+msgid "Warranty Unit"
+msgstr "Garanti Birimi"
+
+#. module: sk_customer_product_warranty
+#: model:ir.model.fields,help:sk_customer_product_warranty.field_product_category__warranty_duration
+#: model:ir.model.fields,help:sk_customer_product_warranty.field_product_product__warranty_duration
+#: model:ir.model.fields,help:sk_customer_product_warranty.field_product_template__warranty_duration
+#: model:ir.model.fields,help:sk_customer_product_warranty.field_warranty_mixin__warranty_duration
+msgid "Warranty duration for the product"
+msgstr "Ürün için garanti süresi"
+
+#. module: sk_customer_product_warranty
+#: model:ir.model.fields,help:sk_customer_product_warranty.field_stock_lot__warranty_expiry_date
+msgid ""
+"Warranty expiry date for this serial (calculated based on customer delivery "
+"date)"
+msgstr ""
+"Bu seri numarası için garanti bitiş tarihi (müşteri teslimat tarihine göre "
+"hesaplanır)"
+
+#. module: sk_customer_product_warranty
+#. odoo-python
+#: code:addons/sk_customer_product_warranty/models/warranty_mixin.py:0
+#: model:ir.model.fields.selection,name:sk_customer_product_warranty.selection__product_category__warranty_unit__week
+#: model:ir.model.fields.selection,name:sk_customer_product_warranty.selection__product_product__warranty_unit__week
+#: model:ir.model.fields.selection,name:sk_customer_product_warranty.selection__product_template__warranty_unit__week
+#: model:ir.model.fields.selection,name:sk_customer_product_warranty.selection__warranty_mixin__warranty_unit__week
+msgid "Week"
+msgstr "Hafta"
+
+#. module: sk_customer_product_warranty
+#. odoo-python
+#: code:addons/sk_customer_product_warranty/models/warranty_mixin.py:0
+msgid "Weeks"
+msgstr "Hafta"
+
+#. module: sk_customer_product_warranty
+#. odoo-python
+#: code:addons/sk_customer_product_warranty/models/warranty_mixin.py:0
+#: model:ir.model.fields.selection,name:sk_customer_product_warranty.selection__product_category__warranty_unit__year
+#: model:ir.model.fields.selection,name:sk_customer_product_warranty.selection__product_product__warranty_unit__year
+#: model:ir.model.fields.selection,name:sk_customer_product_warranty.selection__product_template__warranty_unit__year
+#: model:ir.model.fields.selection,name:sk_customer_product_warranty.selection__warranty_mixin__warranty_unit__year
+msgid "Year"
+msgstr "Yıl"
+
+#. module: sk_customer_product_warranty
+#. odoo-python
+#: code:addons/sk_customer_product_warranty/models/warranty_mixin.py:0
+msgid "Years"
+msgstr "Yıl"

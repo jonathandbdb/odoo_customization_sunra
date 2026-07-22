@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>
+        <!-- Product Category Form View -->
+        <record id="product_category_form_view_inherit_warranty" model="ir.ui.view">
+            <field name="name">product.category.form.inherit.warranty</field>
+            <field name="model">product.category</field>
+            <field name="inherit_id" ref="stock.product_category_form_view_inherit"/>
+            <field name="arch" type="xml">
+                <xpath expr="//group[@name='first']" position="after">
+                    <group name="warranty_information" string="Default Warranty Information">
+                        <group>
+                            <label for="warranty_duration" string="Warranty Duration"/>
+                            <div>
+                                <field name="warranty_duration" class="oe_inline" style="width: 100px !important;"/>
+                                <field name="warranty_unit" class="oe_inline" nolabel="1" style="width: 150px !important;"/>
+                            </div>
+                        </group>
+                        <group>
+                            <field name="warranty_start_type"/>
+                        </group>
+                    </group>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

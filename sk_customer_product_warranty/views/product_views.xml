@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+
+    <!-- Product Template Form View -->
+    <record id="product_template_form_view_inherit_warranty" model="ir.ui.view">
+        <field name="name">product.template.form.inherit.warranty</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_only_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='general_information']" position="inside">
+                <group name="warranty_information" string="Warranty Information" invisible="tracking != 'serial'">
+                    <group>
+                        <field name="warranty_tracking"/>
+                        <field name="warranty_type" invisible="not warranty_tracking or tracking != 'serial'"/>
+                    </group>
+                    <group>
+                        <field name="effective_warranty" invisible="not warranty_tracking or tracking != 'serial'" readonly="1"/>
+                    </group>
+                    <group colspan="2" invisible="not warranty_tracking or warranty_type != 'custom' or tracking != 'serial'">
+                        <label for="warranty_duration" string="Warranty Duration"/>
+                        <div>
+                            <field name="warranty_duration" class="oe_inline" required="warranty_type == 'custom'" style="width: 100px !important;"/>
+                            <field name="warranty_unit" class="oe_inline" required="warranty_type == 'custom'" nolabel="1" style="width: 150px !important;"/>
+                        </div>
+                        <field name="warranty_start_type" required="warranty_type == 'custom'"/>
+                    </group>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Product Variant Form View -->
+    <record id="product_variant_form_view_inherit_warranty" model="ir.ui.view">
+        <field name="name">product.product.form.inherit.warranty</field>
+        <field name="model">product.product</field>
+        <field name="inherit_id" ref="product.product_normal_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='general_information']" position="inside">
+                <group name="warranty_information" string="Warranty Information" invisible="tracking != 'serial'">
+                    <group>
+                        <field name="warranty_tracking"/>
+                        <field name="warranty_type" invisible="not warranty_tracking or tracking != 'serial'"/>
+                    </group>
+                    <group>
+                        <field name="effective_warranty" invisible="not warranty_tracking or tracking != 'serial'" readonly="1"/>
+                    </group>
+                    <group colspan="2" invisible="not warranty_tracking or warranty_type != 'custom' or tracking != 'serial'">
+                        <label for="warranty_duration" string="Warranty Duration"/>
+                        <div>
+                            <field name="warranty_duration" class="oe_inline" style="width: 100px !important;" required="warranty_type == 'custom'"/>
+                            <field name="warranty_unit" class="oe_inline" nolabel="1" style="width: 150px !important;" required="warranty_type == 'custom'"/>
+                        </div>
+                        <field name="warranty_start_type" required="warranty_type == 'custom'"/>
+                    </group>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+
+</odoo>

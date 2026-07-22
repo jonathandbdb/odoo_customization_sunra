@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Warranty - Odoo Module</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 60px 20px;
+            text-align: center;
+            border-radius: 10px;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            font-size: 48px;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+        
+        .header p {
+            font-size: 20px;
+            opacity: 0.95;
+        }
+        
+        .hero-image {
+            text-align: center;
+            margin: 40px 0;
+        }
+        
+        .hero-image img {
+            max-width: 100%;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .section {
+            background: white;
+            padding: 40px;
+            margin-bottom: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .section h2 {
+            color: #667eea;
+            font-size: 32px;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        .section h3 {
+            color: #764ba2;
+            font-size: 24px;
+            margin-top: 25px;
+            margin-bottom: 15px;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+        
+        .feature-card {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            transition: transform 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .feature-card h4 {
+            color: #667eea;
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+        
+        .feature-card ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .feature-card ul li {
+            padding: 5px 0;
+            padding-left: 20px;
+            position: relative;
+        }
+        
+        .feature-card ul li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #667eea;
+            font-weight: bold;
+        }
+        
+        .screenshot {
+            margin: 30px 0;
+            text-align: center;
+        }
+        
+        .screenshot img {
+            max-width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+            margin-top: 15px;
+        }
+        
+        .screenshot h4 {
+            color: #764ba2;
+            font-size: 22px;
+            margin-bottom: 10px;
+        }
+        
+        .screenshot p {
+            color: #666;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        
+        .config-steps {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .config-steps ol {
+            padding-left: 20px;
+        }
+        
+        .config-steps li {
+            margin: 10px 0;
+            line-height: 1.8;
+        }
+        
+        .config-steps code {
+            background: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            color: #d63384;
+        }
+        
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        
+        .warning-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        
+        .footer {
+            background: #2c3e50;
+            color: white;
+            padding: 30px;
+            text-align: center;
+            border-radius: 10px;
+            margin-top: 40px;
+        }
+        
+        .footer a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        
+        .footer a:hover {
+            text-decoration: underline;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 5px 12px;
+            background: #667eea;
+            color: white;
+            border-radius: 20px;
+            font-size: 14px;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>Customer Warranty Module</h1>
+            <p>Comprehensive warranty management for Odoo 19</p>
+            <div style="margin-top: 20px;">
+                <span class="badge">Odoo 19.0</span>
+                <span class="badge">LGPL-3</span>
+                <span class="badge">Multi-Level Tracking</span>
+            </div>
+        </div>
+
+        <!-- Hero Image -->
+        <div class="hero-image">
+            <img src="images/variant_ss.png" alt="Warranty Management Overview">
+        </div>
+
+        <!-- Overview Section -->
+        <div class="section">
+            <h2>📋 Overview</h2>
+            <p style="font-size: 18px; line-height: 1.8;">
+                <strong>Customer Warranty</strong> is a comprehensive warranty management module for Odoo 19 that enables businesses to track product warranties at multiple levels - from product categories to individual serial numbers. The module automatically calculates and manages warranty expiry dates based on customer delivery dates, making warranty tracking effortless and accurate.
+            </p>
+        </div>
+
+        <!-- Key Features Section -->
+        <div class="section">
+            <h2>🚀 Key Features</h2>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <h4>📦 Multi-Level Warranty Configuration</h4>
+                    <ul>
+                        <li>Category Level: Set default warranty terms for entire product categories</li>
+                        <li>Product Template Level: Override category settings with product-specific warranties</li>
+                        <li>Product Variant Level: Fine-tune warranty terms for individual product variants</li>
+                        <li>Flexible Inheritance: Each level can inherit from its parent or define custom warranty terms</li>
+                    </ul>
+                </div>
+
+                <div class="feature-card">
+                    <h4>⏰ Smart Warranty Calculation</h4>
+                    <ul>
+                        <li><strong>First Sale:</strong> Warranty starts on the first customer delivery</li>
+                        <li><strong>Last Sale:</strong> Warranty resets with each customer delivery</li>
+                        <li><strong>Manufacturing:</strong> Warranty starts from production date</li>
+                    </ul>
+                </div>
+
+                <div class="feature-card">
+                    <h4>🔢 Serial Number Tracking</h4>
+                    <ul>
+                        <li>Automatic warranty expiry date calculation for serialized products</li>
+                        <li>Warranty dates automatically assigned on customer delivery</li>
+                        <li>Smart handling of returns and re-sales</li>
+                        <li>View warranty status directly on serial number records</li>
+                    </ul>
+                </div>
+
+                <div class="feature-card">
+                    <h4>📊 Warranty Information Display</h4>
+                    <ul>
+                        <li>Effective Warranty field shows active warranty with source</li>
+                        <li>Clear visibility of warranty duration and unit</li>
+                        <li>Easy-to-understand warranty information at a glance</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screenshots Section -->
+        <div class="section">
+            <h2>📸 Screenshots</h2>
+
+            <div class="screenshot">
+                <h4>Product Category Warranty Configuration</h4>
+                <p>Set default warranty terms at the category level that automatically apply to all products in that category.</p>
+                <img src="images/kategori_ss.png" alt="Category Warranty Settings">
+            </div>
+
+            <div class="screenshot">
+                <h4>Product Variant Warranty Management</h4>
+                <p>Configure warranty settings for individual product variants with the option to inherit from template or category, or set custom warranty terms.</p>
+                <img src="images/variant_ss.png" alt="Variant Warranty Settings">
+            </div>
+
+            <div class="screenshot">
+                <h4>Warranty List View</h4>
+                <p>View all warranty information in a convenient list format with effective warranty details clearly displayed.</p>
+                <img src="images/garanti_listesi_ss.png" alt="Warranty List">
+            </div>
+        </div>
+
+        <!-- Configuration Section -->
+        <div class="section">
+            <h2>⚙️ Configuration</h2>
+
+            <h3>Setting Up Category Warranties</h3>
+            <div class="config-steps">
+                <ol>
+                    <li>Navigate to <code>Inventory > Configuration > Product Categories</code></li>
+                    <li>Select a category or create a new one</li>
+                    <li>In the <strong>Warranty</strong> tab:
+                        <ul>
+                            <li>Set <strong>Warranty Duration</strong> (e.g., 24)</li>
+                            <li>Choose <strong>Warranty Unit</strong> (Days/Weeks/Months/Years)</li>
+                            <li>Select <strong>Warranty Start Date</strong> type (First Sale/Last Sale/Manufacturing)</li>
+                        </ul>
+                    </li>
+                </ol>
+            </div>
+
+            <h3>Configuring Product Warranties</h3>
+            <div class="config-steps">
+                <ol>
+                    <li>Go to <code>Inventory > Products > Products</code></li>
+                    <li>Open a product or create a new one</li>
+                    <li>In the <strong>Warranty</strong> tab:
+                        <ul>
+                            <li>Enable <strong>Warranty Tracking</strong> checkbox</li>
+                            <li>Choose <strong>Warranty Type</strong>:
+                                <ul>
+                                    <li><strong>Use Category Warranty:</strong> Inherit from product category</li>
+                                    <li><strong>Custom Warranty:</strong> Set product-specific warranty terms</li>
+                                </ul>
+                            </li>
+                            <li>If Custom is selected, configure duration, unit, and start type</li>
+                            <li>View <strong>Effective Warranty</strong> to see the active warranty configuration</li>
+                        </ul>
+                    </li>
+                </ol>
+            </div>
+
+            <h3>Product Variant Warranties</h3>
+            <div class="config-steps">
+                <p>For products with variants:</p>
+                <ol>
+                    <li>Open the product template</li>
+                    <li>Click on <strong>Variants</strong> smart button</li>
+                    <li>Select a variant</li>
+                    <li>In the <strong>Warranty</strong> tab:
+                        <ul>
+                            <li>Enable <strong>Warranty Tracking</strong> (inherited from template by default)</li>
+                            <li>Choose <strong>Warranty Type</strong>:
+                                <ul>
+                                    <li><strong>Use Template Warranty:</strong> Inherit from product template</li>
+                                    <li><strong>Use Category Warranty:</strong> Inherit from product category</li>
+                                    <li><strong>Custom Warranty:</strong> Set variant-specific warranty terms</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+                </ol>
+            </div>
+        </div>
+
+        <!-- How It Works Section -->
+        <div class="section">
+            <h2>🔧 How It Works</h2>
+
+            <h3>Warranty Start Type Behavior</h3>
+            <div class="info-box">
+                <p><strong>First Sale:</strong> Warranty date is set only on the first customer delivery. Subsequent sales don't change the warranty.</p>
+            </div>
+            <div class="info-box">
+                <p><strong>Last Sale:</strong> Warranty date is updated with each customer delivery. Returns reset the warranty date.</p>
+            </div>
+            <div class="info-box">
+                <p><strong>Manufacturing:</strong> Warranty date is set when the product exits production, regardless of customer delivery.</p>
+            </div>
+
+            <h3>Return Handling</h3>
+            <div class="warning-box">
+                <p>When a product is returned from a customer:</p>
+                <ul style="margin-top: 10px; padding-left: 20px;">
+                    <li>If warranty type is <strong>Last Sale</strong>, the warranty expiry date is cleared</li>
+                    <li>If warranty type is <strong>First Sale</strong> or <strong>Manufacturing</strong>, the warranty date remains unchanged</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Support Section -->
+        <div class="section">
+            <h2>💬 Support & Contribution</h2>
+            <div style="font-size: 16px; line-height: 1.8;">
+                <p><strong>Issues:</strong> Report bugs or request features on <a href="https://github.com/SalihKalender28/sk_customer_product_warranty/issues" target="_blank">GitHub Issues</a></p>
+                <p><strong>Contributions:</strong> Pull requests are welcome!</p>
+                <p><strong>Author:</strong> Salih Kalender</p>
+                <p><strong>Website:</strong> <a href="https://github.com/SalihKalender28" target="_blank">https://github.com/SalihKalender28</a></p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <h3>License</h3>
+            <p>This module is licensed under LGPL-3. See LICENSE file for details.</p>
+            <hr style="margin: 20px 0; border-color: #34495e;">
+            <p><strong>Note:</strong> This module requires Odoo 19.0 and depends on the <code>product</code> and <code>stock</code> modules which are part of Odoo's core functionality.</p>
+        </div>
+    </div>
+</body>
+</html>

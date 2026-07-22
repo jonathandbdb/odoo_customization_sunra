@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>
+        <!-- Stock Lot Form View -->
+        <record id="stock_lot_form_view_inherit_warranty" model="ir.ui.view">
+            <field name="name">stock.lot.form.inherit.warranty</field>
+            <field name="model">stock.lot</field>
+            <field name="inherit_id" ref="stock.view_production_lot_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='product_id']" position="after">
+                    <field name="warranty_expiry_date" readonly="1"/>
+                </xpath>
+            </field>
+        </record>
+
+
+        <!-- Stock Lot Tree View -->
+        <record id="stock_lot_tree_view_inherit_warranty" model="ir.ui.view">
+            <field name="name">stock.lot.tree.inherit.warranty</field>
+            <field name="model">stock.lot</field>
+            <field name="inherit_id" ref="stock.view_production_lot_tree"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='product_id']" position="after">
+                    <field name="warranty_expiry_date" optional="show"/>
+                </xpath>
+            </field>
+        </record>
+
+
+        <record model="ir.ui.view" id="search_product_lot_filter_inherit_warranty">
+            <field name="name">Production Lots Filter</field>
+            <field name="model">stock.lot</field>
+            <field name="inherit_id" ref="stock.search_product_lot_filter"/>
+            <field name="arch" type="xml">
+                <xpath expr="//filter[@name='on_hand']" position="after">
+                    <filter string="Warranty" name="warranty" domain="[('warranty_expiry_date', '!=', False)]"/>
+                </xpath>
+                <xpath expr="//filter[@name='creation_date']" position="after">
+                    <filter string="Warranty Expiry Date" name="warranty_expiry_date" date="warranty_expiry_date"/>
+                </xpath>
+                <xpath expr="//filter[@name='group_by_creation_date']" position="after">
+                    <filter name="group_by_warranty_expiry_date" string="Warranty Expiry Date" domain="[]" context="{'group_by': 'warranty_expiry_date'}"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>
