@@ -4,7 +4,7 @@ Vender un **envío con instalación incluida** desde el eCommerce y que esa vent
 Cita** (app Citas), con las **fotos del lugar** y los datos que cargó el cliente, y con la **tarea de
 Field Service** del instalador.
 
-- **Versión**: 1.0.2
+- **Versión**: 1.0.3
 - **Licencia**: LGPL-3
 - **Depende de**: `website_sale`, `delivery`, `website_appointment_sale`, `sale_project`
 
@@ -74,6 +74,9 @@ Casi todo el mecanismo es nativo de Odoo Enterprise; el módulo sólo lo enganch
   de que el cliente elija el método, así que apunta al pago incluso cuando el envío exige instalación.
 - `sale.order._action_confirm()` — copia las fotos a la Cita y a la tarea (después de `super()`, que
   es donde el core crea ambas).
+- `sale.order.line._timesheet_create_task_prepare_values()` — título estable para la tarea del
+  instalador (`<pedido> - <tipo de cita>`). Sin esto, cuando el producto de la cita se llama igual
+  que el tipo de cita, `sale_project` descarta esa línea y la tarea queda titulada con la fecha.
 - `WebsiteAppointmentSale._redirect_to_payment()` — al volver de agendar, vuelve al paso Instalación
   (el nativo vuelve al paso de dirección) y descarta la reserva anterior si el cliente reagenda.
 
