@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Paso generico (website_id vacio) del checkout: el core lo copia a cada website nuevo y el
+         post_init_hook lo replica, publicado, en los websites que ya existian. La secuencia lo deja
+         entre "Direccion + envio" (250) y "Extra Info" (500) para que el metodo de envio ya este
+         elegido cuando se pide la cita y las fotos. -->
+    <record id="checkout_step_installation" model="website.checkout.step">
+        <field name="name">Installation</field>
+        <field name="sequence">400</field>
+        <field name="step_href">/shop/installation</field>
+        <field name="main_button_label">Continue</field>
+        <field name="back_button_label">Back to installation</field>
+    </record>
+</odoo>
+<!-- vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4-->

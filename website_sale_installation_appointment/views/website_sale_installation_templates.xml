@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Paso "Instalacion" del checkout (/shop/installation). Solo se muestra si el metodo de envio
+         elegido exige instalacion: el dia y hora se eligen en la pagina nativa de Citas (que ya
+         controla disponibilidad y capacidad de la cuadrilla) y aca se suben las fotos del lugar. -->
+    <template id="installation" name="Checkout Installation">
+        <t t-call="website_sale.checkout_layout">
+            <t t-set="additional_title">Shop - Installation</t>
+            <t t-set="redirect" t-valuef="/shop/installation"/>
+            <t t-set="show_navigation_button" t-value="False"/>
+            <t t-set="oe_structure">
+                <div class="oe_structure" id="oe_structure_website_sale_installation_1"/>
+            </t>
+
+            <div id="shop_installation">
+                <h4 class="mb-3">Installation</h4>
+
+                <div t-if="warnings" class="alert alert-warning" role="alert">
+                    <div t-foreach="warnings" t-as="warning" t-key="warning_index" t-out="warning"/>
+                </div>
+                <div t-if="errors" class="alert alert-info" role="status">
+                    <div t-foreach="errors" t-as="error" t-key="error_index" t-out="error"/>
+                </div>
+
+                <!-- Dia y hora: se delega en la pagina nativa de la cita. -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Date and time</h5>
+                        <t t-if="installation_slot_label">
+                            <p class="mb-2">
+                                <i class="fa fa-calendar-check-o me-2" role="img"/>
+                                <span t-out="installation_slot_label"/>
+                            </p>
+                            <a t-attf-href="/appointment/{{appointment_type.id}}"
+                               class="btn btn-light btn-sm">Change</a>
+                        </t>
+                        <t t-else="">
+                            <p class="text-muted">
+                                Choose the day and time when our crew will do the installation.
+                            </p>
+                            <a t-attf-href="/appointment/{{appointment_type.id}}"
+                               class="btn btn-primary" name="schedule_installation">
+                                Schedule the installation<i class="fa fa-angle-right ms-2" role="img"/>
+                            </a>
+                        </t>
+                    </div>
+                </div>
+
+                <!-- Fotos ya subidas: se pueden quitar antes de pagar. -->
+                <div t-if="installation_photos" class="row g-2 mb-3">
+                    <div t-foreach="installation_photos" t-as="photo" t-key="photo['id']"
+                         class="col-4 col-md-3">
+                        <div class="border rounded p-1 h-100 d-flex flex-column">
+                            <img t-att-src="photo['url']" t-att-alt="photo['name']"
+                                 class="img-fluid rounded mb-1"/>
+                            <form t-attf-action="/shop/installation/photo/{{photo['id']}}/remove"
+                                  method="post" class="mt-auto">
+                                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                <button type="submit" class="btn btn-link btn-sm text-danger p-0">
+                                    Remove
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Subida de fotos + avance de paso. -->
+                <form action="/shop/installation/submit" method="post" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                    <div class="mb-3">
+                        <label for="installation_photos" class="form-label">
+                            Photos of the installation site
+                        </label>
+                        <input type="file" id="installation_photos" name="installation_photos"
+                               class="form-control" multiple="multiple" accept="image/*"/>
+                        <small class="form-text text-muted">
+                            <span>Images only. They help the crew know what to expect at the installation site.</span>
+                            <span class="d-block">Maximum: <span t-out="max_photos"/></span>
+                        </small>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a t-if="previous_website_checkout_step"
+                           t-att-href="previous_website_checkout_step.step_href"
+                           class="btn btn-light">
+                            <i class="fa fa-angle-left me-2" role="img"/>
+                            <span t-field="previous_website_checkout_step.back_button_label"/>
+                        </a>
+                        <button type="submit" class="btn btn-primary" name="installation_continue">
+                            Continue<i class="fa fa-angle-right ms-2" role="img"/>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </t>
+    </template>
+</odoo>
+<!-- vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4-->

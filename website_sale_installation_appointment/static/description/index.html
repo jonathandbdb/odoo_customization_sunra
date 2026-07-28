@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<body>
+    <section style="max-width: 980px; margin: 0 auto; padding: 32px 24px; font-family: Arial, Helvetica, sans-serif; color-scheme: var(--o-webclient-color-scheme, normal); color: CanvasText; line-height: 1.55; background: transparent;">
+        <div style="padding: 28px 30px; border: 1px solid ButtonBorder; border-radius: 8px; background: Canvas;">
+            <p style="margin: 0 0 8px; color: LinkText; font-size: 13px; font-weight: 700; text-transform: uppercase;">eCommerce - Envios y Citas</p>
+            <h1 style="margin: 0 0 12px; color: CanvasText; font-size: 32px; line-height: 1.2;">website_sale_installation_appointment</h1>
+            <p style="margin: 0; max-width: 760px; color: GrayText; font-size: 16px;">Permite vender un envio con instalacion incluida desde el eCommerce: el cliente agenda dia y hora sobre la disponibilidad real de la cuadrilla y sube fotos del lugar, y la venta queda agendada como Cita con la tarea de Field Service del instalador.</p>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 10px; color: LinkText; font-size: 23px;">Objetivo</h2>
+            <p style="margin: 0;">El negocio entrega de dos formas: envio normal a una direccion, y envio <strong>con instalacion incluida</strong>, que tiene otro costo y necesita coordinar cuando va la cuadrilla y con que se va a encontrar. Odoo Enterprise ya sabe reservar turnos con capacidad, cobrarlos en el carrito y generar la tarea del instalador, pero ese flujo arranca en la pagina de Citas y no en el checkout. Este modulo engancha las dos puntas: ata el <strong>metodo de envio</strong> al tipo de cita y agrega un paso de checkout que aparece solo cuando el envio elegido lleva instalacion.</p>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 12px; color: LinkText; font-size: 23px;">Funcionalidades principales</h2>
+            <table style="width: 100%; border-collapse: collapse; border: 1px solid ButtonBorder; background: Canvas;">
+                <tbody>
+                    <tr>
+                        <td style="width: 28%; padding: 14px 16px; border-bottom: 1px solid ButtonBorder; font-weight: 700; background: ButtonFace; color: ButtonText;">Envio que exige instalacion</td>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">Cada metodo de envio puede declarar un <strong>tipo de cita de instalacion</strong> y una cantidad minima de fotos. Si no lo declara, es un envio normal y nada cambia. El costo distinto sale del precio del propio metodo de envio (nativo).</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; font-weight: 700; background: ButtonFace; color: ButtonText;">Paso de checkout condicional</td>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">Se agrega el paso <strong>Instalacion</strong> entre "Direccion + envio" y "Pago". Aparece unicamente si el metodo elegido exige instalacion: con envio normal el paso no existe para el cliente (ni en el wizard, ni en el calculo del paso siguiente).</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; font-weight: 700; background: ButtonFace; color: ButtonText;">Dia y hora reales</td>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">El turno se elige en la pagina nativa de la cita, con la disponibilidad y capacidad reales de la cuadrilla (recursos), zona horaria, anticipacion minima y revalidacion anti doble-booking antes de pagar. Al volver, el checkout muestra el turno reservado y permite cambiarlo.</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; font-weight: 700; background: ButtonFace; color: ButtonText;">Fotos del lugar</td>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">El cliente sube las fotos del lugar de instalacion en ese paso (las ve, las puede quitar). Quedan en el pedido y, al confirmarse, se copian al chatter de la Cita y de la tarea del instalador.</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; font-weight: 700; background: ButtonFace; color: ButtonText;">Gate de pago</td>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">Sin turno agendado o sin las fotos minimas, el pedido no se puede pagar: el error explica exactamente que falta, tanto si el cliente entra directo a /shop/payment como si intenta confirmar.</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 14px 16px; font-weight: 700; background: ButtonFace; color: ButtonText;">Tarea del instalador</td>
+                        <td style="padding: 14px 16px; color: CanvasText;">Si el producto de la cita genera tarea en el proyecto de Field Service, el nativo la crea con fecha, duracion, cliente, la cuadrilla como etiqueta y las respuestas del formulario en la descripcion. Este modulo le suma las fotos.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 12px; color: LinkText; font-size: 23px;">Configuracion</h2>
+            <ol style="margin: 0; padding-left: 22px;">
+                <li style="margin-bottom: 8px;"><strong>Producto de la cita</strong>: tipo Servicio, "Crear tarea en proyecto existente" apuntando al proyecto de Field Service. Precio 0 si el costo va en el envio.</li>
+                <li style="margin-bottom: 8px;"><strong>Tipo de cita</strong>: con <strong>paso de pago</strong> activado y ese producto, agendado por <strong>recursos</strong> (la cuadrilla con su capacidad), franjas horarias reales y publicado. Las <strong>preguntas</strong> del tipo de cita (piso, ascensor, contacto en obra, observaciones) viajan solas a la Cita y a la descripcion de la tarea.</li>
+                <li style="margin-bottom: 8px;"><strong>Etiqueta de producto</strong> (ej. "Requiere instalacion") en los productos instalables.</li>
+                <li style="margin-bottom: 8px;"><strong>Metodo de envio "con instalacion"</strong>: precio fijo con su costo, publicado, con esa etiqueta en "Debe tener etiquetas" (aparece solo si el carrito lleva un producto instalable), zona de cobertura por pais/provincia/CP, y <strong>Tipo de cita de instalacion</strong> = el del punto 2.</li>
+                <li><strong>Proveedor de pago habilitado</strong>: la Cita se crea al confirmarse el pedido. Sin proveedor habilitado el checkout no confirma y la reserva queda pendiente.</li>
+            </ol>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 10px; color: LinkText; font-size: 23px;">Detalle tecnico</h2>
+            <p style="margin: 0 0 14px;">El modulo no crea modelos nuevos: se apoya en la maquinaria nativa de <code>appointment_account_payment</code> (reserva <code>calendar.booking</code>), <code>website_appointment_sale</code> (la reserva entra al carrito como linea y se convierte en <code>calendar.event</code> al confirmar el pedido) y <code>website_appointment_sale_project</code> (propaga fecha, cliente, recursos y respuestas a la tarea). Agrega dos campos a <code>delivery.carrier</code>, campos calculados y de fotos a <code>sale.order</code>, un registro <code>website.checkout.step</code> (replicado a los websites existentes por <code>post_init_hook</code>), y engancha en <code>website._get_allowed_steps_domain()</code>, <code>sale.order._check_cart_is_ready_to_be_paid()</code>, <code>WebsiteSale._get_shop_payment_errors()</code>, <code>sale.order._action_confirm()</code> y <code>WebsiteAppointmentSale._redirect_to_payment()</code>.</p>
+            <p style="margin: 0; padding: 14px 16px; border-left: 4px solid Highlight; background: color-mix(in srgb, Highlight 14%, Canvas); color: CanvasText;">El tipo de cita asociado a un metodo de envio debe tener paso de pago y un producto que genere tarea o tenga precio: sin eso el nativo crearia la cita suelta, sin vincularla al pedido. El modulo lo valida al guardar el metodo de envio. El endpoint publico de fotos acepta solo imagenes (valida el mimetype real del contenido), hasta 10 MB por archivo y 10 fotos por pedido.</p>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 10px; color: LinkText; font-size: 23px;">Dependencias</h2>
+            <ul style="margin: 0; padding-left: 22px;">
+                <li><code>website_sale</code> (core) - checkout del eCommerce y sus pasos.</li>
+                <li><code>delivery</code> (core) - metodos de envio, su precio y su disponibilidad condicional por etiquetas y zona.</li>
+                <li><code>website_appointment_sale</code> (Enterprise) - puente reserva &rarr; carrito &rarr; Cita al confirmar el pedido.</li>
+                <li><code>sale_project</code> (core) - generacion de la tarea a partir del producto de servicio de la cita.</li>
+            </ul>
+        </div>
+    </section>
+</body>
+</html>

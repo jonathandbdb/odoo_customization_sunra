@@ -1,0 +1,176 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* website_sale_installation_appointment
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: es_419\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: website_sale_installation_appointment
+#: model:website.checkout.step,name:website_sale_installation_appointment.checkout_step_installation
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.view_order_form
+msgid "Installation"
+msgstr "Instalación"
+
+#. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation
+msgid "Date and time"
+msgstr "Día y hora"
+
+#. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation
+msgid "Choose the day and time when our crew will do the installation."
+msgstr "Elegí el día y la hora en que nuestro equipo va a hacer la instalación."
+
+#. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation
+msgid "Schedule the installation"
+msgstr "Agendar la instalación"
+
+#. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation
+msgid "Change"
+msgstr "Cambiar"
+
+#. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation
+msgid "Remove"
+msgstr "Quitar"
+
+#. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.view_order_form
+msgid "Photos of the installation site"
+msgstr "Fotos del lugar de instalación"
+
+#. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation
+msgid "Images only. They help the crew know what to expect at the installation site."
+msgstr "Solo imágenes. Le sirven al equipo para saber con qué se va a encontrar en el lugar."
+
+#. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation
+msgid "Maximum:"
+msgstr "Máximo:"
+
+#. module: website_sale_installation_appointment
+#: model:website.checkout.step,main_button_label:website_sale_installation_appointment.checkout_step_installation
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation
+msgid "Continue"
+msgstr "Continuar"
+
+#. module: website_sale_installation_appointment
+#: model:website.checkout.step,back_button_label:website_sale_installation_appointment.checkout_step_installation
+msgid "Back to installation"
+msgstr "Volver a la instalación"
+
+#. module: website_sale_installation_appointment
+#: code:addons/website_sale_installation_appointment/models/sale_order.py:0
+msgid "Please schedule the date and time of the installation."
+msgstr "Agendá el día y la hora de la instalación."
+
+#. module: website_sale_installation_appointment
+#: code:addons/website_sale_installation_appointment/models/sale_order.py:0
+msgid ""
+"Please upload at least %(min_photos)s photo(s) of the installation site "
+"(%(missing)s missing)."
+msgstr ""
+"Subí al menos %(min_photos)s foto(s) del lugar de instalación (faltan "
+"%(missing)s)."
+
+#. module: website_sale_installation_appointment
+#: code:addons/website_sale_installation_appointment/models/sale_order.py:0
+msgid "Photos of the installation site uploaded by the customer on order %(order)s."
+msgstr "Fotos del lugar de instalación cargadas por el cliente en el pedido %(order)s."
+
+#. module: website_sale_installation_appointment
+#: code:addons/website_sale_installation_appointment/controllers/website_sale_installation_appointment.py:0
+msgid "Your installation is not scheduled yet."
+msgstr "Todavía no agendaste la instalación."
+
+#. module: website_sale_installation_appointment
+#: code:addons/website_sale_installation_appointment/controllers/website_sale_installation_appointment.py:0
+msgid "You can upload up to %(max_photos)s photos."
+msgstr "Podés subir hasta %(max_photos)s fotos."
+
+#. module: website_sale_installation_appointment
+#: code:addons/website_sale_installation_appointment/controllers/website_sale_installation_appointment.py:0
+msgid "The file %(filename)s is too big (maximum %(max_size)s MB)."
+msgstr "El archivo %(filename)s es demasiado grande (máximo %(max_size)s MB)."
+
+#. module: website_sale_installation_appointment
+#: code:addons/website_sale_installation_appointment/controllers/website_sale_installation_appointment.py:0
+msgid "The file %(filename)s is not an image."
+msgstr "El archivo %(filename)s no es una imagen."
+
+#. module: website_sale_installation_appointment
+#: code:addons/website_sale_installation_appointment/models/delivery_carrier.py:0
+msgid ""
+"The appointment type %(appointment_type)s cannot be used for installations: "
+"it must have a payment step and a booking product, otherwise the appointment "
+"cannot be linked to the eCommerce order."
+msgstr ""
+"El tipo de cita %(appointment_type)s no se puede usar para instalaciones: "
+"necesita paso de pago y un producto de reserva, si no la cita no puede "
+"quedar vinculada al pedido del eCommerce."
+
+#. module: website_sale_installation_appointment
+#: code:addons/website_sale_installation_appointment/models/delivery_carrier.py:0
+msgid ""
+"The product %(product)s of the appointment type %(appointment_type)s must "
+"either create a task in a project or have a sales price, otherwise no "
+"booking is created when the customer schedules the installation."
+msgstr ""
+"El producto %(product)s del tipo de cita %(appointment_type)s tiene que "
+"crear una tarea en un proyecto o tener precio de venta, si no no se crea la "
+"reserva cuando el cliente agenda la instalación."
+
+#. module: website_sale_installation_appointment
+#: code:addons/website_sale_installation_appointment/models/delivery_carrier.py:0
+msgid "The minimum amount of installation photos cannot be negative."
+msgstr "La cantidad mínima de fotos de instalación no puede ser negativa."
+
+#. module: website_sale_installation_appointment
+#: model:ir.model.fields,field_description:website_sale_installation_appointment.field_delivery_carrier__installation_appointment_type_id
+#: model:ir.model.fields,field_description:website_sale_installation_appointment.field_sale_order__installation_appointment_type_id
+msgid "Installation Appointment Type"
+msgstr "Tipo de cita de instalación"
+
+#. module: website_sale_installation_appointment
+#: model:ir.model.fields,field_description:website_sale_installation_appointment.field_delivery_carrier__installation_min_photos
+msgid "Minimum Installation Photos"
+msgstr "Fotos mínimas de instalación"
+
+#. module: website_sale_installation_appointment
+#: model:ir.model.fields,field_description:website_sale_installation_appointment.field_sale_order__installation_required
+msgid "Installation Required"
+msgstr "Requiere instalación"
+
+#. module: website_sale_installation_appointment
+#: model:ir.model.fields,field_description:website_sale_installation_appointment.field_sale_order__installation_booking_id
+msgid "Installation Booking"
+msgstr "Reserva de instalación"
+
+#. module: website_sale_installation_appointment
+#: model:ir.model.fields,field_description:website_sale_installation_appointment.field_sale_order__installation_event_id
+msgid "Installation Appointment"
+msgstr "Cita de instalación"
+
+#. module: website_sale_installation_appointment
+#: model:ir.model.fields,field_description:website_sale_installation_appointment.field_sale_order__installation_photo_ids
+msgid "Installation Photos"
+msgstr "Fotos de la instalación"
+
+#. module: website_sale_installation_appointment
+#: model:ir.model.fields,field_description:website_sale_installation_appointment.field_sale_order__installation_photo_count
+msgid "Installation Photos Count"
+msgstr "Cantidad de fotos de la instalación"
