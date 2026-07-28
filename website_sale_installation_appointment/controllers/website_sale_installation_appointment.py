@@ -78,6 +78,20 @@ class WebsiteSaleInstallation(WebsiteSale):
 
     # === OVERRIDES === #
 
+    def shop_payment(self, **post):
+        """ Override of `website_sale`: send the customer to the installation step if it is still
+            incomplete.
+
+        The "next step" link of the delivery step is rendered before the customer picks a delivery
+        method, so it points to the payment page even when the chosen method requires an
+        installation. Redirecting here keeps the flow going through the installation step instead of
+        showing an error on the payment page.
+        """
+        order_sudo = request.cart
+        if order_sudo and order_sudo._is_installation_required() and order_sudo._get_installation_errors():
+            return request.redirect(INSTALLATION_STEP_HREF)
+        return super().shop_payment(**post)
+
     def _get_shop_payment_errors(self, order):
         """ Override of `website_sale`: block the payment while the installation is incomplete. """
         errors = super()._get_shop_payment_errors(order)

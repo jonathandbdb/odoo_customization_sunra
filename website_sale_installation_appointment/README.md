@@ -4,7 +4,7 @@ Vender un **envío con instalación incluida** desde el eCommerce y que esa vent
 Cita** (app Citas), con las **fotos del lugar** y los datos que cargó el cliente, y con la **tarea de
 Field Service** del instalador.
 
-- **Versión**: 1.0.0
+- **Versión**: 1.0.1
 - **Licencia**: LGPL-3
 - **Depende de**: `website_sale`, `delivery`, `website_appointment_sale`, `sale_project`
 
@@ -69,6 +69,9 @@ Casi todo el mecanismo es nativo de Odoo Enterprise; el módulo sólo lo enganch
   instalación (así el core calcula solo el paso siguiente/anterior y el wizard no lo dibuja).
 - `sale.order._check_cart_is_ready_to_be_paid()` y `WebsiteSale._get_shop_payment_errors()` — gate de
   pago: sin cita o sin las fotos mínimas no se puede pagar.
+- `WebsiteSale.shop_payment()` — si la instalación está incompleta, redirige al paso en vez de
+  mostrar el error. Hace falta porque el link "siguiente paso" del paso de envío se renderiza **antes**
+  de que el cliente elija el método, así que apunta al pago incluso cuando el envío exige instalación.
 - `sale.order._action_confirm()` — copia las fotos a la Cita y a la tarea (después de `super()`, que
   es donde el core crea ambas).
 - `WebsiteAppointmentSale._redirect_to_payment()` — al volver de agendar, vuelve al paso Instalación
