@@ -1,0 +1,581 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* helpdesk_service_appointment
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: es_419\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: \n"
+
+#. module: helpdesk_service_appointment
+#. odoo-python
+#: code:addons/helpdesk_service_appointment/controllers/helpdesk_service_appointment.py:0
+msgid "6 months to 1 year"
+msgstr "De 6 meses a 1 año"
+
+#. module: helpdesk_service_appointment
+#. odoo-python
+#: code:addons/helpdesk_service_appointment/controllers/helpdesk_service_appointment.py:0
+msgid "6m_1y"
+msgstr "6m_1y"
+
+#. module: helpdesk_service_appointment
+#: model_terms:ir.ui.view,arch_db:helpdesk_service_appointment.portal_service_new
+msgid "<option value=\"\">-</option>"
+msgstr "<option value=\"\">-</option>"
+
+#. module: helpdesk_service_appointment
+#: model_terms:ir.ui.view,arch_db:helpdesk_service_appointment.tickets_followup_inherit_service
+msgid "<small class=\"text-muted\">Service</small>"
+msgstr "<small class=\"text-muted\">Service</small>"
+
+#. module: helpdesk_service_appointment
+#: model_terms:ir.ui.view,arch_db:helpdesk_service_appointment.tickets_followup_inherit_service
+msgid "<span class=\"badge text-bg-danger\">Out of Warranty</span>"
+msgstr "<span class=\"badge text-bg-danger\">Fuera de Garantía</span>"
+
+#. module: helpdesk_service_appointment
+#: model_terms:ir.ui.view,arch_db:helpdesk_service_appointment.tickets_followup_inherit_service
+msgid "<span class=\"badge text-bg-secondary\">No warranty data</span>"
+msgstr "<span class=\"badge text-bg-secondary\">Sin datos de garantía</span>"
+
+#. module: helpdesk_service_appointment
+#: model_terms:ir.ui.view,arch_db:helpdesk_service_appointment.tickets_followup_inherit_service
+msgid "<span class=\"badge text-bg-success\">Under Warranty</span>"
+msgstr "<span class=\"badge text-bg-success\">En Garantía</span>"
+
+#. module: helpdesk_service_appointment
+#: model_terms:ir.ui.view,arch_db:helpdesk_service_appointment.tickets_followup_inherit_service
+msgid "<strong>Appointment:</strong>"
+msgstr "<strong>Cita:</strong>"
+
+#. module: helpdesk_service_appointment
+#: model_terms:ir.ui.view,arch_db:helpdesk_service_appointment.tickets_followup_inherit_service
+msgid "<strong>Lock:</strong>"
+msgstr "<strong>Cerradura:</strong>"
+
+#. module: helpdesk_service_appointment
+#: model_terms:ir.ui.view,arch_db:helpdesk_service_appointment.portal_service_new
+msgid "Address"
+msgstr "Dirección"
+
+#. module: helpdesk_service_appointment
+#: model:ir.model.fields,help:helpdesk_service_appointment.field_helpdesk_ticket__service_visit_address_id
+msgid ""
+"Address where the technician will do the service visit. Must belong to the "
+"ticket's commercial partner; used as the customer of the generated Field "
+"Service task."
+msgstr "Dirección donde el técnico va a hacer la visita de service. Debe pertenecer al commercial partner del ticket; se usa como cliente de la tarea de Field Service generada."
+
+#. module: helpdesk_service_appointment
+#: model_terms:ir.ui.view,arch_db:helpdesk_service_appointment.portal_service_new
+msgid "Approximate installation age"
+msgstr "Antigüedad aproximada de la instalación"
+
+#. module: helpdesk_service_appointment
+#: model:ir.model,name:helpdesk_service_appointment.model_calendar_event
+msgid "Calendar Event"
+msgstr "Evento del calendario"
+
+#. module: helpdesk_service_appointment
+#: model_terms:ir.ui.view,arch_db:helpdesk_service_appointment.portal_service_new
+msgid "Continue to schedule<i class=\"fa fa-angle-right ms-2\" role=\"img\"/>"
+msgstr "Continuar para agendar<i class=\"fa fa-angle-right ms-2\" role=\"img\"/>"
+
+#. module: helpdesk_service_appointment
+#: model:ir.model,name:helpdesk_service_appointment.model_helpdesk_create_fsm_task
+msgid "Create a Field Service task"
+msgstr "Crear una tarea de servicio externo"
+
+#. module: helpdesk_service_appointment
+#: model:ir.model,website_form_label:helpdesk_service_appointment.model_project_task
+msgid "Create a Task"
+msgstr "Crear una tarea"
+
+#. module: helpdesk_service_appointment
+#: model:ir.model,website_form_label:helpdesk_service_appointment.model_helpdesk_ticket
+msgid "Create a Ticket"
+msgstr "Crear un ticket"
+
+#. module: helpdesk_service_appointment
+#: model:ir.model.fields,field_description:helpdesk_service_appointment.field_helpdesk_ticket__warranty_delivery_date
+msgid "Delivery Date"
+msgstr "Fecha de Entrega"
+
+#. module: helpdesk_service_appointment
+#. odoo-python
+#: code:addons/helpdesk_service_appointment/wizard/helpdesk_create_fsm_task.py:0
+msgid "Delivery date used"
+msgstr "Fecha de entrega utilizada"
+
+#. module: helpdesk_service_appointment
+#: model:ir.model.fields,help:helpdesk_service_appointment.field_helpdesk_ticket__warranty_delivery_date
+msgid ""
+"Delivery used as the base of the warranty computation (first or last, "
+"depending on the product's warranty start type)."
+msgstr "Entrega usada como base del cálculo de garantía (primera o última, según el tipo de inicio de garantía del producto)."
+
+#. module: helpdesk_service_appointment
+#: model:ir.model.fields,field_description:helpdesk_service_appointment.field_calendar_event__display_name
+#: model:ir.model.fields,field_description:helpdesk_service_appointment.field_helpdesk_create_fsm_task__display_name
+#: model:ir.model.fields,field_description:helpdesk_service_appointment.field_helpdesk_ticket__display_name
+#: model:ir.model.fields,field_description:helpdesk_service_appointment.field_product_product__display_name
+#: model:ir.model.fields,field_description:helpdesk_service_appointment.field_project_task__display_name
+msgid "Display Name"
+msgstr "Nombre en pantalla"
+
+#. module: helpdesk_service_appointment
+#: model:ir.model,name:helpdesk_service_appointment.model_helpdesk_ticket
+msgid "Helpdesk Ticket"
+msgstr "Ticket de soporte al cliente"
+
+#. module: helpdesk_service_appointment
+#: model:ir.model.fields,field_description:helpdesk_service_appointment.field_calendar_event__id
+#: model:ir.model.fields,field_description:helpdesk_service_appointment.field_helpdesk_create_fsm_task__id
+#: model:ir.model.fields,field_description:helpdesk_service_appointment.field_helpdesk_ticket__id
+#: model:ir.model.fields,field_description:helpdesk_service_appointment.field_product_product__id
+#: model:ir.model.fields,field_description:helpdesk_service_appointment.field_project_task__id
+msgid "ID"
+msgstr "ID"
+
+#. module: helpdesk_service_appointment
+#: model_terms:ir.ui.view,arch_db:helpdesk_service_appointment.portal_service_new
+msgid "If your lock is not on the list above, describe it here:"
+msgstr "Si tu cerradura no está en la lista de arriba, describila acá:"
+
+#. module: helpdesk_service_appointment
+#: model:ir.model.fields,help:helpdesk_service_appointment.field_helpdesk_ticket__warranty_status
+#: model:ir.model.fields,help:helpdesk_service_appointment.field_project_task__service_warranty_status
+msgid "Informative only: it never blocks the scheduling of a service visit."
+msgstr "Solo informativo: nunca bloquea el agendado de una visita de service."
+
+#. module: helpdesk_service_appointment
+#. odoo-python
+#: code:addons/helpdesk_service_appointment/controllers/helpdesk_service_appointment.py:0
+msgid "Installation age"
+msgstr "Antigüedad de la instalación"
+
+#. module: helpdesk_service_appointment
+#. odoo-python
+#: code:addons/helpdesk_service_appointment/controllers/helpdesk_service_appointment.py:0
+msgid "Less than 6 months"
+msgstr "Menos de 6 meses"
+
+#. module: helpdesk_service_appointment
+#. odoo-python
+#: code:addons/helpdesk_service_appointment/wizard/helpdesk_create_fsm_task.py:0
+msgid "Lock"
+msgstr "Cerradura"
+
+#. module: helpdesk_service_appointment
+#: model:helpdesk.tag,name:helpdesk_service_appointment.helpdesk_tag_connectivity
+msgid "Lock App/WiFi connection issue"
+msgstr "Problema de conexión App/WiFi de la cerradura"
+
+#. module: helpdesk_service_appointment
+#: model:helpdesk.tag,name:helpdesk_service_appointment.helpdesk_tag_battery_corrosion
+msgid "Lock battery corrosion"
+msgstr "Corrosión en la batería de la cerradura"
+
+#. module: helpdesk_service_appointment
+#: model:helpdesk.tag,name:helpdesk_service_appointment.helpdesk_tag_battery_drain
+msgid "Lock battery drains fast"
+msgstr "La batería de la cerradura se agota rápido"
+
+#. module: helpdesk_service_appointment
+#: model:helpdesk.tag,name:helpdesk_service_appointment.helpdesk_tag_not_closing
+msgid "Lock does not close properly / jams"
+msgstr "La cerradura no cierra bien / se traba"
+
+#. module: helpdesk_service_appointment
+#: model:helpdesk.tag,name:helpdesk_service_appointment.helpdesk_tag_not_opening
+msgid "Lock does not open / unresponsive"
+msgstr "La cerradura no abre / no responde"
+
+#. module: helpdesk_service_appointment
+#: model:helpdesk.tag,name:helpdesk_service_appointment.helpdesk_tag_other
+msgid "Lock issue - Other"
+msgstr "Otro problema de la cerradura"
+
+#. module: helpdesk_service_appointment
+#: model_terms:ir.ui.view,arch_db:helpdesk_service_appointment.portal_service_new
+msgid "Lock model"
+msgstr "Modelo de la cerradura"
+
+#. module: helpdesk_service_appointment
+#. odoo-python
+#: code:addons/helpdesk_service_appointment/controllers/helpdesk_service_appointment.py:0
+msgid "Lock model (declared by customer)"
+msgstr "Modelo de la cerradura (declarado por el cliente)"
+
+#. module: helpdesk_service_appointment
+#: model:helpdesk.tag,name:helpdesk_service_appointment.helpdesk_tag_locked_out
+msgid "Locked in / locked out"
+msgstr "Encerrado adentro / trabado afuera"
+
+#. module: helpdesk_service_appointment
+#: model_terms:ir.ui.view,arch_db:helpdesk_service_appointment.portal_service_new
+msgid "MB each."
+msgstr "MB cada una."
+
+#. module: helpdesk_service_appointment
+#: model_terms:ir.ui.view,arch_db:helpdesk_service_appointment.tickets_followup_inherit_service
+msgid "Manage / Cancel"
+msgstr "Gestionar / Cancelar"
+
+#. module: helpdesk_service_appointment
+#: model_terms:ir.ui.view,arch_db:helpdesk_service_appointment.portal_service_new
+msgid "Maximum"
+msgstr "Máximo"
+
+#. module: helpdesk_service_appointment
+#. odoo-python
+#: code:addons/helpdesk_service_appointment/controllers/helpdesk_service_appointment.py:0
+msgid "More than 1 year"
+msgstr "Más de 1 año"
+
+#. module: helpdesk_service_appointment
+#: model:ir.model.fields,help:helpdesk_service_appointment.field_helpdesk_ticket__service_event_id
+msgid "Most recent active appointment linked to this ticket."
+msgstr "Cita activa más reciente vinculada a este ticket."
+
+#. module: helpdesk_service_appointment
+#: model_terms:ir.ui.view,arch_db:helpdesk_service_appointment.portal_helpdesk_ticket_inherit_service
+msgid "New Service Request"
+msgstr "Nueva Solicitud de Service"
+
+#. module: helpdesk_service_appointment
+#. odoo-python
+#: code:addons/helpdesk_service_appointment/models/calendar_event.py:0
+msgid ""
+"No Field Service task was created: the %(team)s team has no Field Service "
+"project configured."
+msgstr "No se creó ninguna tarea de Field Service: el equipo %(team)s no tiene un proyecto de Field Service configurado."
+
+#. module: helpdesk_service_appointment
+#: model_terms:ir.ui.view,arch_db:helpdesk_service_appointment.portal_service_new
+msgid "No warranty data"
+msgstr "Sin datos de garantía"
+
+#. module: helpdesk_service_appointment
+#: model_terms:ir.ui.view,arch_db:helpdesk_service_appointment.portal_service_new
+msgid "Not on the list / I don't know"
+msgstr "No está en la lista / No lo sé"
+
+#. module: helpdesk_service_appointment
+#: model_terms:ir.ui.view,arch_db:helpdesk_service_appointment.portal_service_new
+msgid "Notes (floor, apartment, access instructions)"
+msgstr "Aclaraciones (piso, departamento, indicaciones de acceso)"
+
+#. module: helpdesk_service_appointment
+#: model:ir.model.fields.selection,name:helpdesk_service_appointment.selection__helpdesk_ticket__warranty_status__expired
+#: model_terms:ir.ui.view,arch_db:helpdesk_service_appointment.portal_service_new
+msgid "Out of Warranty"
+msgstr "Fuera de Garantía"
+
+#. module: helpdesk_service_appointment
+#: model_terms:ir.ui.view,arch_db:helpdesk_service_appointment.portal_service_new
+msgid "Photos (optional)"
+msgstr "Fotos (opcional)"
+
+#. module: helpdesk_service_appointment
+#. odoo-python
+#: code:addons/helpdesk_service_appointment/models/helpdesk_ticket.py:0
+msgid ""
+"Photos of the reported issue uploaded by the customer on ticket %(ticket)s."
+msgstr "Fotos de la falla reportada subidas por el cliente en el ticket %(ticket)s."
+
+#. module: helpdesk_service_appointment
+#. odoo-python
+#: code:addons/helpdesk_service_appointment/controllers/helpdesk_service_appointment.py:0
+msgid "Photos of the reported issue uploaded by the customer."
+msgstr "Fotos de la falla reportada subidas por el cliente."
+
+#. module: helpdesk_service_appointment
+#. odoo-python
+#: code:addons/helpdesk_service_appointment/controllers/helpdesk_service_appointment.py:0
+msgid "Please describe the issue."
+msgstr "Describí el problema."
+
+#. module: helpdesk_service_appointment
+#. odoo-python
+#: code:addons/helpdesk_service_appointment/controllers/helpdesk_service_appointment.py:0
+msgid "Please select a valid issue type."
+msgstr "Seleccioná un tipo de problema válido."
+
+#. module: helpdesk_service_appointment
+#. odoo-python
+#: code:addons/helpdesk_service_appointment/controllers/helpdesk_service_appointment.py:0
+msgid ""
+"Please select your lock, or describe its model if it is not on the list."
+msgstr "Seleccioná tu cerradura, o describí su modelo si no está en la lista."
+
+#. module: helpdesk_service_appointment
+#: model:ir.model,name:helpdesk_service_appointment.model_product_product
+msgid "Product Variant"
+msgstr "Variante del producto"
+
+#. module: helpdesk_service_appointment
+#: model_terms:ir.ui.view,arch_db:helpdesk_service_appointment.portal_service_new
+msgid "Schedule a Service Visit"
+msgstr "Agendar una Visita de Service"
+
+#. module: helpdesk_service_appointment
+#: model_terms:ir.ui.view,arch_db:helpdesk_service_appointment.tickets_followup_inherit_service
+msgid "Schedule visit"
+msgstr "Agendar visita"
+
+#. module: helpdesk_service_appointment
+#: model:helpdesk.team,name:helpdesk_service_appointment.helpdesk_team_service
+#: model_terms:ir.ui.view,arch_db:helpdesk_service_appointment.helpdesk_ticket_view_form
+msgid "Service"
+msgstr "Service"
+
+#. module: helpdesk_service_appointment
+#: model:ir.model.fields,field_description:helpdesk_service_appointment.field_helpdesk_ticket__service_event_id
+msgid "Service Appointment"
+msgstr "Cita de Service"
+
+#. module: helpdesk_service_appointment
+#: model:ir.model.fields,field_description:helpdesk_service_appointment.field_helpdesk_ticket__service_event_ids
+msgid "Service Appointments"
+msgstr "Citas de Service"
+
+#. module: helpdesk_service_appointment
+#: model:ir.model.fields,field_description:helpdesk_service_appointment.field_calendar_event__service_ticket_id
+msgid "Service Ticket"
+msgstr "Ticket de Service"
+
+#. module: helpdesk_service_appointment
+#: model:appointment.type,name:helpdesk_service_appointment.appointment_type_service
+msgid "Service Visit"
+msgstr "Visita de Service"
+
+#. module: helpdesk_service_appointment
+#. odoo-python
+#: code:addons/helpdesk_service_appointment/models/calendar_event.py:0
+msgid ""
+"Service appointment cancelled: the related Field Service task(s) were "
+"cancelled."
+msgstr "Cita de service cancelada: la(s) tarea(s) de Field Service relacionada(s) se cancelaron."
+
+#. module: helpdesk_service_appointment
+#. odoo-python
+#: code:addons/helpdesk_service_appointment/models/calendar_event.py:0
+msgid "Service appointment re-scheduled: the Field Service task was reopened."
+msgstr "Cita de service reagendada: la tarea de Field Service se reabrió."
+
+#. module: helpdesk_service_appointment
+#. odoo-python
+#: code:addons/helpdesk_service_appointment/wizard/helpdesk_create_fsm_task.py:0
+msgid "Service information"
+msgstr "Información de Service"
+
+#. module: helpdesk_service_appointment
+#. odoo-python
+#: code:addons/helpdesk_service_appointment/controllers/helpdesk_service_appointment.py:0
+msgid "Service request: %(problem)s"
+msgstr "Solicitud de service: %(problem)s"
+
+#. module: helpdesk_service_appointment
+#. odoo-python
+#: code:addons/helpdesk_service_appointment/models/calendar_event.py:0
+msgid "Service visit scheduled for %(date)s."
+msgstr "Visita de service agendada para %(date)s."
+
+#. module: helpdesk_service_appointment
+#: model:ir.model.fields,help:helpdesk_service_appointment.field_calendar_event__service_ticket_id
+msgid ""
+"Set by the Appointments submit hook when the customer schedules a service "
+"visit for this ticket."
+msgstr "Lo setea el hook del submit de Citas cuando el cliente agenda una visita de service para este ticket."
+
+#. module: helpdesk_service_appointment
+#: model:ir.model,name:helpdesk_service_appointment.model_project_task
+msgid "Task"
+msgstr "Tarea"
+
+#. module: helpdesk_service_appointment
+#: model_terms:ir.ui.view,arch_db:helpdesk_service_appointment.portal_service_new
+msgid "Tell us more about what's happening"
+msgstr "Contanos más sobre lo que está pasando"
+
+#. module: helpdesk_service_appointment
+#: model_terms:ir.ui.view,arch_db:helpdesk_service_appointment.portal_service_new
+msgid ""
+"Tell us what's going on with your lock and we will schedule a technician\n"
+"                    visit. There is no charge for the visit itself."
+msgstr "Contanos qué está pasando con tu cerradura y vamos a agendar la visita de un técnico. La visita en sí no tiene costo."
+
+#. module: helpdesk_service_appointment
+#. odoo-python
+#: code:addons/helpdesk_service_appointment/models/calendar_event.py:0
+msgid ""
+"The Field Service task for this appointment could not be created "
+"automatically. Please create it manually."
+msgstr "No se pudo crear automáticamente la tarea de Field Service para esta cita. Creala manualmente."
+
+#. module: helpdesk_service_appointment
+#. odoo-python
+#: code:addons/helpdesk_service_appointment/controllers/helpdesk_service_appointment.py:0
+msgid "The file %(filename)s is not an image."
+msgstr "El archivo %(filename)s no es una imagen."
+
+#. module: helpdesk_service_appointment
+#. odoo-python
+#: code:addons/helpdesk_service_appointment/controllers/helpdesk_service_appointment.py:0
+msgid "The file %(filename)s is too big (maximum %(max_size)s MB)."
+msgstr "El archivo %(filename)s es demasiado grande (máximo %(max_size)s MB)."
+
+#. module: helpdesk_service_appointment
+#: model_terms:ir.ui.view,arch_db:helpdesk_service_appointment.portal_service_new
+msgid "The issue"
+msgstr "El problema"
+
+#. module: helpdesk_service_appointment
+#. odoo-python
+#: code:addons/helpdesk_service_appointment/controllers/helpdesk_service_appointment.py:0
+msgid "The selected lock does not belong to your account."
+msgstr "La cerradura seleccionada no pertenece a tu cuenta."
+
+#. module: helpdesk_service_appointment
+#. odoo-python
+#: code:addons/helpdesk_service_appointment/controllers/helpdesk_service_appointment.py:0
+msgid "The selected visit address is not valid."
+msgstr "La dirección de visita seleccionada no es válida."
+
+#. module: helpdesk_service_appointment
+#: model_terms:ir.ui.view,arch_db:helpdesk_service_appointment.portal_service_new
+msgid "Tickets"
+msgstr "Tickets"
+
+#. module: helpdesk_service_appointment
+#: model:ir.model.fields.selection,name:helpdesk_service_appointment.selection__helpdesk_ticket__warranty_status__valid
+#: model_terms:ir.ui.view,arch_db:helpdesk_service_appointment.portal_service_new
+msgid "Under Warranty"
+msgstr "En Garantía"
+
+#. module: helpdesk_service_appointment
+#: model:ir.model.fields.selection,name:helpdesk_service_appointment.selection__helpdesk_ticket__warranty_status__unknown
+msgid "Unknown"
+msgstr "Desconocido"
+
+#. module: helpdesk_service_appointment
+#: model_terms:ir.ui.view,arch_db:helpdesk_service_appointment.portal_service_new
+msgid "Up to"
+msgstr "Hasta"
+
+#. module: helpdesk_service_appointment
+#: model_terms:ir.ui.view,arch_db:helpdesk_service_appointment.portal_service_new
+msgid "Update my details"
+msgstr "Actualizar mis datos"
+
+#. module: helpdesk_service_appointment
+#: model:ir.model.fields,help:helpdesk_service_appointment.field_project_task__display_name
+msgid ""
+"Use these keywords in the title to set new tasks:\n"
+"\n"
+"        30h Allocate 30 hours to the task\n"
+"        #tags Set tags on the task\n"
+"        @user Assign the task to a user\n"
+"        ! Set the task a medium priority\n"
+"        !! Set the task a high priority\n"
+"        !!! Set the task a urgent priority\n"
+"\n"
+"        Make sure to use the right format and order e.g. Improve the configuration screen 5h #feature #v16 @Mitchell !"
+msgstr "Usa estas palabras clave en el título para configurar nuevas tareas:\n\n        30h Asigna 30 horas a la tarea\n        #etiquetas Agrega etiquetas a la tarea\n        @usuario Asígnale la tarea a un usuario\n        ! Define que la prioridad de la tarea es media\n        !! Define que la prioridad de la tarea es alta\n        !!! Define que la prioridad de la tarea es urgente\n\n        Asegúrate de utilizar el formato y el orden correcto, por ejemplo: Realizar mejoras a la pantalla de configuración 5h #función #v16 @Mitchell !"
+
+#. module: helpdesk_service_appointment
+#. odoo-python
+#: code:addons/helpdesk_service_appointment/models/calendar_event.py:0
+msgid "View appointment"
+msgstr "Ver la cita"
+
+#. module: helpdesk_service_appointment
+#: model:ir.model.fields,field_description:helpdesk_service_appointment.field_helpdesk_ticket__service_visit_address_id
+msgid "Visit Address"
+msgstr "Dirección de Visita"
+
+#. module: helpdesk_service_appointment
+#: model_terms:ir.ui.view,arch_db:helpdesk_service_appointment.portal_service_new
+msgid "Visit address"
+msgstr "Dirección de visita"
+
+#. module: helpdesk_service_appointment
+#. odoo-python
+#: code:addons/helpdesk_service_appointment/controllers/helpdesk_service_appointment.py:0
+msgid "Visit address notes"
+msgstr "Aclaraciones de la dirección de visita"
+
+#. module: helpdesk_service_appointment
+#: model:ir.model.fields,field_description:helpdesk_service_appointment.field_helpdesk_ticket__warranty_expiry_date
+#: model:ir.model.fields,field_description:helpdesk_service_appointment.field_project_task__service_warranty_expiry_date
+msgid "Warranty Expiry Date"
+msgstr "Fecha de Vencimiento de Garantía"
+
+#. module: helpdesk_service_appointment
+#: model:ir.model.fields,field_description:helpdesk_service_appointment.field_helpdesk_ticket__warranty_status
+#: model:ir.model.fields,field_description:helpdesk_service_appointment.field_project_task__service_warranty_status
+msgid "Warranty Status"
+msgstr "Estado de Garantía"
+
+#. module: helpdesk_service_appointment
+#. odoo-python
+#: code:addons/helpdesk_service_appointment/wizard/helpdesk_create_fsm_task.py:0
+msgid "Warranty expiry"
+msgstr "Vencimiento de garantía"
+
+#. module: helpdesk_service_appointment
+#. odoo-python
+#: code:addons/helpdesk_service_appointment/wizard/helpdesk_create_fsm_task.py:0
+msgid "Warranty status"
+msgstr "Estado de garantía"
+
+#. module: helpdesk_service_appointment
+#: model_terms:ir.ui.view,arch_db:helpdesk_service_appointment.portal_service_new
+msgid "What's wrong?"
+msgstr "¿Qué está pasando?"
+
+#. module: helpdesk_service_appointment
+#. odoo-python
+#: code:addons/helpdesk_service_appointment/controllers/helpdesk_service_appointment.py:0
+msgid "You can upload up to %(max_photos)s photos."
+msgstr "Podés subir hasta %(max_photos)s fotos."
+
+#. module: helpdesk_service_appointment
+#: model_terms:ir.ui.view,arch_db:helpdesk_service_appointment.portal_service_new
+msgid "Your details"
+msgstr "Tus datos"
+
+#. module: helpdesk_service_appointment
+#: model_terms:ir.ui.view,arch_db:helpdesk_service_appointment.portal_service_new
+msgid "Your lock"
+msgstr "Tu cerradura"
+
+#. module: helpdesk_service_appointment
+#. odoo-python
+#: code:addons/helpdesk_service_appointment/controllers/helpdesk_service_appointment.py:0
+msgid "gt_1y"
+msgstr "gt_1y"
+
+#. module: helpdesk_service_appointment
+#: model_terms:ir.ui.view,arch_db:helpdesk_service_appointment.portal_service_new
+msgid "photos."
+msgstr "fotos."
+
+#. module: helpdesk_service_appointment
+#: model_terms:ir.ui.view,arch_db:helpdesk_service_appointment.tickets_followup_inherit_service
+msgid "since"
+msgstr "desde"
+
+#. module: helpdesk_service_appointment
+#: model_terms:ir.ui.view,arch_db:helpdesk_service_appointment.tickets_followup_inherit_service
+msgid "until"
+msgstr "hasta"

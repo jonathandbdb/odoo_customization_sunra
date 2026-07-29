@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Grupo Service en el form del ticket: direccion de visita, cita vigente y garantia. -->
+    <record id="helpdesk_ticket_view_form" model="ir.ui.view">
+        <field name="name">helpdesk.ticket.view.form.inherit.helpdesk_service_appointment</field>
+        <field name="model">helpdesk.ticket</field>
+        <field name="inherit_id" ref="helpdesk.helpdesk_ticket_view_form"/>
+        <field name="arch" type="xml">
+            <!-- C1 (fix post-review): el grupo va en el SHEET, no dentro de la page
+                 "extra_info": esa page solo se renderiza si display_extra_info=True (depende de
+                 flags de compania/returns/repairs que nuestra semilla no activa), y en Sunra
+                 (mono-compania, sin esos flags) la pestaña ni existe -> el backoffice no veria
+                 nunca este grupo (CA17 roto). Se inserta antes del <notebook> (unico y estable
+                 en esta vista), como sibling directo dentro de <sheet>: no hay un "bloque de
+                 producto" propio visible en el core (product_id/lot_id de helpdesk_stock no
+                 estan expuestos en ninguna vista nativa), asi que este es el punto estable mas
+                 cercano a ese lugar conceptual. -->
+            <xpath expr="//notebook" position="before">
+                <group string="Service">
+                    <field name="service_visit_address_id"/>
+                    <field name="service_event_id" readonly="1"/>
+                    <!-- M2 (fix post-review): la condicion original tambien chequeaba
+                         "and not product_id", pero product_id (helpdesk_stock) lleva
+                         groups="stock.group_stock_user": referenciarlo en el invisible= de OTRO
+                         campo hace que, para un usuario sin ese grupo, el nodo se elimine del
+                         arch en el cliente y la expresion reviente. Se simplifica a depender
+                         solo de warranty_status (que es nuestro, sin restriccion de grupo). -->
+                    <field name="warranty_status" widget="badge"
+                           decoration-success="warranty_status == 'valid'"
+                           decoration-danger="warranty_status == 'expired'"
+                           decoration-muted="warranty_status == 'unknown'"
+                           invisible="warranty_status == 'unknown'"/>
+                    <field name="warranty_expiry_date" readonly="1"
+                           invisible="warranty_status == 'unknown'"/>
+                    <field name="warranty_delivery_date" readonly="1"
+                           invisible="warranty_status == 'unknown'"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Columna de garantia (opcional) para triage rapido en la lista de tickets. -->
+    <record id="helpdesk_tickets_view_tree" model="ir.ui.view">
+        <field name="name">helpdesk.tickets.view.tree.inherit.helpdesk_service_appointment</field>
+        <field name="model">helpdesk.ticket</field>
+        <field name="inherit_id" ref="helpdesk.helpdesk_tickets_view_tree"/>
+        <field name="arch" type="xml">
+            <field name="stage_id" position="after">
+                <field name="warranty_status" widget="badge" optional="hide"
+                       decoration-success="warranty_status == 'valid'"
+                       decoration-danger="warranty_status == 'expired'"
+                       decoration-muted="warranty_status == 'unknown'"/>
+            </field>
+        </field>
+    </record>
+</odoo>
+<!-- vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4-->

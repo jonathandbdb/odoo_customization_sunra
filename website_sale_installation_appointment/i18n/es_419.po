@@ -22,6 +22,11 @@ msgid ""
 msgstr "<span>Solo imágenes. Le sirven al equipo para saber con qué se va a encontrar en el lugar.</span>"
 
 #. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation
+msgid "A) How thick is the door (width of the door edge)."
+msgstr "A) Qué tan gruesa es la puerta (el ancho del canto)."
+
+#. module: website_sale_installation_appointment
 #: model:ir.model.fields,help:website_sale_installation_appointment.field_sale_order__installation_event_id
 msgid ""
 "Appointment created from the installation booking once the order is "
@@ -29,9 +34,19 @@ msgid ""
 msgstr "Cita creada a partir de la reserva de instalación cuando se confirma el pedido."
 
 #. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation
+msgid "B) The length of the lock on the door."
+msgstr "B) El largo de la cerradura en la puerta."
+
+#. module: website_sale_installation_appointment
 #: model:website.checkout.step,back_button_label:website_sale_installation_appointment.checkout_step_installation
 msgid "Back to installation"
 msgstr "Volver a la instalación"
+
+#. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation
+msgid "Before you schedule"
+msgstr "Antes de agendar"
 
 #. module: website_sale_installation_appointment
 #: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation
@@ -57,6 +72,11 @@ msgstr "Continuar<i class=\"fa fa-angle-right ms-2\" role=\"img\"/>"
 #: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation
 msgid "Date and time"
 msgstr "Día y hora"
+
+#. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation
+msgid "How thick is the door (width of the door edge)"
+msgstr "Qué tan gruesa es la puerta (el ancho del canto)"
 
 #. module: website_sale_installation_appointment
 #: model:ir.model.fields,help:website_sale_installation_appointment.field_delivery_carrier__installation_appointment_type_id
@@ -114,8 +134,20 @@ msgstr "Requiere instalación"
 
 #. module: website_sale_installation_appointment
 #: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation
+msgid ""
+"Keep these measurements handy: we'll ask for them when you schedule the\n"
+"                            appointment."
+msgstr "Tené estas medidas a mano: te las vamos a pedir al agendar la cita."
+
+#. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation
 msgid "Maximum:"
 msgstr "Máximo:"
+
+#. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation
+msgid "Measure your door before scheduling"
+msgstr "Medí tu puerta antes de agendar"
 
 #. module: website_sale_installation_appointment
 #: model:ir.model.fields,field_description:website_sale_installation_appointment.field_delivery_carrier__installation_min_photos
@@ -169,6 +201,26 @@ msgid ""
 msgstr "Subí al menos %(min_photos)s foto(s) del lugar de instalación (faltan %(missing)s)."
 
 #. module: website_sale_installation_appointment
+#. odoo-python
+#: code:addons/website_sale_installation_appointment/models/sale_order.py:0
+msgid "Portal access could not be granted automatically to the customer."
+msgstr "No se pudo otorgar el acceso al portal automáticamente al cliente."
+
+#. module: website_sale_installation_appointment
+#. odoo-python
+#: code:addons/website_sale_installation_appointment/models/sale_order.py:0
+msgid ""
+"Portal access was not granted automatically: the customer has an archived "
+"user."
+msgstr "No se otorgó el acceso al portal automáticamente: el cliente tiene un usuario archivado."
+
+#. module: website_sale_installation_appointment
+#. odoo-python
+#: code:addons/website_sale_installation_appointment/models/sale_order.py:0
+msgid "Portal access was not granted automatically: the customer has no email."
+msgstr "No se otorgó el acceso al portal automáticamente: el cliente no tiene email."
+
+#. module: website_sale_installation_appointment
 #: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation
 msgid "Remove"
 msgstr "Quitar"
@@ -205,6 +257,11 @@ msgid "The file %(filename)s is too big (maximum %(max_size)s MB)."
 msgstr "El archivo %(filename)s es demasiado grande (máximo %(max_size)s MB)."
 
 #. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation
+msgid "The length of the lock on the door"
+msgstr "El largo de la cerradura en la puerta"
+
+#. module: website_sale_installation_appointment
 #. odoo-python
 #: code:addons/website_sale_installation_appointment/models/delivery_carrier.py:0
 msgid "The minimum amount of installation photos cannot be negative."
@@ -220,10 +277,41 @@ msgid ""
 msgstr "El producto %(product)s del tipo de cita %(appointment_type)s tiene que crear una tarea en un proyecto o tener precio de venta, si no no se crea la reserva cuando el cliente agenda la instalación."
 
 #. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation
+msgid "The warranty covers 1 year against factory defects."
+msgstr "La garantía es de 1 año por fallas de fábrica."
+
+#. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation
+msgid "Upload clear photos of your door to confirm compatibility."
+msgstr "Subí fotos claras de tu puerta para confirmar compatibilidad."
+
+#. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation
+msgid ""
+"Upload clear, well-lit photos showing your door from the outside, from\n"
+"                            the inside, and the door edge (where the lock sits)."
+msgstr "Subí fotos claras y bien iluminadas donde se vea tu puerta desde afuera, desde adentro y el canto (el borde donde entra la cerradura)."
+
+#. module: website_sale_installation_appointment
 #. odoo-python
 #: code:addons/website_sale_installation_appointment/controllers/website_sale_installation_appointment.py:0
 msgid "You can upload up to %(max_photos)s photos."
 msgstr "Podés subir hasta %(max_photos)s fotos."
+
+#. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation
+msgid ""
+"You'll need 4 or 8 AA/AAA batteries (depending on your model) on\n"
+"                            installation day — without them the device can't be set up."
+msgstr "Necesitás tener 4 u 8 pilas AA/AAA (según tu modelo) el día de la instalación — sin ellas no se puede configurar el equipo."
+
+#. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation
+msgid ""
+"Your address must be complete (street, number, and floor/apartment if\n"
+"                            applicable)."
+msgstr "La dirección debe estar completa (calle + altura + piso/depto si corresponde)."
 
 #. module: website_sale_installation_appointment
 #. odoo-python
@@ -231,3 +319,10 @@ msgstr "Podés subir hasta %(max_photos)s fotos."
 
 msgid "Your installation is not scheduled yet."
 msgstr "Todavía no agendaste la instalación."
+
+#. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation
+msgid ""
+"⏳ Installation duration: set aside between 2 and 4 hours (it varies\n"
+"                            depending on the complexity of the door)."
+msgstr "⏳ Duración de la instalación: reservate entre 2 y 4 horas (varía según la complejidad de la puerta)."

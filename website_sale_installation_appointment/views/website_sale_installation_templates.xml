@@ -15,11 +15,64 @@
             <div id="shop_installation">
                 <h4 class="mb-3">Installation</h4>
 
+                <!-- Checklist adaptado de la guia historica en JotForm que este paso reemplaza.
+                     OJO: a proposito NO incluye las condiciones de pago en efectivo/transferencia
+                     del JotForm original: aca el pago es online en el checkout, no aplican. -->
+                <div class="alert alert-light border mb-4">
+                    <h5 class="alert-heading">Before you schedule</h5>
+                    <ul class="mb-0 ps-3">
+                        <li>
+                            You'll need 4 or 8 AA/AAA batteries (depending on your model) on
+                            installation day — without them the device can't be set up.
+                        </li>
+                        <li>Upload clear photos of your door to confirm compatibility.</li>
+                        <li>
+                            Your address must be complete (street, number, and floor/apartment if
+                            applicable).
+                        </li>
+                        <li>
+                            ⏳ Installation duration: set aside between 2 and 4 hours (it varies
+                            depending on the complexity of the door).
+                        </li>
+                        <li>The warranty covers 1 year against factory defects.</li>
+                    </ul>
+                </div>
+
                 <div t-if="warnings" class="alert alert-warning" role="alert">
                     <div t-foreach="warnings" t-as="warning" t-key="warning_index" t-out="warning"/>
                 </div>
                 <div t-if="errors" class="alert alert-info" role="status">
                     <div t-foreach="errors" t-as="error" t-key="error_index" t-out="error"/>
+                </div>
+
+                <!-- Guia de medidas: las medidas en si se preguntan como appointment.question del
+                     tipo de cita al agendar (configuracion, no en este template). -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Measure your door before scheduling</h5>
+                        <div class="row g-3">
+                            <div class="col-md-6 text-center">
+                                <img src="/website_sale_installation_appointment/static/src/img/installation_measure_a_door_thickness.jpg"
+                                     alt="How thick is the door (width of the door edge)"
+                                     class="img-fluid rounded border mb-2"/>
+                                <p class="small text-muted mb-0">
+                                    A) How thick is the door (width of the door edge).
+                                </p>
+                            </div>
+                            <div class="col-md-6 text-center">
+                                <img src="/website_sale_installation_appointment/static/src/img/installation_measure_b_lock_length.jpg"
+                                     alt="The length of the lock on the door"
+                                     class="img-fluid rounded border mb-2"/>
+                                <p class="small text-muted mb-0">
+                                    B) The length of the lock on the door.
+                                </p>
+                            </div>
+                        </div>
+                        <p class="text-muted mt-3 mb-0">
+                            Keep these measurements handy: we'll ask for them when you schedule the
+                            appointment.
+                        </p>
+                    </div>
                 </div>
 
                 <!-- Dia y hora: se delega en la pagina nativa de la cita. -->
@@ -68,6 +121,10 @@
                 <form action="/shop/installation/submit" method="post" enctype="multipart/form-data">
                     <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
                     <div class="mb-3">
+                        <p class="text-muted">
+                            Upload clear, well-lit photos showing your door from the outside, from
+                            the inside, and the door edge (where the lock sits).
+                        </p>
                         <label for="installation_photos" class="form-label">
                             Photos of the installation site
                         </label>

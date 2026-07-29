@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- La config de garantia de sk_customer_product_warranty es invisible sin tracking por serie
+         (invisible="tracking != 'serial'"), pero este modulo calcula la garantia desde las entregas
+         SIN series (spec D21/D25): sin este inherit, el funcional no puede configurar los plazos
+         por UI. Se relaja la condicion a warranty_tracking (no se toca el modulo vendorizado). -->
+    <record id="product_template_form_view_inherit_warranty" model="ir.ui.view">
+        <field name="name">product.template.form.inherit.warranty.inherit.helpdesk_service_appointment</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="sk_customer_product_warranty.product_template_form_view_inherit_warranty"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='warranty_information']" position="attributes">
+                <attribute name="invisible">0</attribute>
+            </xpath>
+            <xpath expr="//field[@name='warranty_type']" position="attributes">
+                <attribute name="invisible">not warranty_tracking</attribute>
+            </xpath>
+            <xpath expr="//field[@name='effective_warranty']" position="attributes">
+                <attribute name="invisible">not warranty_tracking</attribute>
+            </xpath>
+            <xpath expr="//group[@name='warranty_information']/group[3]" position="attributes">
+                <attribute name="invisible">not warranty_tracking or warranty_type != 'custom'</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="product_variant_form_view_inherit_warranty" model="ir.ui.view">
+        <field name="name">product.product.form.inherit.warranty.inherit.helpdesk_service_appointment</field>
+        <field name="model">product.product</field>
+        <field name="inherit_id" ref="sk_customer_product_warranty.product_variant_form_view_inherit_warranty"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='warranty_information']" position="attributes">
+                <attribute name="invisible">0</attribute>
+            </xpath>
+            <xpath expr="//field[@name='warranty_type']" position="attributes">
+                <attribute name="invisible">not warranty_tracking</attribute>
+            </xpath>
+            <xpath expr="//field[@name='effective_warranty']" position="attributes">
+                <attribute name="invisible">not warranty_tracking</attribute>
+            </xpath>
+            <xpath expr="//group[@name='warranty_information']/group[3]" position="attributes">
+                <attribute name="invisible">not warranty_tracking or warranty_type != 'custom'</attribute>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
+<!-- vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4-->

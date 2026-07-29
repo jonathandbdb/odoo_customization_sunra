@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
-from odoo import _, api, fields, models
+import logging
+
+from odoo import Command, _, api, fields, models
 from odoo.exceptions import ValidationError
+
+_logger = logging.getLogger(__name__)
 
 
 class SaleOrder(models.Model):
@@ -128,6 +132,7 @@ class SaleOrder(models.Model):
         # sale_project genera la tarea: recien despues de super() existen ambas para copiarles las fotos.
         res = super()._action_confirm()
         self._sync_installation_photos()
+        self._grant_portal_access_after_installation_sale()
         return res
 
     def _sync_installation_photos(self):
@@ -165,5 +170,53 @@ class SaleOrder(models.Model):
             ),
             attachment_ids=attachment_ids,
         )
+
+    def _grant_portal_access_after_installation_sale(self):
+        """ Auto-invite the customer to the portal after an installation sale is confirmed.
+
+        helpdesk_service_appointment (sibling module) assumes that the customer who had an
+        installation is a portal user, so the native portal invitation is sent right here. A
+        failure must never break the order confirmation: each partner is handled in its own
+        try/savepoint and any problem only leaves a note on the order's chatter.
+        """
+        for order in self.filtered(lambda so: so._is_installation_required()):
+            partner = order.partner_id
+            # sudo: la confirmacion puede dispararla el usuario publico del checkout (guest
+            # checkout), sin permisos sobre res.users, portal.wizard ni para postear en el pedido.
+            users = self.env["res.users"].sudo().search([("partner_id", "=", partner.id)])
+            if users:
+                continue  # el partner ya tiene un usuario activo (portal o interno): no-op
+            archived_users = self.env["res.users"].sudo().with_context(active_test=False).search(
+                [("partner_id", "=", partner.id)]
+            )
+            if archived_users:
+                # No se reactiva en automatico: portal.wizard.user.action_grant_access()
+                # reactivaria un usuario archivado sin control (ver odoo/addons/portal/wizard).
+                order.sudo().message_post(body=_(
+                    "Portal access was not granted automatically: the customer has an archived "
+                    "user."
+                ))
+                continue
+            if not partner.email:
+                order.sudo().message_post(body=_(
+                    "Portal access was not granted automatically: the customer has no email."
+                ))
+                continue
+            try:
+                with self.env.cr.savepoint():
+                    wizard = self.env["portal.wizard"].sudo().create({
+                        "partner_ids": [Command.link(partner.id)],
+                    })
+                    wizard.user_ids.action_grant_access()
+            except Exception:
+                # Nunca debe romper la confirmacion de la venta (ej. email duplicado en otro
+                # usuario, UserError de _assert_user_email_uniqueness).
+                _logger.warning(
+                    "Could not grant portal access to partner %s after confirming order %s.",
+                    partner.id, order.name, exc_info=True,
+                )
+                order.sudo().message_post(body=_(
+                    "Portal access could not be granted automatically to the customer."
+                ))
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

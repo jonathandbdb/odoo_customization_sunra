@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Formulario de portal /my/service/new (paso 1): reemplaza al JotForm "Agendar service
+         con Nokey". El paso 2 (fecha y hora) es la pagina nativa de Citas (D12). -->
+    <template id="portal_service_new" name="Schedule a Service Visit">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+            <ol class="breadcrumb o_portal_submenu">
+                <li class="breadcrumb-item"><a href="/my/tickets">Tickets</a></li>
+                <li class="breadcrumb-item active">Schedule a Service Visit</li>
+            </ol>
+
+            <div id="helpdesk_service_new" class="mt-3">
+                <h3>Schedule a Service Visit</h3>
+                <p class="text-muted">
+                    Tell us what's going on with your lock and we will schedule a technician
+                    visit. There is no charge for the visit itself.
+                </p>
+
+                <div t-if="warnings" class="alert alert-warning" role="alert">
+                    <div t-foreach="warnings" t-as="warning" t-key="warning_index" t-out="warning"/>
+                </div>
+
+                <form action="/my/service/new" method="post" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">Your details</h5>
+                            <p class="mb-1"><strong t-field="partner.name"/></p>
+                            <p class="mb-1" t-if="partner.phone" t-field="partner.phone"/>
+                            <p class="mb-1" t-if="partner.email" t-field="partner.email"/>
+                            <a href="/my/account">Update my details</a>
+                        </div>
+                    </div>
+
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">Visit address</h5>
+                            <label for="visit_address_id" class="form-label">Address</label>
+                            <select id="visit_address_id" name="visit_address_id" class="form-select mb-2">
+                                <t t-foreach="address_ids" t-as="address" t-key="address.id">
+                                    <option t-att-value="address.id"
+                                            t-att-selected="address.id == selected_address_id"
+                                            t-out="address.contact_address or address.display_name"/>
+                                </t>
+                            </select>
+                            <label for="address_notes" class="form-label">
+                                Notes (floor, apartment, access instructions)
+                            </label>
+                            <!-- Rehidratacion post-warning (fix post-review, M3): el contenido de
+                                 un textarea se rehidrata como texto interno, no como atributo. -->
+                            <textarea id="address_notes" name="address_notes" class="form-control" rows="2"
+                                      t-esc="form_values.get('address_notes', '')"/>
+                        </div>
+                    </div>
+
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">Your lock</h5>
+                            <div t-foreach="products" t-as="product_item" t-key="product_item['product'].id"
+                                 class="form-check">
+                                <input class="form-check-input" type="radio" name="product_id"
+                                       t-att-id="'service_product_%s' % product_item['product'].id"
+                                       t-att-value="product_item['product'].id"
+                                       t-att-checked="product_item['product'].id == selected_product_id"/>
+                                <label class="form-check-label"
+                                       t-att-for="'service_product_%s' % product_item['product'].id">
+                                    <span t-out="product_item['product'].display_name"/>
+                                    <span t-if="product_item['warranty_status'] == 'valid'"
+                                          class="badge text-bg-success ms-2">Under Warranty</span>
+                                    <span t-elif="product_item['warranty_status'] == 'expired'"
+                                          class="badge text-bg-danger ms-2">Out of Warranty</span>
+                                    <span t-else="" class="badge text-bg-secondary ms-2">No warranty data</span>
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="product_id" value=""
+                                       id="service_product_unknown" t-att-checked="not selected_product_id"/>
+                                <label class="form-check-label" for="service_product_unknown">
+                                    Not on the list / I don't know
+                                </label>
+                            </div>
+                            <!-- El bloque de abajo se muestra siempre (sin JS que lo oculte, fix
+                                 post-review m2): el copy aclara que solo aplica si no elegiste una
+                                 cerradura de la lista de arriba; la validacion (RB04) no cambia. -->
+                            <div id="service_product_fallback" class="mt-2">
+                                <p class="text-muted small mb-2">
+                                    If your lock is not on the list above, describe it here:
+                                </p>
+                                <label for="product_note" class="form-label">Lock model</label>
+                                <input type="text" id="product_note" name="product_note" class="form-control mb-2"
+                                       t-att-value="form_values.get('product_note', '')"/>
+                                <label for="installation_age" class="form-label">Approximate installation age</label>
+                                <select id="installation_age" name="installation_age" class="form-select">
+                                    <option value="">-</option>
+                                    <t t-foreach="installation_age_options" t-as="age_option" t-key="age_option[0]">
+                                        <option t-att-value="age_option[0]"
+                                                t-att-selected="age_option[0] == form_values.get('installation_age')"
+                                                t-out="age_option[1]"/>
+                                    </t>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">The issue</h5>
+                            <label for="problem_tag_id" class="form-label">What's wrong?</label>
+                            <select id="problem_tag_id" name="problem_tag_id" class="form-select mb-2" required="required">
+                                <option value="">-</option>
+                                <t t-foreach="problem_tags" t-as="tag" t-key="tag.id">
+                                    <option t-att-value="tag.id"
+                                            t-att-selected="tag.id == selected_problem_tag_id"
+                                            t-out="tag.name"/>
+                                </t>
+                            </select>
+                            <label for="description" class="form-label">Tell us more about what's happening</label>
+                            <textarea id="description" name="description" class="form-control" rows="4" required="required"
+                                      t-esc="form_values.get('description', '')"/>
+                        </div>
+                    </div>
+
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">Photos (optional)</h5>
+                            <input type="file" name="service_photos" class="form-control" multiple="multiple" accept="image/*"/>
+                            <small class="form-text text-muted">
+                                <span>Up to <t t-out="max_photos"/> photos.</span>
+                                <span class="d-block">Maximum <t t-out="max_photo_size_mb"/> MB each.</span>
+                            </small>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">
+                        Continue to schedule<i class="fa fa-angle-right ms-2" role="img"/>
+                    </button>
+                </form>
+            </div>
+        </t>
+    </template>
+
+    <!-- Boton "New Service Request" en /my/tickets. -->
+    <template id="portal_helpdesk_ticket_inherit_service" name="Portal Helpdesk Tickets - Service"
+              inherit_id="helpdesk.portal_helpdesk_ticket">
+        <xpath expr="//t[@t-call='portal.portal_searchbar']" position="after">
+            <div class="mb-3">
+                <a role="button" class="btn btn-primary" href="/my/service/new">New Service Request</a>
+            </div>
+        </xpath>
+    </template>
+
+    <!-- Bloque Service en el detalle del ticket: producto/garantia y la cita (link a
+         /calendar/view/<token> o boton "Schedule visit"). Solo se muestra para tickets del
+         team Service (values['service_appointment_url'] queda en False para el resto). -->
+    <template id="tickets_followup_inherit_service" name="Helpdesk Ticket Followup - Service"
+              inherit_id="helpdesk.tickets_followup">
+        <xpath expr="//div[@id='card_body']" position="inside">
+            <div t-if="service_appointment_url" class="row mt-3" name="service_appointment">
+                <div class="col-lg-12">
+                    <h6><small class="text-muted">Service</small></h6>
+                    <p t-if="ticket.product_id" class="mb-1">
+                        <strong>Lock:</strong> <span t-out="ticket.product_id.display_name"/>
+                    </p>
+                    <p t-if="ticket.warranty_status == 'valid'" class="mb-1">
+                        <span class="badge text-bg-success">Under Warranty</span>
+                        <span t-if="ticket.warranty_expiry_date" class="ms-1 text-muted">
+                            until <span t-field="ticket.warranty_expiry_date"/>
+                        </span>
+                    </p>
+                    <p t-elif="ticket.warranty_status == 'expired'" class="mb-1">
+                        <span class="badge text-bg-danger">Out of Warranty</span>
+                        <span t-if="ticket.warranty_expiry_date" class="ms-1 text-muted">
+                            since <span t-field="ticket.warranty_expiry_date"/>
+                        </span>
+                    </p>
+                    <p t-else="" class="mb-1">
+                        <span class="badge text-bg-secondary">No warranty data</span>
+                    </p>
+                    <p t-if="ticket.service_event_id" class="mb-1">
+                        <strong>Appointment:</strong>
+                        <span t-field="ticket.service_event_id.start" t-options="{'widget': 'datetime'}"/>
+                        <a t-attf-href="/calendar/view/{{ticket.service_event_id.access_token}}" class="ms-2">
+                            Manage / Cancel
+                        </a>
+                    </p>
+                    <!-- Fix post-review (m8): no ofrecer "Schedule visit" si la etapa del
+                         ticket esta plegada/cerrada (ticket.stage_id.fold) — un ticket cerrado
+                         no deberia poder generar una cita/tarea nueva. -->
+                    <a t-elif="not ticket.stage_id.fold" t-att-href="service_appointment_url"
+                       class="btn btn-primary btn-sm">
+                        Schedule visit
+                    </a>
+                </div>
+            </div>
+        </xpath>
+    </template>
+</odoo>
+<!-- vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4-->

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <!-- Team "Service": el reclamo es un helpdesk.ticket con use_fsm=True (D1).
+         privacy_visibility='portal' explicito: lo exige la record rule portal de helpdesk
+         (helpdesk_portal_ticket_rule, D27); el default del core ya es 'portal', pero se fija
+         para que un cambio de default no rompa el acceso del cliente a su ticket. -->
+    <record id="helpdesk_team_service" model="helpdesk.team">
+        <field name="name">Service</field>
+        <field name="use_fsm" eval="True"/>
+        <field name="privacy_visibility">portal</field>
+    </record>
+
+    <!-- Tipo de cita "Service Visit": 2h, por usuarios, despublicado (accesible solo por el
+         invite de abajo). staff_user_ids se vacia explicitamente: sin eso queda el usuario que
+         instala el modulo como tecnico (default nativo del core, D28). Los slot_ids NO se
+         pueden omitir: el core (_compute_category) auto-crea los slots default L-V 9-12/14-17
+         si el tipo nace sin slot_ids; con staff vacio el tipo igual no ofrece horarios (inerte
+         hasta que el funcional asigne tecnicos, D29 - ver README). -->
+    <record id="appointment_type_service" model="appointment.type">
+        <field name="name">Service Visit</field>
+        <field name="schedule_based_on">users</field>
+        <field name="appointment_duration">2.0</field>
+        <field name="is_published" eval="False"/>
+        <field name="staff_user_ids" eval="[(6, 0, [])]"/>
+    </record>
+
+    <!-- Invite: habilita el tipo de cita despublicado via su access_token/redirect_url (D13),
+         sin necesidad de agregarlo a /appointment publico. -->
+    <record id="appointment_invite_service" model="appointment.invite">
+        <field name="short_code">service</field>
+        <field name="appointment_type_ids" eval="[(6, 0, [ref('appointment_type_service')])]"/>
+    </record>
+
+    <!-- Los 7 tipos de problema del JotForm, como helpdesk.tag. helpdesk.tag tiene
+         UNIQUE(name): los nombres se califican ("Lock ...") para no chocar con tags
+         preexistentes ni con los que cree el equipo (D28). -->
+    <record id="helpdesk_tag_not_opening" model="helpdesk.tag">
+        <field name="name">Lock does not open / unresponsive</field>
+    </record>
+    <record id="helpdesk_tag_battery_drain" model="helpdesk.tag">
+        <field name="name">Lock battery drains fast</field>
+    </record>
+    <record id="helpdesk_tag_not_closing" model="helpdesk.tag">
+        <field name="name">Lock does not close properly / jams</field>
+    </record>
+    <record id="helpdesk_tag_battery_corrosion" model="helpdesk.tag">
+        <field name="name">Lock battery corrosion</field>
+    </record>
+    <record id="helpdesk_tag_connectivity" model="helpdesk.tag">
+        <field name="name">Lock App/WiFi connection issue</field>
+    </record>
+    <record id="helpdesk_tag_locked_out" model="helpdesk.tag">
+        <field name="name">Locked in / locked out</field>
+    </record>
+    <record id="helpdesk_tag_other" model="helpdesk.tag">
+        <field name="name">Lock issue - Other</field>
+    </record>
+</odoo>
+<!-- vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4-->

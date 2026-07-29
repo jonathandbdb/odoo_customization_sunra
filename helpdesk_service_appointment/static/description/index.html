@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+<body>
+    <section style="max-width: 980px; margin: 0 auto; padding: 32px 24px; font-family: Arial, Helvetica, sans-serif; color-scheme: var(--o-webclient-color-scheme, normal); color: CanvasText; line-height: 1.55; background: transparent;">
+        <div style="padding: 28px 30px; border: 1px solid ButtonBorder; border-radius: 8px; background: Canvas;">
+            <p style="margin: 0 0 8px; color: LinkText; font-size: 13px; font-weight: 700; text-transform: uppercase;">Helpdesk - Field Service - Citas</p>
+            <h1 style="margin: 0 0 12px; color: CanvasText; font-size: 32px; line-height: 1.2;">helpdesk_service_appointment</h1>
+            <p style="margin: 0; max-width: 760px; color: GrayText; font-size: 16px;">Permite que un cliente pida service/reparacion de una cerradura ya instalada desde el portal: elige su cerradura entre las entregadas, describe la falla y agenda la visita sobre la disponibilidad real del tecnico. El pedido queda como ticket de Helpdesk y la cita genera automaticamente la tarea de Field Service, con fecha, direccion, fotos y el estado de garantia (informativo).</p>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 10px; color: LinkText; font-size: 23px;">Objetivo</h2>
+            <p style="margin: 0;">El pedido de service se hacia por un formulario externo (JotForm) que no validaba nada contra los datos reales del cliente ni contra la agenda del tecnico. Este modulo mueve ese pedido al portal de Odoo: el cliente ya esta identificado (tiene usuario portal por su compra/instalacion), elige entre <strong>sus</strong> cerraduras entregadas y agenda sobre la <strong>disponibilidad real</strong> del tecnico usando la app nativa de Citas. El agendado es <strong>siempre gratis</strong>: no hay paso de pago; la garantia es puramente informativa y nunca bloquea el flujo.</p>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 12px; color: LinkText; font-size: 23px;">Funcionalidades principales</h2>
+            <table style="width: 100%; border-collapse: collapse; border: 1px solid ButtonBorder; background: Canvas;">
+                <tbody>
+                    <tr>
+                        <td style="width: 28%; padding: 14px 16px; border-bottom: 1px solid ButtonBorder; font-weight: 700; background: ButtonFace; color: ButtonText;">Formulario de portal</td>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;"><code>/my/service/new</code>: resumen de datos de contacto, seleccion de direccion de visita + aclaraciones, lista de cerraduras <strong>entregadas al cliente</strong> con badge de garantia, fallback de texto libre + antiguedad si no la encuentra, tipo de problema (7 opciones), descripcion y fotos opcionales.</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; font-weight: 700; background: ButtonFace; color: ButtonText;">Ticket de Helpdesk</td>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">El pedido crea un ticket en el team <strong>Service</strong> con el producto, la direccion de visita, el tipo de problema y las fotos adjuntas, visible por el cliente en <code>/my/tickets</code>.</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; font-weight: 700; background: ButtonFace; color: ButtonText;">Agendado con disponibilidad real</td>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">Tras crear el ticket, el cliente elige dia y hora en la pagina <strong>nativa</strong> de Citas, sobre la agenda real de los tecnicos asignados. Al confirmar la cita se crea automaticamente la <strong>tarea de Field Service</strong> con esas fechas.</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; font-weight: 700; background: ButtonFace; color: ButtonText;">Estado de garantia (informativo)</td>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">Sin numeros de serie: la garantia se calcula desde las <strong>entregas</strong> historicas del cliente y la configuracion de <code>sk_customer_product_warranty</code>. Se muestra como badge en el portal y como bloque en la tarea del tecnico; <strong>nunca</strong> bloquea el agendado ni exige pago.</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; font-weight: 700; background: ButtonFace; color: ButtonText;">Seguimiento en el portal</td>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">El detalle del ticket en <code>/my/tickets</code> muestra la cerradura, la garantia y la cita, con link para gestionarla/cancelarla o el boton "Schedule visit" si todavia no agendo.</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 14px 16px; font-weight: 700; background: ButtonFace; color: ButtonText;">Cancelar y reagendar</td>
+                        <td style="padding: 14px 16px; color: CanvasText;">Cancelar la cita desde el portal cancela la tarea del tecnico y vuelve a ofrecer "Schedule visit"; la cita nueva que agenda el cliente conserva el vinculo con el mismo ticket.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 12px; color: LinkText; font-size: 23px;">Configuracion</h2>
+            <ol style="margin: 0; padding-left: 22px;">
+                <li style="margin-bottom: 8px;"><strong>Asignar tecnicos (staff)</strong> al tipo de cita "Service Visit" (Citas &rarr; Configuracion &rarr; Tipos de cita). El modulo se instala <strong>sin staff a proposito</strong>: sin tecnicos asignados, la pagina de agendado no ofrece ningun horario.</li>
+                <li style="margin-bottom: 8px;"><strong>Revisar los horarios</strong>: el tipo de cita nace con las franjas por defecto que crea Odoo (Lunes a Viernes, 9-12 y 14-17); ajustarlas al horario real del equipo tecnico.</li>
+                <li style="margin-bottom: 8px;"><strong>Proyecto de Field Service</strong> del team Service (Helpdesk &rarr; Configuracion &rarr; Equipos &rarr; pestaña Field Service): sin este proyecto la cita se agenda igual pero no se genera la tarea del tecnico.</li>
+                <li style="margin-bottom: 8px;"><strong>Garantias de las cerraduras</strong>: activar el seguimiento de garantia y su duracion en los productos o sus categorias (<code>sk_customer_product_warranty</code>). Atencion con las <strong>variantes ya existentes</strong>: la propagacion desde la plantilla solo aplica a variantes nuevas, hay que revisarlas una por una.</li>
+                <li style="margin-bottom: 8px;"><strong>Grupo de Inventario</strong> (<code>stock.group_stock_user</code>) para los agentes de Helpdesk que atienden Service: sin ese grupo no ven el campo Producto del ticket.</li>
+                <li><strong>Pedidos telefonicos</strong>: compartir la URL <code>/my/service/new</code>; si el cliente no tiene usuario portal, invitarlo con "Grant portal access" desde su ficha de contacto.</li>
+            </ol>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 10px; color: LinkText; font-size: 23px;">Detalle tecnico</h2>
+            <p style="margin: 0 0 14px;">El modulo no crea modelos nuevos: extiende <code>product.product</code> (calculo de garantia sin series), <code>helpdesk.ticket</code> (direccion de visita, cita vigente, snapshot de garantia), <code>calendar.event</code> (vinculo con el ticket y generacion/sincronizacion de la tarea FSM en su <code>create</code>/<code>write</code>), <code>project.task</code> (garantia readonly) y el wizard nativo <code>helpdesk.create.fsm.task</code> (direccion de visita + bloque de garantia en la descripcion). La URL de agendado se arma siempre a partir de <code>appointment.invite.redirect_url</code> del invite semilla, nunca a mano.</p>
+            <p style="margin: 0; padding: 14px 16px; border-left: 4px solid Highlight; background: color-mix(in srgb, Highlight 14%, Canvas); color: CanvasText;">La garantia mostrada es <strong>informativa</strong>: se calcula desde las entregas historicas del cliente (sin numeros de serie) y nunca bloquea el pedido ni el agendado. Si el service resulta fuera de garantia, se presupuesta despues de la visita, fuera de este modulo.</p>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 10px; color: LinkText; font-size: 23px;">Dependencias</h2>
+            <ul style="margin: 0; padding-left: 22px;">
+                <li><code>helpdesk_fsm</code> (Enterprise) - ticket de Helpdesk con generacion de tarea de Field Service.</li>
+                <li><code>helpdesk_stock</code> (Enterprise) - producto y lote del ticket.</li>
+                <li><code>website_appointment</code> (Enterprise) - la app de Citas (tipos, invites, eventos).</li>
+                <li><code>sk_customer_product_warranty</code> (propio) - configuracion de garantia por categoria/plantilla/variante.</li>
+            </ul>
+        </div>
+    </section>
+</body>
+</html>

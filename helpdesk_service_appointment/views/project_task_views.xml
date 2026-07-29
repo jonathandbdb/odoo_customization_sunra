@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Garantia readonly en el form de la tarea FSM (solo si viene de un ticket de service). -->
+    <record id="view_task_form2" model="ir.ui.view">
+        <field name="name">project.task.view.form2.inherit.helpdesk_service_appointment</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_form2"/>
+        <field name="arch" type="xml">
+            <field name="partner_id" position="after">
+                <field name="helpdesk_ticket_id" invisible="1"/>
+                <field name="service_warranty_status" widget="badge"
+                       decoration-success="service_warranty_status == 'valid'"
+                       decoration-danger="service_warranty_status == 'expired'"
+                       decoration-muted="service_warranty_status == 'unknown'"
+                       invisible="not helpdesk_ticket_id"/>
+                <field name="service_warranty_expiry_date"
+                       invisible="not helpdesk_ticket_id or not service_warranty_expiry_date"/>
+            </field>
+        </field>
+    </record>
+</odoo>
+<!-- vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4-->

@@ -4,7 +4,7 @@ Vender un **envío con instalación incluida** desde el eCommerce y que esa vent
 Cita** (app Citas), con las **fotos del lugar** y los datos que cargó el cliente, y con la **tarea de
 Field Service** del instalador.
 
-- **Versión**: 1.0.3
+- **Versión**: 1.2.0
 - **Licencia**: LGPL-3
 - **Depende de**: `website_sale`, `delivery`, `website_appointment_sale`, `sale_project`
 
@@ -25,6 +25,11 @@ del formulario de la cita y las fotos en el chatter.
 
 Si elige el envío normal, el paso **no aparece**: no molesta al flujo de compra habitual.
 
+Este paso **reemplaza la guía de instalaciones que antes se pedía por un formulario externo
+(JotForm)**: el checklist previo, la guía de fotos y las imágenes de referencia para medir la puerta
+que estaban en ese formulario ahora viven en `/shop/installation` (ver "Contenido del paso
+Instalación" más abajo).
+
 ## Cómo funciona (qué es nativo y qué agrega el módulo)
 
 Casi todo el mecanismo es nativo de Odoo Enterprise; el módulo sólo lo engancha al método de envío:
@@ -37,8 +42,38 @@ Casi todo el mecanismo es nativo de Odoo Enterprise; el módulo sólo lo enganch
 4. **Nativo** — `sale_project` genera la tarea y `website_appointment_sale_project` le propaga fecha,
    duración, cliente, recursos como etiquetas y las respuestas del formulario en la descripción.
 5. **Este módulo** — vincula el **método de envío** con el tipo de cita, agrega el **paso de checkout
-   condicional**, recibe las **fotos**, **bloquea el pago** si falta agendar o faltan fotos, y copia
-   las fotos a la **Cita** y a la **tarea**.
+   condicional**, recibe las **fotos**, **bloquea el pago** si falta agendar o faltan fotos, copia
+   las fotos a la **Cita** y a la **tarea**, e **invita al cliente al portal** (ver más abajo).
+
+## Contenido del paso Instalación
+
+El paso `/shop/installation` es una adaptación del **JotForm** de instalaciones que Nokey usaba
+antes de este módulo (el formulario externo queda reemplazado por este flujo). Contenido, de arriba
+hacia abajo:
+
+1. **Checklist previo** ("Before you schedule") — 5 puntos adaptados del JotForm: pilas AA/AAA
+   necesarias el día de la instalación, fotos claras de la puerta, dirección completa, duración
+   estimada (2 a 4 horas) y garantía de 1 año por fallas de fábrica.
+   - **Adaptación deliberada**: el JotForm original incluía una condición de **pago en efectivo o
+     transferencia el día del turno**. Acá **no aplica y no se muestra**: el pago de este flujo es
+     **online, en el checkout**, antes de que la instalación quede agendada como Cita.
+2. **Bloque "Measure your door before scheduling"** — dos imágenes de referencia (las mismas del
+   JotForm) para que el cliente mida la puerta antes de agendar: A) el ancho del canto (espesor de
+   la puerta) y B) el largo de la cerradura actual. Las medidas en sí **no las carga acá**: se
+   preguntan como `appointment.question` del tipo de cita al agendar (ver "Configuración" abajo).
+3. **Día y hora** (existente) — se delega en la página nativa de Citas.
+4. **Guía de fotos** — texto adaptado del JotForm sobre qué fotos subir (puerta desde afuera, desde
+   adentro, y el canto/borde donde entra la cerradura), junto al input de subida existente.
+
+### Imágenes
+
+| Archivo | Diagrama |
+|---|---|
+| `static/src/img/installation_measure_a_door_thickness.jpg` | A) Ancho del canto (espesor) de la puerta |
+| `static/src/img/installation_measure_b_lock_length.jpg` | B) Largo de la cerradura en la puerta |
+
+Se sirven directo desde `static/` (URL `/website_sale_installation_appointment/static/src/img/...`),
+sin bundle de assets: son `<img>` del template, no JS/CSS.
 
 ## Qué agrega
 
@@ -72,8 +107,8 @@ Casi todo el mecanismo es nativo de Odoo Enterprise; el módulo sólo lo enganch
 - `WebsiteSale.shop_payment()` — si la instalación está incompleta, redirige al paso en vez de
   mostrar el error. Hace falta porque el link "siguiente paso" del paso de envío se renderiza **antes**
   de que el cliente elija el método, así que apunta al pago incluso cuando el envío exige instalación.
-- `sale.order._action_confirm()` — copia las fotos a la Cita y a la tarea (después de `super()`, que
-  es donde el core crea ambas).
+- `sale.order._action_confirm()` — copia las fotos a la Cita y a la tarea, e invita al cliente al
+  portal (después de `super()`, que es donde el core crea la Cita y la tarea).
 - `sale.order.line._timesheet_create_task_prepare_values()` — título estable para la tarea del
   instalador (`<pedido> - <tipo de cita>`). Sin esto, cuando el producto de la cita se llama igual
   que el tipo de cita, `sale_project` descarta esa línea y la tarea queda titulada con la fecha.
@@ -88,6 +123,30 @@ Casi todo el mecanismo es nativo de Odoo Enterprise; el módulo sólo lo enganch
 - El endpoint público de fotos acepta **sólo imágenes** (se valida el mimetype real del contenido, no
   el que declara el navegador), hasta **10 MB** por archivo y **10 fotos** por pedido.
 
+## Invitación automática al portal
+
+Al confirmarse un pedido con instalación (`_action_confirm()`), el módulo intenta darle acceso al
+**portal** al cliente del pedido, reusando el mecanismo nativo de invitación (`portal.wizard`), el
+mismo que usa el botón *Otorgar acceso al portal* de un contacto. Es **incondicional**: no hay
+forma de desactivarla para un pedido puntual (aplica a todo pedido con instalación).
+
+- **Cuándo se dispara**: solo en pedidos donde `installation_required` es verdadero (el método de
+  envío elegido exige instalación). Los pedidos con envío normal no la disparan.
+- **Idempotencia**: si el partner ya tiene un usuario activo (portal o interno), no hace nada. Si
+  el partner tiene un usuario **archivado**, tampoco hace nada (no lo reactiva en automático) y
+  deja una nota en el chatter del pedido.
+- **Sin email**: si el partner no tiene email cargado, no se puede invitar; se deja una nota en el
+  chatter del pedido.
+- **Qué manda**: el mail nativo de invitación al portal (plantilla `auth_signup.portal_set_password_email`),
+  con el link de *sign up* para que el cliente elija su contraseña.
+- **Fallos**: cualquier error (ej. el email ya está en uso por otro usuario) queda aislado con
+  `savepoint` y **nunca** rompe la confirmación del pedido; queda logueado y anotado en el chatter.
+
+**Gotcha**: sin un **servidor de correo saliente** configurado (Configuración → Técnico → Correo →
+Servidores de correo saliente), el mail de invitación no sale (queda en la cola o falla en silencio
+según la configuración de Odoo); la invitación en sí se sigue disparando (el usuario portal queda
+creado), pero el cliente no recibe el link de *sign up*.
+
 ## Configuración (registros a crear)
 
 1. **Producto de la cita** — tipo *Servicio*, `service_tracking = Crear tarea en proyecto existente`
@@ -96,8 +155,23 @@ Casi todo el mecanismo es nativo de Odoo Enterprise; el módulo sólo lo enganch
 2. **Tipo de cita** (Citas → Configuración) — con **paso de pago** activado y el producto anterior;
    agendado **por recursos** (la cuadrilla como `appointment.resource` con su capacidad), franjas
    horarias reales, zona horaria, y publicado en el website.
-   - Las **preguntas** del tipo de cita (piso/depto, ascensor, contacto en obra, observaciones) se
-     cargan acá: las respuestas viajan solas a la Cita y a la descripción de la tarea de FSM.
+   - Las **preguntas** del tipo de cita (`appointment.question`) se cargan acá: las respuestas viajan
+     solas a la Cita y a la descripción de la tarea de FSM (vía `website_appointment_sale_project`,
+     nativo). Preguntas a crear (textos exactos, en español, adaptados del JotForm reemplazado):
+
+     | Pregunta | Tipo | Obligatoria | Opciones |
+     |---|---|---|---|
+     | Material de la puerta | Select | Sí | Chapa/Metal · Madera · Aluminio/PVC · Vidrio/Blindada · No estoy seguro |
+     | A) ¿Qué tan gruesa es la puerta? (ancho del canto, en cm) | Texto corto | Sí | — |
+     | B) Largo de la cerradura en la puerta (en cm) | Texto corto | Sí | — |
+     | ¿Contás con lugar para estacionar? | Select | No | Sí, cochera propia / entrada · Sí, estacionamiento medido / garage cerca · No, es zona de estacionamiento libre · No hay lugar cerca |
+     | Notas aclaratorias | Texto largo | No | — |
+     | Confirmo que tendré las pilas alcalinas nuevas listas (sin ellas no se puede configurar el equipo) | Checkbox | Sí | — |
+     | Entiendo que la garantía es de 1 año por fallas de fábrica | Checkbox | Sí | — |
+
+     Las dos preguntas de medida (A y B) corresponden a los diagramas del paso "Measure your door
+     before scheduling" (ver "Contenido del paso Instalación" arriba): el cliente ya vio cómo medir
+     antes de llegar a este paso de la cita.
 3. **Etiqueta de producto** (ej. *Requiere instalación*) en los productos instalables.
 4. **Método de envío "Envío con instalación"** — `Precio fijo` con su costo, publicado en el website,
    con la etiqueta anterior en *Debe tener etiquetas* (así el método aparece sólo si el carrito lleva
@@ -111,8 +185,9 @@ Casi todo el mecanismo es nativo de Odoo Enterprise; el módulo sólo lo enganch
 
 1. Agrega el producto al carrito.
 2. Dirección + **método de envío**: elige *Envío con instalación* (ve el costo).
-3. Paso **Instalación**: *Agendar la instalación* → elige día y hora en la página de la cita y
-   responde las preguntas → vuelve al paso → sube las fotos del lugar → *Continuar*.
+3. Paso **Instalación**: lee el checklist previo y mide la puerta con la ayuda de los diagramas →
+   *Agendar la instalación* → elige día y hora en la página de la cita y responde las preguntas
+   (incluidas las medidas) → vuelve al paso → sube las fotos del lugar (según la guía) → *Continuar*.
 4. Paga. Al confirmarse el pedido: se crea la **Cita**, la **tarea de Field Service** y las fotos
    quedan en el chatter de las dos.
 
@@ -126,14 +201,22 @@ Casi todo el mecanismo es nativo de Odoo Enterprise; el módulo sólo lo enganch
 - Si el cliente cambia el método de envío a uno normal después de agendar, la línea de la reserva
   queda en el carrito hasta que la quite; el paso deja de mostrarse porque el envío ya no exige cita.
 - `free_over` (envío gratis a partir de un monto) no tiene sentido en el método con instalación.
+- Las **preguntas del tipo de cita** (tabla en "Configuración" arriba) viven en la base de datos, no
+  en este módulo: si se editan los textos/opciones en el tipo de cita, hay que actualizar esa tabla
+  a mano (drift entre la config real y esta doc).
 
 ## Validación manual
 
 1. Carrito con un producto etiquetado como instalable → el método *Envío con instalación* aparece.
-2. Elegirlo → el paso *Instalación* aparece en el wizard del checkout.
+2. Elegirlo → el paso *Instalación* aparece en el wizard del checkout, con el checklist previo, el
+   bloque de medidas (dos imágenes lado a lado, responsive) y la guía de fotos visibles.
 3. Intentar ir directo a `/shop/payment` → error explicando que falta agendar.
 4. Agendar → volver al paso con el día y hora visibles.
 5. Intentar pagar sin fotos (con `installation_min_photos = 1`) → error de fotos faltantes.
 6. Subir una foto → *Continuar* → pagar.
 7. Verificar: Cita creada con las respuestas y las fotos, tarea de FSM con fecha, dirección y fotos.
 8. Repetir con el *Envío normal* → el paso *Instalación* no aparece en ningún momento.
+9. Con un cliente sin usuario de portal: verificar que quede creado tras confirmar (Ajustes →
+   Usuarios y Compañías → Usuarios) y que llegue el mail de invitación (requiere servidor de correo
+   saliente configurado). Repetir con un cliente que ya tiene usuario portal/interno → no debe
+   mandar mail ni crear un usuario nuevo.
