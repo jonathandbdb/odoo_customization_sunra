@@ -6,7 +6,7 @@ falla y agenda la visita sobre la disponibilidad real del técnico. El pedido qu
 Helpdesk** y la cita agendada genera la **tarea de Field Service** con fecha, dirección, fotos y el
 estado de garantía (informativo).
 
-- **Versión**: 1.0.0
+- **Versión**: 1.0.1
 - **Licencia**: LGPL-3
 - **Depende de**: `helpdesk_fsm`, `helpdesk_stock`, `website_appointment`, `sk_customer_product_warranty`
 
@@ -168,15 +168,38 @@ con el técnico equivocado"). Pasos:
    cita → *Service Visit* → agregar los usuarios técnicos en **Usuarios**. La semilla lo deja
    **vacío a propósito**: sin staff asignado, la página de agendado no muestra ningún horario
    disponible (inerte).
+   - **Con varios técnicos** (lo normal): el tipo de cita agenda `Reservar = Usuarios`, así que cada
+     técnico tiene su **propia agenda**. La disponibilidad que ve el cliente es la **unión** de las
+     agendas: un horario aparece si al menos un técnico está libre, y desaparece para ese técnico
+     cuando ya tiene una cita encima (no hay sobreagendado). La disponibilidad de cada uno sale de
+     (a) las franjas del tipo de cita, (b) su **horario laboral** si tiene ficha de empleado
+     (`appointment_hr`) y (c) sus eventos de calendario existentes. Si además está instalado
+     `hr_holidays`, sus **licencias** también le bloquean los horarios.
+   - Cómo elige el cliente: con *Asignar automáticamente* apagado ve la pantalla "Seleccione con
+     quién se reunirá" y elige técnico; encendido, Odoo reparte solo. Se puede además pedir que
+     elija **primero fecha y hora** y recién después el técnico disponible.
+   - Para restringir un horario a un técnico puntual (ej. sábados solo uno), usar *Restringir a
+     usuarios* en la franja horaria, en la pestaña **Disponibilidad**.
+   - La **tarea de Field Service queda asignada al técnico de la cita** (D35). Si en cambio se
+     configura el tipo de cita por **Recursos** (cuadrillas con capacidad, como el flujo de
+     instalación), la tarea nace **sin asignar** y el despacho lo hace el backoffice: por recursos
+     Odoo no sabe qué persona va.
 2. **Ajustar los slots (franjas horarias)** — Odoo auto-crea slots por defecto **Lunes a Viernes,
    9-12 y 14-17** en cuanto el tipo de cita se crea sin franjas propias (no se pueden "no
    semillar"). Revisar/editar esas franjas en la pestaña **Disponibilidad** del tipo de cita según
    el horario real del equipo técnico.
-3. **Configurar el proyecto de Field Service del team** — Helpdesk → Configuración → Equipos →
+3. **Verificar la COMPAÑÍA del team Service** (crítico en bases multi-compañía) — el team semilla se
+   crea en la compañía **activa del usuario que instala** el módulo. Si esa no es la compañía que
+   vende al cliente final, la regla multi-compañía **oculta los tickets al cliente en el portal**
+   (`/my/tickets` aparece vacío aunque el ticket exista). Helpdesk → Configuración → Equipos →
+   *Service* → **Empresa** = la compañía del negocio (ej. Miluan SRL).
+   - Al cambiar la empresa, Odoo **limpia** el campo *Proyecto* de Field Service: hay que volver a
+     elegir un proyecto FSM **de esa misma compañía** (ver punto 4).
+4. **Configurar el proyecto de Field Service del team** — Helpdesk → Configuración → Equipos →
    *Service* → pestaña **Field Service** → **Proyecto**: sin este `fsm_project_id`, la cita se
    agenda igual pero **no se genera** la tarea del técnico (queda una nota en el chatter del
    ticket).
-4. **Configurar garantías de las cerraduras** — en la ficha del producto (o su categoría), pestaña
+5. **Configurar garantías de las cerraduras** — en la ficha del producto (o su categoría), pestaña
    *Información general* → grupo **Warranty Information**: activar `warranty_tracking` y configurar
    duración/unidad/tipo de inicio (módulo `sk_customer_product_warranty`). Sin esto, el badge de
    garantía siempre muestra "Sin datos de garantía" (`unknown`), lo cual **no bloquea** el pedido
@@ -189,15 +212,16 @@ con el técnico equivocado"). Pasos:
      ya tenían variantes creadas **antes** de activar la garantía en la plantilla, hay que revisar
      manualmente cada variante existente y activar `warranty_tracking` en ella (no alcanza con
      tocar solo la plantilla o la categoría).
-5. **Dar el grupo `stock.group_stock_user` a los agentes de Helpdesk que atienden Service** —
+6. **Dar el grupo `stock.group_stock_user` a los agentes de Helpdesk que atienden Service** —
    Ajustes → Usuarios y Compañías → Usuarios → pestaña *Otros* → agregar el grupo de **Inventario /
    Usuario**. Sin este grupo no ven el campo **Producto** del ticket (lo restringe `helpdesk_stock`),
    y por lo tanto tampoco ven qué cerradura reportó el cliente.
-6. **Procedimiento telefónico** (pedidos que no entran por el portal): compartir la URL
+7. **Procedimiento telefónico** (pedidos que no entran por el portal): compartir la URL
    `/my/service/new` con el cliente. Si el cliente **no tiene** usuario portal, invitarlo desde su
-   ficha de contacto con la acción nativa **"Grant portal access"**. También puede llegar con
+   ficha de contacto con la acción nativa **Acción → "Otorgar acceso al portal"** (el botón
+   *Otorgar acceso* está dentro del asistente, en la fila del contacto). También puede llegar con
    usuario portal ya creado si compró con instalación: el módulo hermano
-   `website_sale_installation_appointment` (v1.1.0) lo auto-invita al confirmarse esa venta.
+   `website_sale_installation_appointment` lo auto-invita al confirmarse esa venta.
 
 ## Flujo del cliente
 

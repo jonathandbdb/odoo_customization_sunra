@@ -121,13 +121,40 @@ class CalendarEvent(models.Model):
             "partner_id": (ticket.service_visit_address_id or ticket.partner_id).id,
         })
         task = wizard.action_generate_task()
-        # Los dos campos en el MISMO write: project_enterprise tiene el constraint SQL
+        # Los dos campos de fecha en el MISMO write: project_enterprise tiene el constraint SQL
         # _planned_dates_check (planned_date_begin <= date_deadline); escribirlos por separado
         # puede violarlo contra el valor viejo del otro campo.
-        task.write({"planned_date_begin": self.start, "date_deadline": self.stop})
+        # user_ids en el mismo write (D35): el create de project.task deja como asignado al uid
+        # actual, que aca es el CLIENTE PORTAL que agendo (sudo no cambia el uid). Se pisa con el
+        # tecnico de la cita (organizador del evento) y, si la cita se agenda por recursos y no hay
+        # usuario, se deja SIN asignar para que el despacho lo resuelva el backoffice.
+        task.write({
+            "planned_date_begin": self.start,
+            "date_deadline": self.stop,
+            "user_ids": [(6, 0, self._service_task_assignee_ids())],
+        })
         ticket._post_service_photos(task)
         ticket.message_post(body=self._service_scheduled_message())
         return task
+
+    def _service_task_assignee_ids(self):
+        """Tecnico al que se asigna la tarea FSM del service (D35).
+
+        Solo las citas agendadas **por usuarios** traen al tecnico que eligio el cliente en el
+        organizador del evento: en las citas por **recursos** el nativo pone el `create_uid` del
+        tipo de cita (ver `appointment.type._prepare_calendar_event_values`), que no es quien va a
+        la visita. Sin tecnico asignable la tarea queda sin asignar y el despacho lo resuelve el
+        backoffice.
+
+        :return: ids de ``res.users`` para el ``user_ids`` de la tarea
+        :rtype: list
+        """
+        self.ensure_one()
+        if self.appointment_type_id.schedule_based_on != "users":
+            return []
+        staff = self.user_id
+        # user_ids de project.task exige share=False: nunca el cliente portal ni el usuario publico.
+        return staff.ids if staff and not staff.sudo().share else []
 
     def _service_scheduled_message(self):
         """Mensaje HTML para el chatter del ticket al agendar (fix post-review, M4): la fecha se

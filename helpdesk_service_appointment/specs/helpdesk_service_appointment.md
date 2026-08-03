@@ -3,10 +3,10 @@
 | Campo | Valor |
 |-------|-------|
 | **Modulo** | `helpdesk_service_appointment` |
-| **Version** | `1.0.1` (== `version` del `__manifest__.py`, formato `x.x.x`) |
+| **Version** | `1.0.2` (== `version` del `__manifest__.py`, formato `x.x.x`) |
 | **Serie Odoo** | `19` (informativa — serie de `ODOO_VERSION`, no es la version de la spec) |
 | **Estado** | `verified` |
-| **Actualizado** | `2026-07-29` |
+| **Actualizado** | `2026-08-03` |
 
 ## Objetivo
 
@@ -65,6 +65,7 @@ invite y tags de problema).
 | D32 | Limite de tickets abiertos | `[ASUNCION]` **Sin limite**: un partner puede tener varios tickets de service abiertos. El anti-doble-agendado es por **ticket** (D16), no por partner. |
 | D33 | Alcance del override del wizard FSM | El `partner_id` = `service_visit_address_id` se aplica **solo** cuando el wizard corre desde nuestro flujo, marcado con la clave de contexto `hsa_from_appointment=True` que pasa `calendar.event.create`. El camino **manual** del backoffice (agente que abre "Create a Field Service task" y elige un cliente) queda **intacto**: pisarle la eleccion seria un efecto lateral inesperado. El **bloque de garantia** en la descripcion, en cambio, se agrega **siempre** (es informacion, no una decision del agente). |
 | D34 | Reagendado del cliente tras cancelar | El controller nativo de cancelacion redirige a `invite.redirect_url + '&state=cancel'`, **sin** `service_ticket_id` → si el cliente reserva de nuevo desde ahi, la cita nace **huerfana** (sin ticket ni tarea). Se agrega un override chico de `appointment_cancel`: si el evento cancelado tenia `service_ticket_id`, se **reinyecta** ese param en la URL de redireccion, de forma que el rebooking conserve el vinculo. |
+| D35 | Asignado de la tarea FSM (varios tecnicos) | La tarea se asigna al **tecnico de la cita** = organizador del evento (`calendar.event.user_id`), **solo** si el tipo de cita agenda `schedule_based_on='users'`; en las citas por **recursos** el nativo pone ahi el `create_uid` del tipo de cita (`appointment.type._prepare_calendar_event_values`), que no es quien va a la visita, asi que la tarea queda **sin asignar** y el despacho lo resuelve el backoffice. Se escribe **explicitamente** (no se confia en el default) porque el `create` de `project.task` deja como asignado al **uid actual**, que en este flujo es el **cliente portal** que agendo (`sudo()` no cambia el uid) — un `share=True` como asignado ademas viola el `domain` del campo. Limitacion aceptada: cambiar el organizador del evento **despues** no re-asigna la tarea (mismo criterio que "mover la tarea no sincroniza la cita", D18). |
 
 ## Alcance
 
@@ -319,11 +320,13 @@ No aplica. El modulo no define modelos nuevos (no crea tablas ni `_name`), por d
      priorizada (D7).
   4. `task = wizard.action_generate_task()` (reusa `_generate_task_values()` — ya con nuestro override
      de garantia/direccion — y el `message_post_with_source` nativo que linkea la tarea en el ticket).
-  5. `task.write({'planned_date_begin': self.start, 'date_deadline': self.stop})` — **los dos campos en
-     el MISMO `write`**: `project_enterprise` tiene el constraint SQL
-     `_planned_dates_check (planned_date_begin <= date_deadline)`, y escribirlos por separado puede
+  5. `task.write({'planned_date_begin': self.start, 'date_deadline': self.stop, 'user_ids': [(6, 0, self._service_task_assignee_ids())]})`
+     — **las dos fechas en el MISMO `write`**: `project_enterprise` tiene el constraint SQL
+     `_planned_dates_check (planned_date_begin <= date_deadline)`, y escribirlas por separado puede
      violarlo contra el valor viejo del otro campo. (`planned_date_begin` lo aporta
-     `project_enterprise`, dependencia transitiva de `industry_fsm`.)
+     `project_enterprise`, dependencia transitiva de `industry_fsm`.) El `user_ids` va en el mismo
+     `write` y **siempre explicito** (D35): el `create` de `project.task` deja como asignado al uid
+     actual, que en este flujo es el **cliente portal**.
   6. `ticket._post_service_photos(task)` (fotos de la falla al chatter de la tarea).
   7. `ticket.message_post(body=self._service_scheduled_message())` — **precision post-review (M4)**:
      `_service_scheduled_message()` formatea la fecha con `odoo.tools.misc.format_datetime` en la
@@ -333,6 +336,15 @@ No aplica. El modulo no define modelos nuevos (no crea tablas ni `_name`), por d
      sin escapar dos veces el link ya construido).
 - **Retorna**: la tarea creada (`project.task`) o `None`.
 - **Errores**: los deja subir al `try`/savepoint del `create` (D15).
+
+### `CalendarEvent._service_task_assignee_ids(self)`
+
+- **Proposito**: resolver el **tecnico** al que se asigna la tarea FSM (D35).
+- **Decoradores**: ninguno (`ensure_one()`).
+- **Logica**: si `appointment_type_id.schedule_based_on != 'users'` → `[]` (en las citas por recursos
+  el `user_id` del evento es el `create_uid` del tipo de cita, no el tecnico de la visita); si el
+  organizador existe y **no** es `share` (portal/publico) → sus ids; si no → `[]`.
+- **Retorna**: lista de ids de `res.users` (0 o 1 elemento).
 
 ### `CalendarEvent.write(self, vals)` (override)
 
