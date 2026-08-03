@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     "name": "helpdesk_service_appointment",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "summary": "Service/reparacion de cerraduras instaladas: portal -> ticket Helpdesk -> cita -> tarea FSM",
     "description": """
 Permite que un cliente de Sunra pida service/reparacion de una cerradura ya instalada desde el

@@ -22,6 +22,8 @@
         <field name="appointment_duration">2.0</field>
         <field name="is_published" eval="False"/>
         <field name="staff_user_ids" eval="[(6, 0, [])]"/>
+        <!-- El cliente NO elige tecnico: Odoo asigna uno disponible para la franja (D36). -->
+        <field name="is_auto_assign" eval="True"/>
     </record>
 
     <!-- Invite: habilita el tipo de cita despublicado via su access_token/redirect_url (D13),

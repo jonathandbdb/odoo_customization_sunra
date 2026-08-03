@@ -175,9 +175,13 @@ con el técnico equivocado"). Pasos:
      (a) las franjas del tipo de cita, (b) su **horario laboral** si tiene ficha de empleado
      (`appointment_hr`) y (c) sus eventos de calendario existentes. Si además está instalado
      `hr_holidays`, sus **licencias** también le bloquean los horarios.
-   - Cómo elige el cliente: con *Asignar automáticamente* apagado ve la pantalla "Seleccione con
-     quién se reunirá" y elige técnico; encendido, Odoo reparte solo. Se puede además pedir que
-     elija **primero fecha y hora** y recién después el técnico disponible.
+   - **El cliente no elige técnico**: la semilla deja el tipo de cita con *Asignar automáticamente*
+     encendido (`is_auto_assign`), así que el portal no muestra la pantalla "Seleccione con quién se
+     reunirá": el cliente ve directamente los horarios y, al reservar, Odoo toma un técnico
+     **disponible** para esa franja. El reparto es **al azar entre los que están libres** (el core
+     baraja los técnicos y toma el primero disponible), no por carga de trabajo: si hace falta
+     equilibrar, se ajusta con las franjas de cada uno (*Restringir a usuarios*) o reasignando la
+     tarea en Field Service. Si algún día quisieran que el cliente sí elija, se apaga esa opción.
    - Para restringir un horario a un técnico puntual (ej. sábados solo uno), usar *Restringir a
      usuarios* en la franja horaria, en la pestaña **Disponibilidad**.
    - La **tarea de Field Service queda asignada al técnico de la cita** (D35). Si en cambio se
