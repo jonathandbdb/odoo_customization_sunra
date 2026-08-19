@@ -51,29 +51,66 @@ El paso `/shop/installation` es una adaptación del **JotForm** de instalaciones
 antes de este módulo (el formulario externo queda reemplazado por este flujo). Contenido, de arriba
 hacia abajo:
 
-1. **Checklist previo** ("Before you schedule") — 5 puntos adaptados del JotForm: pilas AA/AAA
-   necesarias el día de la instalación, fotos claras de la puerta, dirección completa, duración
-   estimada (2 a 4 horas) y garantía de 1 año por fallas de fábrica.
+0. **Encabezado** — "Preparemos tu instalación / Necesitamos estos tres datos antes de confirmar
+   el turno", y debajo los tres pedidos **numerados y cada uno en su propia tarjeta** (antes el de
+   las fotos quedaba suelto y se leía distinto de los otros dos).
+1. **Checklist previo** ("Antes de agendar") — puntos adaptados del JotForm: pilas AA/AAA
+   necesarias el día de la instalación, dirección completa, duración estimada (2 a 4 horas) y
+   garantía de 1 año por fallas de fábrica.
    - **Adaptación deliberada**: el JotForm original incluía una condición de **pago en efectivo o
      transferencia el día del turno**. Acá **no aplica y no se muestra**: el pago de este flujo es
      **online, en el checkout**, antes de que la instalación quede agendada como Cita.
-2. **Bloque "Measure your door before scheduling"** — dos imágenes de referencia (las mismas del
-   JotForm) para que el cliente mida la puerta antes de agendar: A) el ancho del canto (espesor de
-   la puerta) y B) el largo de la cerradura actual. Las medidas en sí **no las carga acá**: se
-   preguntan como `appointment.question` del tipo de cita al agendar (ver "Configuración" abajo).
-3. **Día y hora** (existente) — se delega en la página nativa de Citas.
-4. **Guía de fotos** — texto adaptado del JotForm sobre qué fotos subir (puerta desde afuera, desde
-   adentro, y el canto/borde donde entra la cerradura), junto al input de subida existente.
+> El paso pide **dos** cosas, no tres. La tarjeta *"Medí tu puerta antes de agendar"* se eliminó:
+> al mudar los diagramas junto a la pregunta quedaba como un recordatorio suelto sin imágenes. Las
+> medidas se preguntan como `appointment.question` al agendar y su guía aparece ahí (ver *Guía de
+> medidas* abajo).
+2. **Día y hora** (existente) — se delega en la página nativa de Citas.
+3. **Guía de fotos** — texto adaptado del JotForm sobre qué fotos subir (puerta desde afuera, desde
+   adentro, y el canto/borde donde entra la cerradura), junto al input de subida, **con un ejemplo
+   visual de cada toma** (template `installation_photo_examples`): antes solo estaba el párrafo y el
+   cliente subía cualquier cosa. La toma "desde adentro" todavía no tiene foto propia: se muestra
+   como recuadro con ícono hasta que Nokey la provea.
+   - Las fotos **se suben apenas se eligen** (`static/src/js/installation_photos.js`) y el paso
+     muestra "Subidas hasta ahora: X de Y". Antes había que elegirlas **y además** apretar
+     *Continuar*: si el cliente iba directo al pago, el paso lo rebotaba pidiendo fotos que él veía
+     seleccionadas en pantalla. Sin JS el botón *Continuar* sigue funcionando igual.
+   - Si un archivo se rechaza se avisa **con el nombre del archivo** (caso típico: fotos HEIC de
+     iPhone, que no se pueden leer como imagen — hay que mandarlas en JPG).
 
 ### Imágenes
 
-| Archivo | Diagrama |
+| Archivo | Para qué |
 |---|---|
-| `static/src/img/installation_measure_a_door_thickness.jpg` | A) Ancho del canto (espesor) de la puerta |
-| `static/src/img/installation_measure_b_lock_length.jpg` | B) Largo de la cerradura en la puerta |
+| `static/src/img/installation_measure_a_door_thickness.jpg` | Medida A) Ancho del canto (espesor) de la puerta |
+| `static/src/img/installation_measure_b_lock_length.jpg` | Medida B) Largo de la cerradura en la puerta |
+| `static/src/img/installation_example_lock.jpg` | Ejemplo de foto: la puerta desde afuera (manija y cilindro) |
+| `static/src/img/installation_example_door_edge.jpg` | Ejemplo de foto: el canto, con la puerta abierta |
+
+Las dos de **ejemplo** salen de las mismas tomas reales que las de medidas, recortadas y con las
+marcas rojas A/B quitadas: esas marcan *qué medir*, no *qué fotografiar*, y mezclarlas confundía.
 
 Se sirven directo desde `static/` (URL `/website_sale_installation_appointment/static/src/img/...`),
 sin bundle de assets: son `<img>` del template, no JS/CSS.
+
+### Guía de medidas (dónde aparece)
+
+Los diagramas A/B viven en el template `installation_measure_guide` y se renderizan **dentro del
+bucle de preguntas del formulario del turno, justo antes de la pregunta marcada** con el campo
+`installation_measure_guide` de `appointment.question` (casilla *Mostrar la guía de medidas*).
+
+Esto cubre **los dos caminos con un solo lugar**: la pregunta del espesor es **reutilizable** y la
+comparten el tipo de cita del checkout y el del link que comparte Nokey, así que marcarla una vez
+alcanza. Antes los diagramas iban sueltos —arriba de todas las preguntas en el formulario, y en una
+tarjeta del paso de checkout, que es otra página—: el cliente leía el diagrama lejos de donde tenía
+que escribir la medida.
+
+> ⚠️ **Config obligatoria por base**: si nadie marca *Mostrar la guía de medidas* en la pregunta del
+> espesor, los diagramas no se muestran en ningún lado. El campo es del cliente (las preguntas las
+> crea el funcional), por eso el módulo no puede traerlo marcado de fábrica.
+
+Los **ejemplos de las fotos a subir** viven en el template `installation_photo_examples` (definido en
+`views/website_sale_installation_templates.xml`) y se llaman con `t-call` desde los dos caminos, justo
+arriba del input de archivos: uno solo para mantener, mismo mensaje compre por donde compre.
 
 ## Qué agrega
 
@@ -89,6 +126,11 @@ sin bundle de assets: son `<img>` del template, no JS/CSS.
 | `sale.order` | `installation_event_id` | Cita creada (después de confirmar). |
 | `sale.order` | `installation_photo_ids` | Fotos del lugar que subió el cliente. |
 | `sale.order` | `installation_photo_count` | Cantidad de fotos (para el gate). |
+| `appointment.type` | `installation_fsm_project_id` | Proyecto de Field Service donde crear la tarea cuando la cita se agenda **sin** pasar por el eCommerce (link compartido). Vacío = la tarea la genera el pedido. |
+| `appointment.type` | `installation_request_photos` | Pedir fotos del lugar en el formulario de la cita. |
+| `appointment.type` | `installation_min_photos` | Fotos necesarias para reservar (0 = opcionales pero visibles). |
+| `appointment.question` | `answer_format` | Formato esperado de la respuesta: texto libre, número entero, número, teléfono o documento (DNI/CUIT). |
+| `calendar.event` | `installation_task_id` | Tarea de Field Service generada por una cita agendada fuera del eCommerce. |
 
 ### Rutas
 
@@ -159,20 +201,34 @@ creado), pero el cliente no recibe el link de *sign up*.
      solas a la Cita y a la descripción de la tarea de FSM (vía `website_appointment_sale_project`,
      nativo). Preguntas a crear (textos exactos, en español, adaptados del JotForm reemplazado):
 
-     | Pregunta | Tipo | Obligatoria | Opciones |
-     |---|---|---|---|
-     | Material de la puerta | Select | Sí | Chapa/Metal · Madera · Aluminio/PVC · Vidrio/Blindada · No estoy seguro |
-     | A) ¿Qué tan gruesa es la puerta? (ancho del canto, en cm) | Texto corto | Sí | — |
-     | B) Largo de la cerradura en la puerta (en cm) | Texto corto | Sí | — |
-     | ¿Contás con lugar para estacionar? | Select | No | Sí, cochera propia / entrada · Sí, estacionamiento medido / garage cerca · No, es zona de estacionamiento libre · No hay lugar cerca |
-     | Notas aclaratorias | Texto largo | No | — |
-     | Confirmo que tendré las pilas alcalinas nuevas listas (sin ellas no se puede configurar el equipo) | Checkbox | Sí | — |
-     | Entiendo que la garantía es de 1 año por fallas de fábrica | Checkbox | Sí | — |
+     | Pregunta | Tipo | Formato | Obligatoria | Opciones |
+     |---|---|---|---|---|
+     | Teléfono de contacto | Teléfono | Teléfono | Sí | — |
+     | Material de la puerta | Desplegable | Texto libre | Sí | Chapa/Metal · Madera · Aluminio/PVC · Vidrio/Blindada · No estoy seguro |
+     | A) ¿Qué tan gruesa es la puerta? (ancho del canto, en cm) | Texto corto | **Número** | Sí | — |
+     | B) Largo de la cerradura en la puerta (en cm) | Texto corto | **Número** | Sí | — |
+     | ¿Contás con lugar para estacionar? | Desplegable | Texto libre | No | Sí, cochera propia / entrada · Sí, estacionamiento medido / garage cerca · No, es zona de estacionamiento libre · No hay lugar cerca |
+     | Observaciones para el instalador | Texto largo | Texto libre | No | — |
 
-     Las dos preguntas de medida (A y B) corresponden a los diagramas del paso "Measure your door
-     before scheduling" (ver "Contenido del paso Instalación" arriba): el cliente ya vio cómo medir
-     antes de llegar a este paso de la cita.
+     **No** se piden acá la dirección ni el DNI/CUIT: los toma el checkout (dirección estructurada
+     que después guía al instalador, y *Número de Identificación*, que la localización argentina ya
+     valida con dígito verificador). Preguntarlos dos veces era lo que confundía y duplicaba datos.
+
+     El **orden** se cambia arrastrando las preguntas en la pestaña *Preguntas* del tipo de cita
+     (columna de tirador). Ojo: `sequence` es **global** de la pregunta, así que reordenar afecta a
+     todos los tipos de cita que la reutilicen.
+
+     El **Formato de la respuesta** (campo propio de este módulo) es lo que evita que el cliente
+     escriba cualquier cosa: emite `type`/`inputmode`/`pattern` reales en el input (el nativo emite
+     `type="phone"` y `type="char"`, que **no existen en HTML** y el navegador trata como texto
+     libre) y revalida en el servidor por las dudas.
+
+     Las dos preguntas de medida (A y B) corresponden a los diagramas del paso "Medí tu puerta antes
+     de agendar": el cliente ya vio cómo medir antes de llegar a este paso.
 3. **Etiqueta de producto** (ej. *Requiere instalación*) en los productos instalables.
+   Desmarcar **Visible para los clientes** (`product.tag.visible_to_customers`): la etiqueta es
+   un marcador interno para el método de envío y, si se publica, aparece en la ficha del
+   producto y confunde al comprador. Ocultarla **no** afecta a *Debe tener etiquetas*.
 4. **Método de envío "Envío con instalación"** — `Precio fijo` con su costo, publicado en el website,
    con la etiqueta anterior en *Debe tener etiquetas* (así el método aparece sólo si el carrito lleva
    un producto instalable), zona de cobertura por país/provincia/CP si la cuadrilla no llega a todos
@@ -180,6 +236,39 @@ creado), pero el cliente no recibe el link de *sign up*.
 5. **Método de envío "Envío normal"** — el de siempre, sin tipo de cita.
 6. **Proveedor de pago habilitado** — el pedido se confirma al pagarse; sin proveedor habilitado el
    checkout no llega a confirmar y la Cita no se crea.
+7. **Nombre del tipo de cita** — es el texto que se ve en la línea del pedido (el nativo arma la
+   descripción con el nombre del tipo + el horario). Conviene que se lea como el turno y no como un
+   segundo cargo, ej. *Turno de instalación a domicilio*; el módulo además le agrega
+   "Incluido en el método de envío … — sin cargo adicional".
+
+### Agenda compartida sin cobrar online (el cliente paga por fuera)
+
+Cuando Nokey coordina la instalación por teléfono/WhatsApp y el pago se arregla aparte, el cliente
+solo tiene que elegir día y hora. Eso **no** se hace con el tipo de cita del eCommerce (tiene paso de
+pago y termina en el checkout): se configura un **segundo tipo de cita**.
+
+1. **Tipo de cita** ej. *Instalación coordinada por Nokey*: **sin** paso de pago, **no publicado**,
+   con el **mismo recurso** (la cuadrilla) que el tipo del eCommerce — así **comparten
+   disponibilidad**: el nativo busca las reservas **por recurso**, no por tipo, y no se pueden
+   superponer dos instalaciones. Copiarle también las franjas horarias, la duración y el
+   *Total de reservas* (citas simultáneas) del tipo web: si no coinciden, una agenda muestra
+   horarios que la otra ya considera ocupados.
+2. **Proyecto de Field Service** en el campo homónimo: sin venta no hay quien genere la tarea del
+   instalador, la crea este módulo con la fecha, el cliente, la dirección y las respuestas. La tarea
+   nace **sin asignar** (por recursos Odoo no sabe qué persona va) y se sincroniza si la cita se
+   reprograma o se cancela.
+3. **Preguntas**: las mismas técnicas del tipo web **más la dirección de la instalación** (acá no hay
+   checkout que la aporte). Las preguntas se reutilizan entre tipos, no hay que duplicarlas.
+4. **Fotos del lugar**: activar *Pedir fotos del lugar*. El mínimo puede quedar en 0 (se muestran
+   pero no bloquean) — bloquear una reserva por una subida desde el celular es arriesgado.
+5. **Link para compartir**: abrir el tipo de cita y apretar **Compartir** (arriba a la izquierda).
+   Odoo abre *Crear un enlace para compartir* con la URL ya armada (ej. `/book/instalacion`) y el
+   botón *Copiar enlace y cerrar*. Ese es el link que se manda al cliente por WhatsApp o mail; **no**
+   requiere que se registre y **es siempre el mismo** (queda guardado en el smart button *Enlaces
+   compartidos* del tipo de cita, modelo `appointment.invite`).
+
+Este camino **no genera pedido de venta**: si además hay que facturar, el pedido lo arma Nokey en el
+backoffice.
 
 ## Flujo del cliente
 
@@ -192,6 +281,19 @@ creado), pero el cliente no recibe el link de *sign up*.
    quedan en el chatter de las dos.
 
 ## Gotchas
+
+- **Nombre de la empresa fuera del checkout**: la vista `website_sale.address_form_fields` se hereda
+  para sacar `#company_name_div`. **No** alcanza con desactivar la vista opcional
+  `website_sale.address_b2b`: ese switch apaga todo el bloque b2b y `l10n_ar` cuelga ahí adentro la
+  *Responsabilidad de ARCA*, que sí se necesita. El formulario de *Mi cuenta* del portal queda
+  intacto (se hereda la variante `primary` del checkout).
+- **Invitado que cambia el mail en la cita**: el formulario llega prellenado con el contacto del
+  checkout (`_get_customer_partner` cae al partner del carrito), pero si el cliente **edita** el mail
+  o el teléfono ahí, el nativo crea un contacto nuevo. No se puede impedir sin bloquear los campos.
+- **DNI / CUIT**: los valida la localización argentina en el checkout (largo, solo números, dígito
+  verificador y prefijo de CUIT). Este módulo no duplica esa validación: solo la reusa en las
+  preguntas de cita que se configuren con formato *Documento*.
+- **El `sequence` de las preguntas es global**: se comparten entre tipos de cita.
 
 - **Sin proveedor de pago habilitado no hay Cita**: la reserva se convierte en Cita al confirmarse el
   pedido. Un pedido que queda en presupuesto conserva la reserva pendiente (`calendar.booking`), que

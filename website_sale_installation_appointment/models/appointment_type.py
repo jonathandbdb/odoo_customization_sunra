@@ -1,0 +1,27 @@
+# -*- coding: utf-8 -*-
+from odoo import fields, models
+
+
+class AppointmentType(models.Model):
+    _inherit = "appointment.type"
+
+    installation_fsm_project_id = fields.Many2one(
+        comodel_name="project.project",
+        string="Field Service Project",
+        domain="[('is_fsm', '=', True)]",
+        help="For appointment types booked WITHOUT going through the eCommerce (the link Nokey "
+             "shares when the customer pays outside the website): the visit booked here creates a "
+             "task in this Field Service project, so the crew has the job on their planning. Leave "
+             "empty for appointment types that already create the task through a sales order.",
+    )
+    installation_request_photos = fields.Boolean(
+        string="Ask for Site Photos",
+        help="Show the photo upload in the appointment form: the crew needs to know what they will "
+             "find at the installation site.",
+    )
+    installation_min_photos = fields.Integer(
+        string="Minimum Site Photos",
+        help="Photos required to book. 0 shows the upload box without blocking the booking.",
+    )
+
+# vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

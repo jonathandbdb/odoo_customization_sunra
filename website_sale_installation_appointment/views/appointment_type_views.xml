@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- El orden en que se le preguntan las cosas al cliente lo maneja el funcional: la lista
+         nativa de preguntas no trae el tirador de secuencia, asi que las preguntas salian en el
+         orden en que se fueron creando. OJO: appointment.question.sequence es GLOBAL (las preguntas
+         se reutilizan entre tipos de cita), reordenar acá reordena en todos los tipos que la usen. -->
+    <record id="appointment_type_view_form" model="ir.ui.view">
+        <field name="name">appointment.type.view.form.inherit.website_sale_installation_appointment</field>
+        <field name="model">appointment.type</field>
+        <field name="inherit_id" ref="appointment.appointment_type_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='question_ids']/list/field[@name='name']" position="before">
+                <field name="sequence" widget="handle"/>
+            </xpath>
+            <xpath expr="//field[@name='question_ids']/list/field[@name='question_type']" position="after">
+                <field name="answer_format" optional="show"/>
+            </xpath>
+            <!-- Instalaciones agendadas FUERA del eCommerce (el link que comparte Nokey cuando el
+                 cliente paga por fuera): sin venta no hay quien genere la tarea del instalador, la
+                 crea este modulo con el proyecto de acá. -->
+            <xpath expr="//group[@name='right_details']" position="inside">
+                <field name="installation_fsm_project_id"/>
+                <field name="installation_request_photos"/>
+                <field name="installation_min_photos" invisible="not installation_request_photos"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
+<!-- vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4-->

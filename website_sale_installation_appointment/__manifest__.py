@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     "name": "website_sale_installation_appointment",
-    "version": "1.2.0",
+    "version": "1.6.0",
     "summary": "Envio con instalacion en el eCommerce: agenda la cita y pide fotos del lugar en el checkout",
     "description": """
 Permite vender un envio "con instalacion incluida" desde el eCommerce y que esa venta quede agendada
@@ -31,8 +31,16 @@ como Cita (app Citas), con las fotos del lugar y los datos que cargo el cliente.
         "views/delivery_carrier_views.xml",
         "views/sale_order_views.xml",
         "views/website_sale_installation_templates.xml",
+        "views/website_sale_templates.xml",
+        "views/appointment_type_views.xml",
+        "views/appointment_question_views.xml",
+        "views/appointment_templates.xml",
     ],
-    "assets": {},
+    "assets": {
+        "web.assets_frontend": [
+            "website_sale_installation_appointment/static/src/js/installation_photos.js",
+        ],
+    },
     "post_init_hook": "post_init_hook",
     "uninstall_hook": "uninstall_hook",
     "installable": True,

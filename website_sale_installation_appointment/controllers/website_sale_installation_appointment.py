@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 import base64
+import re
+from urllib.parse import urlencode
 
 from odoo import Command, _
 from odoo.http import request, route
@@ -13,6 +15,61 @@ from odoo.addons.website_sale_installation_appointment.models.website import INS
 # Limites del upload publico de fotos (el endpoint es auth="public").
 MAX_PHOTOS = 10
 MAX_PHOTO_SIZE = 10 * 1024 * 1024
+
+
+
+def create_installation_photos(uploads, available_slots, res_model=False, res_id=0):
+    """Crear los adjuntos de las fotos del lugar, validando tipo, tamano y cantidad.
+
+    Compartida por el paso del checkout y por el formulario de la cita (link que comparte Nokey):
+    en los dos casos sube fotos un usuario publico, asi que se valida el mimetype del CONTENIDO
+    real y no lo que declara el navegador.
+
+    :param uploads: lista de werkzeug FileStorage
+    :param available_slots: cuantas fotos mas se aceptan
+    :param res_model: modelo al que se atan (por defecto quedan pendientes, para message_post)
+    :param res_id: id del registro
+    :return: (ir.attachment creados, lista de avisos)
+    :rtype: tuple
+    """
+    warnings = []
+    attachments = request.env["ir.attachment"].sudo()
+    for upload in uploads:
+        if not upload or not upload.filename:
+            continue
+        if available_slots <= 0:
+            warnings.append(_(
+                "You can upload up to %(max_photos)s photos.", max_photos=MAX_PHOTOS,
+            ))
+            break
+        content = upload.read()
+        if not content:
+            continue
+        if len(content) > MAX_PHOTO_SIZE:
+            warnings.append(_(
+                "The file %(filename)s is too big (maximum %(max_size)s MB).",
+                filename=upload.filename,
+                max_size=MAX_PHOTO_SIZE // (1024 * 1024),
+            ))
+            continue
+        # Se valida el mimetype real del contenido, no el que declara el navegador. Las fotos HEIC
+        # del iPhone caen aca: se avisa con el nombre del archivo para que el cliente sepa cual.
+        mimetype = guess_mimetype(content)
+        if not mimetype.startswith("image/"):
+            warnings.append(_(
+                "The file %(filename)s is not an image we can read. If it comes from an iPhone, "
+                "send it as JPG.", filename=upload.filename,
+            ))
+            continue
+        attachments |= request.env["ir.attachment"].sudo().create({
+            "name": upload.filename,
+            "datas": base64.b64encode(content),
+            "mimetype": mimetype,
+            "res_model": res_model or "mail.compose.message",
+            "res_id": res_id,
+        })
+        available_slots -= 1
+    return attachments, warnings
 
 
 class WebsiteSaleInstallation(WebsiteSale):
@@ -47,14 +104,19 @@ class WebsiteSaleInstallation(WebsiteSale):
         if not order_sudo._is_installation_required():
             return request.redirect("/shop/payment")
 
+        remove_photo_id = post.get("remove_photo_id")
+        if remove_photo_id:
+            return self.shop_installation_photo_remove(int(remove_photo_id))
+
         warnings = self._save_installation_photos(
             order_sudo, request.httprequest.files.getlist("installation_photos")
         )
         if warnings:
             request.session["installation_warnings"] = warnings
             return request.redirect(INSTALLATION_STEP_HREF)
-        if order_sudo._get_installation_errors():
-            # Falta algo (cita o fotos): se vuelve al paso, que ya muestra el detalle.
+        if post.get("stay_on_step") or order_sudo._get_installation_errors():
+            # Subida de fotos desde el propio input (stay_on_step) o falta algo (cita o fotos):
+            # se vuelve al paso, que ya muestra el detalle y las fotos cargadas.
             return request.redirect(INSTALLATION_STEP_HREF)
 
         return request.redirect(self._get_installation_next_step_href())
@@ -121,6 +183,8 @@ class WebsiteSaleInstallation(WebsiteSale):
             "installation_slot_label": self._get_installation_slot_label(order_sudo),
             "installation_photos": self._get_installation_photos(order_sudo),
             "max_photos": MAX_PHOTOS,
+            "min_photos": order_sudo.carrier_id.installation_min_photos,
+            "photo_count": order_sudo.installation_photo_count,
             "show_navigation_button": False,
         }
         values.update(request.website._get_checkout_step_values())
@@ -168,44 +232,14 @@ class WebsiteSaleInstallation(WebsiteSale):
         :return: list of warnings for the rejected files
         :rtype: list
         """
-        warnings = []
-        available_slots = MAX_PHOTOS - order_sudo.installation_photo_count
-        for upload in uploads:
-            if not upload or not upload.filename:
-                continue
-            if available_slots <= 0:
-                warnings.append(_(
-                    "You can upload up to %(max_photos)s photos.", max_photos=MAX_PHOTOS,
-                ))
-                break
-            content = upload.read()
-            if not content:
-                continue
-            if len(content) > MAX_PHOTO_SIZE:
-                warnings.append(_(
-                    "The file %(filename)s is too big (maximum %(max_size)s MB).",
-                    filename=upload.filename,
-                    max_size=MAX_PHOTO_SIZE // (1024 * 1024),
-                ))
-                continue
-            # Se valida el mimetype real del contenido, no el que declara el navegador.
-            mimetype = guess_mimetype(content)
-            if not mimetype.startswith("image/"):
-                warnings.append(_(
-                    "The file %(filename)s is not an image.", filename=upload.filename,
-                ))
-                continue
-            # sudo: la foto la sube el cliente del eCommerce, que no crea ir.attachment por si mismo.
-            # Ya se validaron tipo, tamaño y cantidad antes de llegar aca.
-            attachment = request.env["ir.attachment"].sudo().create({
-                "name": upload.filename,
-                "datas": base64.b64encode(content),
-                "mimetype": mimetype,
-                "res_model": order_sudo._name,
-                "res_id": order_sudo.id,
-            })
+        attachments, warnings = create_installation_photos(
+            uploads,
+            MAX_PHOTOS - order_sudo.installation_photo_count,
+            res_model=order_sudo._name,
+            res_id=order_sudo.id,
+        )
+        for attachment in attachments:
             order_sudo.installation_photo_ids = [Command.link(attachment.id)]
-            available_slots -= 1
         return warnings
 
     def _get_installation_next_step_href(self):
@@ -220,6 +254,121 @@ class WebsiteSaleInstallation(WebsiteSale):
 
 
 class AppointmentInstallation(WebsiteAppointmentSale):
+
+    def appointment_type_id_form(self, appointment_type_id, date_time, duration, **kwargs):
+        """ Override of `appointment`: surface the answer format errors of the previous attempt. """
+        response = super().appointment_type_id_form(appointment_type_id, date_time, duration, **kwargs)
+        if hasattr(response, "qcontext"):
+            response.qcontext["installation_answer_errors"] = request.session.pop(
+                "installation_answer_errors", [],
+            )
+        return response
+
+    def appointment_form_submit(self, appointment_type_id, datetime_str, duration_str, name, email,
+                                staff_user_id=None, available_resource_ids=None, asked_capacity=1,
+                                guest_emails_str=None, **kwargs):
+        """ Override of `appointment`: check the answers before booking the slot.
+
+        Red de seguridad del `pattern` que ya frena en el navegador: si el cliente entra sin JS (o
+        manda el POST a mano), las respuestas se validan igual y vuelve al formulario con el
+        detalle en vez de quedar una cita con datos inservibles para el instalador.
+        """
+        appointment_type = request.env["appointment.type"].sudo().browse(int(appointment_type_id)).exists()
+        errors = []
+        for question in appointment_type.question_ids:
+            key = "question_%s" % question.id
+            if key not in kwargs:
+                continue
+            error = question._validate_answer(kwargs.get(key))
+            if error:
+                errors.append(error)
+        # Fotos del lugar: solo en los tipos de cita que las piden (el link que comparte Nokey).
+        photos = request.env["ir.attachment"].sudo()
+        if appointment_type.installation_request_photos:
+            uploads = request.httprequest.files.getlist("installation_photos")
+            photos, photo_warnings = create_installation_photos(uploads, MAX_PHOTOS)
+            errors.extend(photo_warnings)
+            missing = appointment_type.installation_min_photos - len(photos)
+            if missing > 0:
+                errors.append(_(
+                    "Please upload at least %(min_photos)s photo(s) of the installation site.",
+                    min_photos=appointment_type.installation_min_photos,
+                ))
+
+        if errors:
+            photos.unlink()
+            request.session["installation_answer_errors"] = errors
+            return request.redirect("/appointment/%s/info?%s" % (
+                appointment_type.id, self._get_installation_info_query(
+                    datetime_str, duration_str, staff_user_id, available_resource_ids,
+                    asked_capacity, **kwargs,
+                ),
+            ))
+
+        response = super().appointment_form_submit(
+            appointment_type_id, datetime_str, duration_str, name, email,
+            staff_user_id=staff_user_id, available_resource_ids=available_resource_ids,
+            asked_capacity=asked_capacity, guest_emails_str=guest_emails_str, **kwargs,
+        )
+        if photos:
+            event = self._get_submitted_appointment_event(response)
+            if event:
+                event._installation_post_photos(photos)
+            else:
+                photos.unlink()
+        return response
+
+    def _get_submitted_appointment_event(self, response):
+        """ Recover the event just created by the native submit.
+
+        El nativo redirige a ``/calendar/view/<access_token>``: se toma el token de ahi en vez de
+        adivinar cual es la cita recien creada.
+
+        :param response: respuesta del submit nativo
+        :return: calendar.event (sudo) o un recordset vacio
+        """
+        location = response.headers.get("Location", "") if hasattr(response, "headers") else ""
+        match = re.search(r"/calendar/view/([0-9a-f-]+)", location)
+        if not match:
+            return request.env["calendar.event"].sudo()
+        return request.env["calendar.event"].sudo().search(
+            [("access_token", "=", match.group(1))], limit=1,
+        )
+
+    def _get_installation_info_query(self, datetime_str, duration_str, staff_user_id,
+                                     available_resource_ids, asked_capacity, **kwargs):
+        """ Query string to render the appointment form again on the same slot.
+
+        :rtype: str
+        """
+        params = {"date_time": datetime_str, "duration": duration_str, "asked_capacity": asked_capacity}
+        if staff_user_id:
+            params["staff_user_id"] = staff_user_id
+        if available_resource_ids:
+            params["available_resource_ids"] = available_resource_ids
+        for key in ("allday", "resource_selected_id", "filter_appointment_type_ids",
+                    "filter_staff_user_ids", "filter_resource_ids", "invite_token"):
+            if kwargs.get(key):
+                params[key] = kwargs[key]
+        return urlencode(params)
+
+    def _get_customer_partner(self):
+        """ Override of `appointment`: fall back to the cart customer for guest checkouts.
+
+        El nativo solo devuelve el partner del **usuario logueado**, asi que a un invitado que ya
+        cargo sus datos en el paso de Direccion el formulario de la cita le vuelve a pedir nombre y
+        mail; y al enviarlo, como el partner viene vacio, crea un contacto NUEVO sin buscar por
+        email (`appointment/controllers/appointment.py`, `appointment_form_submit`) -> el mismo
+        cliente quedaba duplicado en Contactos. Con el partner del carrito el formulario llega
+        prellenado y se reutiliza ese contacto.
+        """
+        partner = super()._get_customer_partner()
+        if partner:
+            return partner
+        order_sudo = request.cart
+        if order_sudo and not order_sudo._is_anonymous_cart():
+            return order_sudo.partner_id
+        return partner
 
     def _redirect_to_payment(self, calendar_booking):
         """ Override of `website_appointment_sale`: when the booking is the installation of the

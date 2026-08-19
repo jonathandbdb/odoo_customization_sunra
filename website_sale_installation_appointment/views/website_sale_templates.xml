@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Checkout: sin "Nombre de la empresa". Es opcional y es el que arma una empresa aparte con
+         el contacto colgando, asi que el mismo cliente terminaba duplicado. Se saca SOLO del
+         checkout (esta vista es la variante primary de /shop/address): el formulario de "Mi cuenta"
+         del portal queda intacto. NO se desactiva la vista opcional website_sale.address_b2b porque
+         esa apaga todo el bloque b2b y l10n_ar cuelga ahi adentro la Responsabilidad de ARCA. -->
+    <template id="address_form_fields" inherit_id="website_sale.address_form_fields">
+        <xpath expr="//div[@id='company_name_div']" position="replace"/>
+    </template>
+
+    <!-- Con envio CON instalacion no hay "entrega": el equipo va a instalar al domicilio. Se
+         renombra el titulo para que el cliente no lea dos cosas distintas (la direccion es la misma
+         y es la que despues guia al instalador en la tarea de Field Service). -->
+    <template id="delivery_address_list" inherit_id="website_sale.delivery_address_list">
+        <xpath expr="//h5[@name='delivery_address_title']" position="replace">
+            <h5 name="delivery_address_title" class="mb-0">
+                <t t-if="order._is_installation_required()">Installation address</t>
+                <t t-else="">Delivery address</t>
+            </h5>
+        </xpath>
+    </template>
+</odoo>
+<!-- vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4-->

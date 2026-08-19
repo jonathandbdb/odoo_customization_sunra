@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Los inputs de las preguntas salen del nativo con type="phone" / type="char", que NO existen
+         en HTML: el navegador los trata como texto libre y el cliente puede escribir cualquier cosa
+         (era el reclamo de "acepta cualquier numero de telefono o DNI"). Se emiten con el tipo real
+         y con inputmode/pattern segun el formato configurado en la pregunta; el formulario nativo
+         llama a reportValidity() antes de enviar, asi que el error se ve en el campo. -->
+    <template id="appointment_form" inherit_id="appointment.appointment_form">
+        <!-- Errores de formato de la validacion del servidor (red de seguridad del pattern). -->
+        <xpath expr="//form[hasclass('appointment_submit_form')]" position="before">
+            <div t-if="installation_answer_errors" class="alert alert-danger" role="alert">
+                <div t-foreach="installation_answer_errors" t-as="answer_error"
+                     t-key="answer_error_index" t-out="answer_error"/>
+            </div>
+        </xpath>
+        <!-- Fotos del lugar en el formulario de la cita: el JS nativo hace un submit() plano del
+             form, asi que con multipart los archivos viajan igual que en el checkout. -->
+        <xpath expr="//form[hasclass('appointment_submit_form')]" position="attributes">
+            <attribute name="enctype">multipart/form-data</attribute>
+        </xpath>
+        <!-- Guia de medidas: va DENTRO del bucle de preguntas, justo antes de la que la pide
+             (marcada con `installation_measure_guide`). Antes iba arriba de todas las preguntas y
+             quedaba lejos de la que hay que responder. Sirve para los dos caminos: la pregunta de
+             la medida es reutilizable y la comparten el tipo de cita del checkout y el del link. -->
+        <xpath expr="//t[@t-foreach='appointment_type.question_ids']/div[hasclass('row')]" position="before">
+            <t t-if="question.installation_measure_guide"
+               t-call="website_sale_installation_appointment.installation_measure_guide"/>
+        </xpath>
+        <xpath expr="//t[@t-if='appointment_type.allow_guests']" position="before">
+            <div class="row mb-4" t-if="appointment_type.installation_request_photos">
+                <label class="col-sm-3 col-form-label fw-normal" for="installation_photos">
+                    Photos of the site<t t-if="appointment_type.installation_min_photos"> *</t>
+                </label>
+                <div class="col-sm-9">
+                    <t t-call="website_sale_installation_appointment.installation_photo_examples"/>
+                    <input type="file" id="installation_photos" name="installation_photos"
+                           class="form-control" multiple="multiple" accept="image/*"
+                           t-att-required="appointment_type.installation_min_photos and '1' or None"/>
+                    <div class="form-text">
+                        Clear, well-lit photos of your door from the outside, from the inside and
+                        the door edge (where the lock sits). They help the crew know what to expect.
+                    </div>
+                </div>
+            </div>
+        </xpath>
+        <xpath expr="//input[@type='phone']" position="replace">
+            <t t-set="input_attrs" t-value="question._answer_input_attrs()"/>
+            <input class="form-control" t-att="input_attrs"
+                   t-attf-name="question_#{question.id}"
+                   t-att-value="partner_data['phone'] if isMainPhoneQuestion and 'phone' in partner_data else ''"
+                   t-att-required="question.question_required or None"
+                   t-att-placeholder="question.placeholder"
+                   t-att-data-is-main-phone-question="isMainPhoneQuestion"/>
+        </xpath>
+        <xpath expr="//input[@type='char' and @t-attf-name]" position="replace">
+            <t t-set="input_attrs" t-value="question._answer_input_attrs()"/>
+            <input class="form-control" t-att="input_attrs"
+                   t-attf-name="question_#{question.id}"
+                   t-att-required="question.question_required or None"
+                   t-att-placeholder="question.placeholder"/>
+        </xpath>
+    </template>
+</odoo>
+<!-- vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4-->
