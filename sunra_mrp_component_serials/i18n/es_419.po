@@ -157,7 +157,7 @@ msgid ""
 "assignment."
 msgstr ""
 "Número de serie del chasis (stock.lot) en el que está montada actualmente "
-"esta pieza. Vacío significa que la pieza esta libre. Es el único origen de "
+"esta pieza. Vacío significa que la pieza está libre. Es el único origen de "
 "verdad de la asignación."
 
 #. module: sunra_mrp_component_serials
@@ -347,8 +347,8 @@ msgstr ""
 "Lista de Materiales se trasladan las piezas de la bicicleta (motor, "
 "baterías, controlador) montadas en el número de serie del chasis del kit al "
 "número de serie de la bicicleta terminada, reutilizando el mismo número de "
-"chasis. Sin este indicador el modulo no interviene en absoluto en las "
-"ordenes de fabricación de esta Lista de Materiales."
+"chasis. Sin este indicador el módulo no interviene en absoluto en las "
+"órdenes de fabricación de esta Lista de Materiales."
 
 #. module: sunra_mrp_component_serials
 #: model:ir.model.fields,field_description:sunra_mrp_component_serials.field_mrp_bom__sunra_pull_kit_components
