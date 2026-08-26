@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Herencia del formulario del lote: grupo con las piezas montadas en el chasis -->
+    <record id="view_production_lot_form" model="ir.ui.view">
+        <field name="name">stock.lot.view.form.inherit.sunra_mrp_component_serials</field>
+        <field name="model">stock.lot</field>
+        <field name="inherit_id" ref="stock.view_production_lot_form"/>
+        <field name="arch" type="xml">
+            <group name="main_group" position="after">
+                <group name="sunra_components" string="Bike Components">
+                    <field name="motor_id"
+                        domain="[('component_type', '=', 'motor'), ('faulty', '=', False), '|', ('lot_id', '=', False), ('lot_id', '=', id)]"
+                        context="{'default_component_type': 'motor'}"/>
+                    <field name="controller_id"
+                        domain="[('component_type', '=', 'controller'), ('faulty', '=', False), '|', ('lot_id', '=', False), ('lot_id', '=', id)]"
+                        context="{'default_component_type': 'controller'}"/>
+                    <field name="battery_ids" nolabel="1" colspan="2">
+                        <list editable="bottom" delete="0">
+                            <field name="name"/>
+                            <field name="faulty"/>
+                        </list>
+                    </field>
+                </group>
+            </group>
+        </field>
+    </record>
+</odoo>
+<!-- vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4-->

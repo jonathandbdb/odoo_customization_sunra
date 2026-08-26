@@ -12,3 +12,4 @@ que se prueben explícitamente).
 | `base_import_ux` | Mejoras UX del asistente de importación nativo: filas de cabecera a saltear (CSV) y fecha DD-MM-YYYY por defecto en extractos bancarios (caso Mercado Pago) |
 | `website_sale_installation_appointment` | eCommerce: método de envío con instalación — agenda la Cita en el checkout, pide fotos del lugar, genera la tarea de Field Service e invita al cliente al portal al confirmar la venta |
 | `helpdesk_service_appointment` | Portal de service/reparación de cerraduras instaladas: formulario `/my/service/new` → ticket de Helpdesk → Cita → tarea de Field Service, con estado de garantía informativo |
+| `sunra_mrp_component_serials` | Trazabilidad de motor/batería(s)/controlador contra el número de serie del chasis: traslado automático kit → bicicleta armada en la orden de fabricación e impresión sin intervención manual en remito y factura |

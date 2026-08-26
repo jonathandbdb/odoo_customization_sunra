@@ -1,0 +1,444 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* sunra_mrp_component_serials
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: es_419\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: \n"
+
+#. module: sunra_mrp_component_serials
+#. odoo-python
+#: code:addons/sunra_mrp_component_serials/models/stock_lot.py:0
+msgid "%(component)s is not a %(type)s."
+msgstr "%(component)s no es un/a %(type)s."
+
+#. module: sunra_mrp_component_serials
+#. odoo-python
+#: code:addons/sunra_mrp_component_serials/models/mrp_production.py:0
+msgid ""
+"%(product)s must be tracked by serial number to pull kit component serials."
+msgstr ""
+"%(product)s debe estar rastreado por numero de serie para poder trasladar "
+"los numeros de serie de los componentes del kit."
+
+#. module: sunra_mrp_component_serials
+#. odoo-python
+#: code:addons/sunra_mrp_component_serials/models/mrp_production.py:0
+msgid "(none)"
+msgstr "(ninguna)"
+
+#. module: sunra_mrp_component_serials
+#: model_terms:ir.ui.view,arch_db:sunra_mrp_component_serials.stock_account_report_invoice_document
+msgid "<span>Batteries</span>"
+msgstr "<span>Baterias</span>"
+
+#. module: sunra_mrp_component_serials
+#: model_terms:ir.ui.view,arch_db:sunra_mrp_component_serials.stock_account_report_invoice_document
+msgid "<span>Controller</span>"
+msgstr "<span>Controlador</span>"
+
+#. module: sunra_mrp_component_serials
+#: model_terms:ir.ui.view,arch_db:sunra_mrp_component_serials.stock_account_report_invoice_document
+msgid "<span>Motor</span>"
+msgstr "<span>Motor</span>"
+
+#. module: sunra_mrp_component_serials
+#: model:ir.model.fields,field_description:sunra_mrp_component_serials.field_sunra_bike_component__message_needaction
+msgid "Action Needed"
+msgstr "Accion requerida"
+
+#. module: sunra_mrp_component_serials
+#: model:ir.model.fields,help:sunra_mrp_component_serials.field_stock_lot__component_ids
+msgid ""
+"All bike components (motor, batteries, controller) currently mounted on this"
+" chassis. Technical field: it is the dependency of the computed component "
+"fields below and is not shown in the view."
+msgstr ""
+"Todas las piezas de la bicicleta (motor, baterias, controlador) montadas "
+"actualmente en este chasis. Campo tecnico: es la dependencia de los campos "
+"calculados de piezas de abajo y no se muestra en la vista."
+
+#. module: sunra_mrp_component_serials
+#: model_terms:ir.ui.view,arch_db:sunra_mrp_component_serials.sunra_bike_component_view_search
+msgid "Assigned"
+msgstr "Asignada"
+
+#. module: sunra_mrp_component_serials
+#: model:ir.model.fields,field_description:sunra_mrp_component_serials.field_sunra_bike_component__lot_id
+msgid "Assigned Chassis"
+msgstr "Chasis asignado"
+
+#. module: sunra_mrp_component_serials
+#: model:ir.model.fields,field_description:sunra_mrp_component_serials.field_sunra_bike_component__message_attachment_count
+msgid "Attachment Count"
+msgstr "Cantidad de adjuntos"
+
+#. module: sunra_mrp_component_serials
+#: model:ir.model.fields,field_description:sunra_mrp_component_serials.field_stock_lot__battery_ids
+#: model_terms:ir.ui.view,arch_db:sunra_mrp_component_serials.report_delivery_document
+msgid "Batteries"
+msgstr "Baterias"
+
+#. module: sunra_mrp_component_serials
+#: model:ir.model.fields,help:sunra_mrp_component_serials.field_stock_lot__battery_ids
+msgid ""
+"Batteries (fajas) mounted on this chassis. A chassis admits any number of "
+"batteries."
+msgstr ""
+"Baterias (fajas) montadas en este chasis. Un chasis admite cualquier "
+"cantidad de baterias."
+
+#. module: sunra_mrp_component_serials
+#: model:ir.model.fields.selection,name:sunra_mrp_component_serials.selection__sunra_bike_component__component_type__battery
+msgid "Battery"
+msgstr "Bateria"
+
+#. module: sunra_mrp_component_serials
+#: model:ir.model,name:sunra_mrp_component_serials.model_sunra_bike_component
+msgid "Bike Component"
+msgstr "Pieza de bicicleta"
+
+#. module: sunra_mrp_component_serials
+#: model:ir.actions.act_window,name:sunra_mrp_component_serials.sunra_bike_component_action
+#: model:ir.model.fields,field_description:sunra_mrp_component_serials.field_stock_lot__component_ids
+#: model:ir.ui.menu,name:sunra_mrp_component_serials.sunra_bike_component_menu
+#: model_terms:ir.ui.view,arch_db:sunra_mrp_component_serials.view_production_lot_form
+msgid "Bike Components"
+msgstr "Piezas de bicicleta"
+
+#. module: sunra_mrp_component_serials
+#: model:ir.model,name:sunra_mrp_component_serials.model_mrp_bom
+msgid "Bill of Material"
+msgstr "Lista de materiales"
+
+#. module: sunra_mrp_component_serials
+#. odoo-python
+#: code:addons/sunra_mrp_component_serials/models/mrp_production.py:0
+msgid ""
+"Cannot identify the kit chassis serial for %(production)s. Serial numbers "
+"found among the components: %(lots)s. Reserve and set the serial number of "
+"exactly one kit: this flow builds one bike per manufacturing order."
+msgstr ""
+"No se puede identificar el numero de serie del chasis del kit para "
+"%(production)s. Numeros de serie encontrados entre los componentes: "
+"%(lots)s. Reserva y carga el numero de serie de exactamente un kit: este "
+"flujo arma una bicicleta por orden de fabricacion."
+
+#. module: sunra_mrp_component_serials
+#: model_terms:ir.ui.view,arch_db:sunra_mrp_component_serials.sunra_bike_component_view_search
+msgid "Chassis"
+msgstr "Chasis"
+
+#. module: sunra_mrp_component_serials
+#. odoo-python
+#: code:addons/sunra_mrp_component_serials/models/sunra_bike_component.py:0
+msgid "Chassis %(chassis)s already has a %(type)s assigned."
+msgstr "El chasis %(chassis)s ya tiene un/a %(type)s asignado/a."
+
+#. module: sunra_mrp_component_serials
+#. odoo-python
+#: code:addons/sunra_mrp_component_serials/models/mrp_production.py:0
+msgid "Chassis %(chassis)s is missing: %(missing)s."
+msgstr "Al chasis %(chassis)s le falta: %(missing)s."
+
+#. module: sunra_mrp_component_serials
+#: model:ir.model.fields,help:sunra_mrp_component_serials.field_sunra_bike_component__lot_id
+msgid ""
+"Chassis serial (stock.lot) this component is currently mounted on. Empty "
+"means the component is free. This is the single source of truth for the "
+"assignment."
+msgstr ""
+"Numero de serie del chasis (stock.lot) en el que esta montada actualmente "
+"esta pieza. Vacio significa que la pieza esta libre. Es el unico origen de "
+"verdad de la asignacion."
+
+#. module: sunra_mrp_component_serials
+#: model:ir.model.fields,field_description:sunra_mrp_component_serials.field_stock_lot__controller_id
+#: model:ir.model.fields.selection,name:sunra_mrp_component_serials.selection__sunra_bike_component__component_type__controller
+#: model_terms:ir.ui.view,arch_db:sunra_mrp_component_serials.report_delivery_document
+msgid "Controller"
+msgstr "Controlador"
+
+#. module: sunra_mrp_component_serials
+#: model:ir.model.fields,help:sunra_mrp_component_serials.field_stock_lot__controller_id
+msgid "Controller mounted on this chassis."
+msgstr "Controlador montado en este chasis."
+
+#. module: sunra_mrp_component_serials
+#: model:ir.model.fields,field_description:sunra_mrp_component_serials.field_sunra_bike_component__create_uid
+msgid "Created by"
+msgstr "Creado por"
+
+#. module: sunra_mrp_component_serials
+#: model:ir.model.fields,field_description:sunra_mrp_component_serials.field_sunra_bike_component__create_date
+msgid "Created on"
+msgstr "Creado el"
+
+#. module: sunra_mrp_component_serials
+#: model:ir.model.fields,field_description:sunra_mrp_component_serials.field_account_move__display_name
+#: model:ir.model.fields,field_description:sunra_mrp_component_serials.field_mrp_bom__display_name
+#: model:ir.model.fields,field_description:sunra_mrp_component_serials.field_mrp_production__display_name
+#: model:ir.model.fields,field_description:sunra_mrp_component_serials.field_stock_lot__display_name
+#: model:ir.model.fields,field_description:sunra_mrp_component_serials.field_sunra_bike_component__display_name
+msgid "Display Name"
+msgstr "Nombre para mostrar"
+
+#. module: sunra_mrp_component_serials
+#: model:ir.model.fields,field_description:sunra_mrp_component_serials.field_sunra_bike_component__faulty
+#: model_terms:ir.ui.view,arch_db:sunra_mrp_component_serials.sunra_bike_component_view_search
+msgid "Faulty"
+msgstr "Fallada"
+
+#. module: sunra_mrp_component_serials
+#. odoo-python
+#: code:addons/sunra_mrp_component_serials/models/mrp_production.py:0
+msgid "Finished product serial set to %(name)s (reused from the kit chassis)."
+msgstr ""
+"Numero de serie del producto terminado establecido en %(name)s (reutilizado "
+"del chasis del kit)."
+
+#. module: sunra_mrp_component_serials
+#: model:ir.model.fields,field_description:sunra_mrp_component_serials.field_sunra_bike_component__message_follower_ids
+msgid "Followers"
+msgstr "Seguidores"
+
+#. module: sunra_mrp_component_serials
+#: model:ir.model.fields,field_description:sunra_mrp_component_serials.field_sunra_bike_component__message_partner_ids
+msgid "Followers (Partners)"
+msgstr "Seguidores (Contactos)"
+
+#. module: sunra_mrp_component_serials
+#: model_terms:ir.ui.view,arch_db:sunra_mrp_component_serials.sunra_bike_component_view_search
+msgid "Free"
+msgstr "Libre"
+
+#. module: sunra_mrp_component_serials
+#: model:ir.model.fields,field_description:sunra_mrp_component_serials.field_sunra_bike_component__has_message
+msgid "Has Message"
+msgstr "Tiene mensaje"
+
+#. module: sunra_mrp_component_serials
+#: model:ir.model.fields,field_description:sunra_mrp_component_serials.field_account_move__id
+#: model:ir.model.fields,field_description:sunra_mrp_component_serials.field_mrp_bom__id
+#: model:ir.model.fields,field_description:sunra_mrp_component_serials.field_mrp_production__id
+#: model:ir.model.fields,field_description:sunra_mrp_component_serials.field_stock_lot__id
+#: model:ir.model.fields,field_description:sunra_mrp_component_serials.field_sunra_bike_component__id
+msgid "ID"
+msgstr "ID"
+
+#. module: sunra_mrp_component_serials
+#: model:ir.model.fields,help:sunra_mrp_component_serials.field_sunra_bike_component__message_needaction
+msgid "If checked, new messages require your attention."
+msgstr "Si esta marcado, hay nuevos mensajes que requieren su atencion."
+
+#. module: sunra_mrp_component_serials
+#: model:ir.model.fields,help:sunra_mrp_component_serials.field_sunra_bike_component__message_has_error
+#: model:ir.model.fields,help:sunra_mrp_component_serials.field_sunra_bike_component__message_has_sms_error
+msgid "If checked, some messages have a delivery error."
+msgstr "Si esta marcado, algunos mensajes tienen un error de envio."
+
+#. module: sunra_mrp_component_serials
+#: model:ir.model.fields,field_description:sunra_mrp_component_serials.field_sunra_bike_component__message_is_follower
+msgid "Is Follower"
+msgstr "Es seguidor"
+
+#. module: sunra_mrp_component_serials
+#: model:ir.model,name:sunra_mrp_component_serials.model_account_move
+msgid "Journal Entry"
+msgstr "Asiento contable"
+
+#. module: sunra_mrp_component_serials
+#: model:ir.model.fields,help:sunra_mrp_component_serials.field_sunra_bike_component__component_type
+msgid "Kind of component this serial number identifies."
+msgstr "Tipo de pieza que identifica este numero de serie."
+
+#. module: sunra_mrp_component_serials
+#: model:ir.model.fields,field_description:sunra_mrp_component_serials.field_sunra_bike_component__write_uid
+msgid "Last Updated by"
+msgstr "Ultima actualizacion por"
+
+#. module: sunra_mrp_component_serials
+#: model:ir.model.fields,field_description:sunra_mrp_component_serials.field_sunra_bike_component__write_date
+msgid "Last Updated on"
+msgstr "Ultima actualizacion el"
+
+#. module: sunra_mrp_component_serials
+#: model:ir.model,name:sunra_mrp_component_serials.model_stock_lot
+msgid "Lot/Serial"
+msgstr "Lote/Serie"
+
+#. module: sunra_mrp_component_serials
+#: model:ir.model,name:sunra_mrp_component_serials.model_mrp_production
+msgid "Manufacturing Order"
+msgstr "Orden de fabricacion"
+
+#. module: sunra_mrp_component_serials
+#: model:ir.model.fields,help:sunra_mrp_component_serials.field_sunra_bike_component__faulty
+msgid ""
+"Marking a component as faulty releases it from its chassis: it is no longer "
+"offered in selection fields, printed, or counted towards the completeness "
+"guard."
+msgstr ""
+"Marcar una pieza como fallada la libera de su chasis: deja de ofrecerse en "
+"los campos de seleccion, de imprimirse y de contar para el chequeo de "
+"completitud."
+
+#. module: sunra_mrp_component_serials
+#: model:ir.model.fields,field_description:sunra_mrp_component_serials.field_sunra_bike_component__message_has_error
+msgid "Message Delivery error"
+msgstr "Error de envio de mensaje"
+
+#. module: sunra_mrp_component_serials
+#: model:ir.model.fields,field_description:sunra_mrp_component_serials.field_sunra_bike_component__message_ids
+msgid "Messages"
+msgstr "Mensajes"
+
+#. module: sunra_mrp_component_serials
+#: model:ir.model.fields,field_description:sunra_mrp_component_serials.field_stock_lot__motor_id
+#: model:ir.model.fields.selection,name:sunra_mrp_component_serials.selection__sunra_bike_component__component_type__motor
+#: model_terms:ir.ui.view,arch_db:sunra_mrp_component_serials.report_delivery_document
+msgid "Motor"
+msgstr "Motor"
+
+#. module: sunra_mrp_component_serials
+#: model:ir.model.fields,help:sunra_mrp_component_serials.field_stock_lot__motor_id
+msgid "Motor mounted on this chassis."
+msgstr "Motor montado en este chasis."
+
+#. module: sunra_mrp_component_serials
+#: model:ir.model.fields,field_description:sunra_mrp_component_serials.field_sunra_bike_component__message_needaction_counter
+msgid "Number of Actions"
+msgstr "Cantidad de acciones"
+
+#. module: sunra_mrp_component_serials
+#: model:ir.model.fields,field_description:sunra_mrp_component_serials.field_sunra_bike_component__message_has_error_counter
+msgid "Number of errors"
+msgstr "Cantidad de errores"
+
+#. module: sunra_mrp_component_serials
+#: model:ir.model.fields,help:sunra_mrp_component_serials.field_sunra_bike_component__message_needaction_counter
+msgid "Number of messages requiring action"
+msgstr "Cantidad de mensajes que requieren accion"
+
+#. module: sunra_mrp_component_serials
+#: model:ir.model.fields,help:sunra_mrp_component_serials.field_sunra_bike_component__message_has_error_counter
+msgid "Number of messages with delivery error"
+msgstr "Cantidad de mensajes con error de envio"
+
+#. module: sunra_mrp_component_serials
+#: model:ir.model.fields,help:sunra_mrp_component_serials.field_mrp_bom__sunra_pull_kit_components
+#: model:ir.model.fields,help:sunra_mrp_component_serials.field_mrp_production__sunra_pull_kit_components
+msgid ""
+"Opt-in: when checked, closing a Manufacturing Order using this BoM "
+"translates the bike components (motor, batteries, controller) mounted on the"
+" kit's chassis serial to the finished bicycle's serial, reusing the same "
+"chassis number. Without this flag the module does not intervene on this "
+"BoM's manufacturing orders at all."
+msgstr ""
+"Opt-in: si esta marcado, al cerrar una Orden de Fabricacion que use esta "
+"Lista de Materiales se trasladan las piezas de la bicicleta (motor, "
+"baterias, controlador) montadas en el numero de serie del chasis del kit al "
+"numero de serie de la bicicleta terminada, reutilizando el mismo numero de "
+"chasis. Sin este indicador el modulo no interviene en absoluto en las "
+"ordenes de fabricacion de esta Lista de Materiales."
+
+#. module: sunra_mrp_component_serials
+#: model:ir.model.fields,field_description:sunra_mrp_component_serials.field_mrp_bom__sunra_pull_kit_components
+#: model:ir.model.fields,field_description:sunra_mrp_component_serials.field_mrp_production__sunra_pull_kit_components
+#: model_terms:ir.ui.view,arch_db:sunra_mrp_component_serials.mrp_production_form_view
+msgid "Pull Kit Component Serials"
+msgstr "Trasladar numeros de serie de piezas del kit"
+
+#. module: sunra_mrp_component_serials
+#: model:ir.model.fields,field_description:sunra_mrp_component_serials.field_sunra_bike_component__rating_ids
+msgid "Ratings"
+msgstr "Calificaciones"
+
+#. module: sunra_mrp_component_serials
+#: model:ir.model.fields,field_description:sunra_mrp_component_serials.field_sunra_bike_component__message_has_sms_error
+msgid "SMS Delivery error"
+msgstr "Error de envio de SMS"
+
+#. module: sunra_mrp_component_serials
+#: model:ir.model.fields,field_description:sunra_mrp_component_serials.field_sunra_bike_component__name
+msgid "Serial Number"
+msgstr "Numero de serie"
+
+#. module: sunra_mrp_component_serials
+#: model:ir.model.fields,help:sunra_mrp_component_serials.field_sunra_bike_component__name
+msgid ""
+"Serial number printed on the component (motor, battery/faja or controller)."
+msgstr ""
+"Numero de serie impreso en la pieza (motor, bateria/faja o controlador)."
+
+#. module: sunra_mrp_component_serials
+#. odoo-python
+#: code:addons/sunra_mrp_component_serials/models/mrp_production.py:0
+msgid ""
+"The Bill of Materials %(bom)s is not marked to pull kit component serials."
+msgstr ""
+"La Lista de Materiales %(bom)s no esta marcada para trasladar los numeros de"
+" serie de las piezas del kit."
+
+#. module: sunra_mrp_component_serials
+#: model:ir.model.constraint,message:sunra_mrp_component_serials.constraint_sunra_bike_component_component_type_name_uniq
+msgid "This serial number already exists for that component type."
+msgstr "Ese numero de serie ya existe para ese tipo de pieza."
+
+#. module: sunra_mrp_component_serials
+#: model:ir.model.fields,field_description:sunra_mrp_component_serials.field_sunra_bike_component__component_type
+#: model_terms:ir.ui.view,arch_db:sunra_mrp_component_serials.sunra_bike_component_view_search
+msgid "Type"
+msgstr "Tipo"
+
+#. module: sunra_mrp_component_serials
+#: model:ir.model.fields,field_description:sunra_mrp_component_serials.field_sunra_bike_component__website_message_ids
+msgid "Website Messages"
+msgstr "Mensajes del sitio web"
+
+#. module: sunra_mrp_component_serials
+#: model:ir.model.fields,help:sunra_mrp_component_serials.field_sunra_bike_component__website_message_ids
+msgid "Website communication history"
+msgstr "Historial de comunicacion del sitio web"
+
+#. module: sunra_mrp_component_serials
+#. odoo-python
+#: code:addons/sunra_mrp_component_serials/models/mrp_production.py:0
+msgid "at least one battery"
+msgstr "al menos una bateria"
+
+#. module: sunra_mrp_component_serials
+#. odoo-python
+#: code:addons/sunra_mrp_component_serials/models/mrp_production.py:0
+msgid "controller"
+msgstr "controlador"
+
+#. module: sunra_mrp_component_serials
+#. odoo-python
+#: code:addons/sunra_mrp_component_serials/models/mrp_production.py:0
+msgid "motor"
+msgstr "motor"
+
+#. module: sunra_mrp_component_serials
+#. odoo-python
+#: code:addons/sunra_mrp_component_serials/models/mrp_production.py:0
+msgid "none"
+msgstr "ninguno"
+
+#. module: sunra_mrp_component_serials
+#. odoo-python
+#: code:addons/sunra_mrp_component_serials/models/sunra_bike_component.py:0
+msgid ""
+"Component %(component)s is marked as faulty and cannot stay assigned to "
+"chassis %(chassis)s."
+msgstr ""
+"El componente %(component)s esta marcado como fallado y no puede seguir "
+"asignado al chasis %(chassis)s."

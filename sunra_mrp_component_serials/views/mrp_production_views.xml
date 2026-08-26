@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Herencia del formulario de la OF: boton manual de traslado kit -> bici (D17) -->
+    <record id="mrp_production_form_view" model="ir.ui.view">
+        <field name="name">mrp.production.form.inherit.sunra_mrp_component_serials</field>
+        <field name="model">mrp.production</field>
+        <field name="inherit_id" ref="mrp.mrp_production_form_view"/>
+        <field name="arch" type="xml">
+            <!-- El invisible= del boton no atraviesa relaciones: el campo related tiene que
+                 estar en el arch antes de usarlo. -->
+            <button name="button_unbuild" position="after">
+                <field name="sunra_pull_kit_components" invisible="1"/>
+                <button name="action_sunra_pull_kit_components" string="Pull Kit Component Serials"
+                    type="object"
+                    invisible="not sunra_pull_kit_components or state in ('done', 'cancel')"/>
+            </button>
+        </field>
+    </record>
+</odoo>
+<!-- vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4-->

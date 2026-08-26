@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Menu del padron de piezas, bajo Inventario -> Productos -->
+    <menuitem id="sunra_bike_component_menu" name="Bike Components"
+        parent="stock.menu_stock_inventory_control" action="sunra_bike_component_action"
+        groups="stock.group_production_lot" sequence="20"/>
+</odoo>
+<!-- vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4-->

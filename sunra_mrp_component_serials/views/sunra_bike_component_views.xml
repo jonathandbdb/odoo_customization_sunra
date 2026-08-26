@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Lista del padron de piezas -->
+    <record id="sunra_bike_component_view_list" model="ir.ui.view">
+        <field name="name">sunra.bike.component.view.list</field>
+        <field name="model">sunra.bike.component</field>
+        <field name="arch" type="xml">
+            <list decoration-danger="faulty">
+                <field name="name"/>
+                <field name="component_type"/>
+                <field name="lot_id"/>
+                <field name="faulty"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Formulario del padron de piezas -->
+    <record id="sunra_bike_component_view_form" model="ir.ui.view">
+        <field name="name">sunra.bike.component.view.form</field>
+        <field name="model">sunra.bike.component</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <field name="component_type"/>
+                        <field name="lot_id"/>
+                        <field name="faulty"/>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Busqueda del padron de piezas -->
+    <record id="sunra_bike_component_view_search" model="ir.ui.view">
+        <field name="name">sunra.bike.component.view.search</field>
+        <field name="model">sunra.bike.component</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="lot_id"/>
+                <filter string="Free" name="free" domain="[('lot_id', '=', False)]"/>
+                <filter string="Assigned" name="assigned" domain="[('lot_id', '!=', False)]"/>
+                <filter string="Faulty" name="faulty" domain="[('faulty', '=', True)]"/>
+                <filter string="Type" name="group_by_component_type" domain="[]" context="{'group_by': 'component_type'}"/>
+                <filter string="Chassis" name="group_by_lot_id" domain="[]" context="{'group_by': 'lot_id'}"/>
+            </search>
+        </field>
+    </record>
+
+    <!-- Accion y menu del padron de piezas -->
+    <record id="sunra_bike_component_action" model="ir.actions.act_window">
+        <field name="name">Bike Components</field>
+        <field name="res_model">sunra.bike.component</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>
+<!-- vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4-->
