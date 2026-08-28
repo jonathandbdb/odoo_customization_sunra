@@ -1,0 +1,266 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* website_sale_payment_method_price
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-08-28 17:53+0000\n"
+"PO-Revision-Date: 2026-08-28 17:53+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: website_sale_payment_method_price
+#: model:ir.model.fields,field_description:website_sale_payment_method_price.field_payment_method_website_price__applies_to
+msgid "Applies To"
+msgstr "Aplica a"
+
+
+#. module: website_sale_payment_method_price
+#: model:ir.model.fields,field_description:website_sale_payment_method_price.field_payment_method_website_price__create_uid
+msgid "Created by"
+msgstr "Creado por"
+
+
+#. module: website_sale_payment_method_price
+#: model:ir.model.fields,field_description:website_sale_payment_method_price.field_payment_method_website_price__create_date
+msgid "Created on"
+msgstr "Creado el"
+
+
+#. module: website_sale_payment_method_price
+#: model:ir.model.fields.selection,name:website_sale_payment_method_price.selection__payment_method_website_price__price_type__discount
+msgid "Discount"
+msgstr "Descuento"
+
+
+#. module: website_sale_payment_method_price
+#: model:ir.model.fields,field_description:website_sale_payment_method_price.field_payment_method__display_name
+#: model:ir.model.fields,field_description:website_sale_payment_method_price.field_payment_method_website_price__display_name
+#: model:ir.model.fields,field_description:website_sale_payment_method_price.field_product_template__display_name
+#: model:ir.model.fields,field_description:website_sale_payment_method_price.field_sale_order__display_name
+#: model:ir.model.fields,field_description:website_sale_payment_method_price.field_sale_order_line__display_name
+msgid "Display Name"
+msgstr "Nombre en pantalla"
+
+#. module: website_sale_payment_method_price
+#: model:ir.model.fields,help:website_sale_payment_method_price.field_payment_method_website_price__show_on_website
+msgid ""
+"Display the resulting price below the regular price on the shop and product "
+"pages."
+msgstr ""
+"Mostrar el precio resultante debajo del precio habitual en la tienda y en la ficha del producto."
+
+
+#. module: website_sale_payment_method_price
+#: model:ir.model.fields,field_description:website_sale_payment_method_price.field_payment_method__id
+#: model:ir.model.fields,field_description:website_sale_payment_method_price.field_payment_method_website_price__id
+#: model:ir.model.fields,field_description:website_sale_payment_method_price.field_product_template__id
+#: model:ir.model.fields,field_description:website_sale_payment_method_price.field_sale_order__id
+#: model:ir.model.fields,field_description:website_sale_payment_method_price.field_sale_order_line__id
+msgid "ID"
+msgstr "ID"
+
+
+#. module: website_sale_payment_method_price
+#: model:ir.model.fields,field_description:website_sale_payment_method_price.field_sale_order_line__is_payment_method_discount
+msgid "Is a Payment Method Discount"
+msgstr "Es un descuento por medio de pago"
+
+
+#. module: website_sale_payment_method_price
+#: model:ir.model.fields,field_description:website_sale_payment_method_price.field_payment_method_website_price__write_uid
+msgid "Last Updated by"
+msgstr "Última actualización por"
+
+
+#. module: website_sale_payment_method_price
+#: model:ir.model.fields,field_description:website_sale_payment_method_price.field_payment_method_website_price__write_date
+msgid "Last Updated on"
+msgstr "Última actualización el"
+
+
+#. module: website_sale_payment_method_price
+#: model:ir.model.fields,help:website_sale_payment_method_price.field_payment_method_website_price__sequence
+msgid "Order in which the extra prices are listed on the website."
+msgstr "Orden en el que se listan los precios adicionales en el sitio web."
+
+
+#. module: website_sale_payment_method_price
+#: model:ir.model,name:website_sale_payment_method_price.model_payment_method
+#: model:ir.model.fields,field_description:website_sale_payment_method_price.field_payment_method_website_price__payment_method_id
+msgid "Payment Method"
+msgstr "Método de pago"
+
+#. module: website_sale_payment_method_price
+#: model:ir.model.fields,field_description:website_sale_payment_method_price.field_sale_order__payment_price_rule_id
+msgid "Payment Method Price Rule"
+msgstr "Regla de precio por medio de pago"
+
+
+#. module: website_sale_payment_method_price
+#: model:ir.model,name:website_sale_payment_method_price.model_payment_method_website_price
+msgid "Payment Method Website Price"
+msgstr "Precio por medio de pago y sitio web"
+
+
+#. module: website_sale_payment_method_price
+#: model:ir.model.fields,field_description:website_sale_payment_method_price.field_payment_method_website_price__percentage
+msgid "Percentage"
+msgstr "Porcentaje"
+
+
+#. module: website_sale_payment_method_price
+#: model:ir.model.fields,help:website_sale_payment_method_price.field_payment_method_website_price__percentage
+msgid ""
+"Percentage applied to the price when this payment method is used. A rule "
+"with 0 has no effect."
+msgstr ""
+"Porcentaje que se aplica al precio cuando se usa este medio de pago. Una regla en 0 no tiene efecto."
+
+
+#. module: website_sale_payment_method_price
+#: model:ir.model.fields,field_description:website_sale_payment_method_price.field_payment_method_website_price__price_round
+msgid "Price Rounding"
+msgstr "Redondeo del precio"
+
+
+#. module: website_sale_payment_method_price
+#: model:ir.model.fields,help:website_sale_payment_method_price.field_sale_order__payment_price_rule_id
+msgid "Price rule currently materialised on this order as a discount line."
+msgstr ""
+"Regla de precio actualmente aplicada a este pedido como línea de descuento."
+
+
+#. module: website_sale_payment_method_price
+#: model:ir.model,name:website_sale_payment_method_price.model_product_template
+msgid "Product"
+msgstr "Producto"
+
+#. module: website_sale_payment_method_price
+#: model:ir.model.fields.selection,name:website_sale_payment_method_price.selection__payment_method_website_price__applies_to__product
+msgid "Products"
+msgstr "Productos"
+
+
+#. module: website_sale_payment_method_price
+#: model:ir.model.fields.selection,name:website_sale_payment_method_price.selection__payment_method_website_price__applies_to__all
+msgid "Products and Shipping"
+msgstr "Productos y envíos"
+
+
+#. module: website_sale_payment_method_price
+#: model:ir.model,name:website_sale_payment_method_price.model_sale_order
+msgid "Sales Order"
+msgstr "Orden de venta"
+
+#. module: website_sale_payment_method_price
+#: model:ir.model,name:website_sale_payment_method_price.model_sale_order_line
+msgid "Sales Order Line"
+msgstr "Línea de la orden de venta"
+
+#. module: website_sale_payment_method_price
+#: model:ir.model.fields,field_description:website_sale_payment_method_price.field_payment_method_website_price__sequence
+msgid "Sequence"
+msgstr "Secuencia"
+
+
+#. module: website_sale_payment_method_price
+#: model:ir.model.fields,help:website_sale_payment_method_price.field_payment_method_website_price__price_round
+msgid ""
+"Sets the price so that it is a multiple of this value.\n"
+"Rounding is applied after the percentage.\n"
+"Leave it at 0 to keep the exact result."
+msgstr ""
+"Fija el precio para que sea múltiplo de este valor.\n"
+"El redondeo se aplica después del porcentaje.\n"
+"Dejalo en 0 para conservar el resultado exacto."
+
+
+#. module: website_sale_payment_method_price
+#: model:ir.model.fields.selection,name:website_sale_payment_method_price.selection__payment_method_website_price__applies_to__delivery
+msgid "Shipping"
+msgstr "Envíos"
+
+
+#. module: website_sale_payment_method_price
+#: model:ir.model.fields,field_description:website_sale_payment_method_price.field_payment_method_website_price__show_on_website
+msgid "Show Price on Website"
+msgstr "Mostrar el precio en el sitio web"
+
+
+#. module: website_sale_payment_method_price
+#: model:ir.model.fields.selection,name:website_sale_payment_method_price.selection__payment_method_website_price__price_type__surcharge
+msgid "Surcharge"
+msgstr "Recargo"
+
+
+#. module: website_sale_payment_method_price
+#: model:ir.model.fields,help:website_sale_payment_method_price.field_sale_order_line__is_payment_method_discount
+msgid ""
+"Technical flag marking the lines generated by the payment method price rule,"
+" so they can be removed without guessing by product."
+msgstr ""
+"Marca técnica de las líneas generadas por la regla de precio del medio de pago, para poder quitarlas sin adivinar por producto."
+
+
+#. module: website_sale_payment_method_price
+#. odoo-python
+#: code:addons/website_sale_payment_method_price/models/payment_method_website_price.py:0
+msgid "The percentage must be between 0 and 100."
+msgstr "El porcentaje debe estar entre 0 y 100."
+
+
+#. module: website_sale_payment_method_price
+#. odoo-python
+#: code:addons/website_sale_payment_method_price/models/payment_method_website_price.py:0
+msgid "The price rounding cannot be negative."
+msgstr "El redondeo del precio no puede ser negativo."
+
+
+#. module: website_sale_payment_method_price
+#: model:ir.model.constraint,message:website_sale_payment_method_price.constraint_payment_method_website_price_unique_method_website
+msgid "There can only be one price rule per payment method and website."
+msgstr "Solo puede haber una regla de precio por medio de pago y sitio web."
+
+
+#. module: website_sale_payment_method_price
+#: model:ir.model.fields,field_description:website_sale_payment_method_price.field_payment_method_website_price__price_type
+msgid "Type"
+msgstr "Tipo"
+
+
+#. module: website_sale_payment_method_price
+#: model:ir.model.fields,field_description:website_sale_payment_method_price.field_payment_method_website_price__website_id
+#: model_terms:ir.ui.view,arch_db:website_sale_payment_method_price.payment_method_form
+msgid "Website"
+msgstr "Sitio web"
+
+
+#. module: website_sale_payment_method_price
+#: model:ir.model.fields,field_description:website_sale_payment_method_price.field_payment_method__website_price_ids
+#: model_terms:ir.ui.view,arch_db:website_sale_payment_method_price.payment_method_form
+msgid "Website Prices"
+msgstr "Precios por sitio web"
+
+
+#. module: website_sale_payment_method_price
+#: model:ir.model.fields,help:website_sale_payment_method_price.field_payment_method_website_price__applies_to
+msgid ""
+"Which part of the order the percentage is computed on. The website only ever"
+" shows the product price, so this only affects the checkout."
+msgstr ""
+"Sobre qué parte del pedido se calcula el porcentaje. El sitio web solo muestra el precio del producto, así que esto afecta únicamente al checkout."
+
+
+#. module: website_sale_payment_method_price
+#. odoo-python
+#: code:addons/website_sale_payment_method_price/models/product_template.py:0
+#: code:addons/website_sale_payment_method_price/models/sale_order.py:0
+msgid "with %(method)s"
+msgstr "con %(method)s"

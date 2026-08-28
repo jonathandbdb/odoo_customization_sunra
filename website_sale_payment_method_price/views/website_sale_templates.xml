@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Ficha del producto: precios por medio de pago debajo del precio. El JS de variantes
+         repinta este contenedor (clase o_wspmp_prices) al cambiar de variante. -->
+    <template
+        id="product_price"
+        inherit_id="website_sale.product_price"
+        name="Product price - payment method prices"
+    >
+        <xpath expr="//div[@name='product_price_container']" position="after">
+            <div
+                t-attf-class="o_wspmp_prices css_editable_mode_hidden #{'' if combination_info.get('payment_method_prices') else 'd-none'}"
+            >
+                <t t-foreach="combination_info.get('payment_method_prices') or []" t-as="pm_price">
+                    <div class="o_wspmp_price">
+                        <span class="o_wspmp_price_amount" t-out="pm_price['price_formatted']"/>
+                        <span class="o_wspmp_price_label" t-out="pm_price['label']"/>
+                    </div>
+                </t>
+            </div>
+        </xpath>
+    </template>
+
+    <!-- Grilla del shop: mismos precios en la tarjeta del producto. -->
+    <template
+        id="products_item"
+        inherit_id="website_sale.products_item"
+        name="Product tile - payment method prices"
+    >
+        <xpath expr="//div[hasclass('product_price')]" position="inside">
+            <t t-if="template_price_vals.get('payment_method_prices')">
+                <div class="o_wspmp_prices">
+                    <t t-foreach="template_price_vals['payment_method_prices']" t-as="pm_price">
+                        <div class="o_wspmp_price">
+                            <span class="o_wspmp_price_amount" t-out="pm_price['price_formatted']"/>
+                            <span class="o_wspmp_price_label" t-out="pm_price['label']"/>
+                        </div>
+                    </t>
+                </div>
+            </t>
+        </xpath>
+    </template>
+
+    <!-- Carrito y checkout: total por medio de pago debajo del total del pedido. -->
+    <template
+        id="total"
+        inherit_id="website_sale.total"
+        name="Cart total - payment method totals"
+    >
+        <xpath expr="//tr[@name='o_order_total']" position="after">
+            <t
+                t-set="wspmp_totals"
+                t-value="website_sale_order._get_payment_method_price_totals()"
+            />
+            <tr t-foreach="wspmp_totals" t-as="pm_total" name="o_order_total_payment_method">
+                <td class="ps-0 pt-0 pb-0 border-0 text-muted o_wspmp_price_label" colspan="2">
+                    <t t-out="pm_total['label']"/>
+                </td>
+                <td class="text-end pe-0 pt-0 pb-0 border-0 o_wspmp_price_amount">
+                    <t t-out="pm_total['price_formatted']"/>
+                </td>
+            </tr>
+        </xpath>
+    </template>
+</odoo>
+<!-- vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4-->

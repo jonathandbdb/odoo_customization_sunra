@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Pestana Website del medio de pago: una linea de precio por sitio. -->
+    <record id="payment_method_form" model="ir.ui.view">
+        <field name="name">payment.method.form.inherit.website_sale_payment_method_price</field>
+        <field name="model">payment.method</field>
+        <field name="inherit_id" ref="payment.payment_method_form"/>
+        <field name="arch" type="xml">
+            <notebook position="inside">
+                <page id="website_price_page" string="Website" name="website_price">
+                    <field name="website_price_ids">
+                        <list string="Website Prices" editable="bottom">
+                            <field name="sequence" widget="handle"/>
+                            <field name="website_id"/>
+                            <field name="price_type"/>
+                            <field name="percentage"/>
+                            <field name="applies_to"/>
+                            <field name="price_round"/>
+                            <field name="show_on_website"/>
+                        </list>
+                    </field>
+                </page>
+            </notebook>
+        </field>
+    </record>
+</odoo>
+<!-- vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4-->

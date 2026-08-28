@@ -13,3 +13,4 @@ que se prueben explícitamente).
 | `website_sale_installation_appointment` | eCommerce: método de envío con instalación — agenda la Cita en el checkout, pide fotos del lugar, genera la tarea de Field Service e invita al cliente al portal al confirmar la venta |
 | `helpdesk_service_appointment` | Portal de service/reparación de cerraduras instaladas: formulario `/my/service/new` → ticket de Helpdesk → Cita → tarea de Field Service, con estado de garantía informativo |
 | `sunra_mrp_component_serials` | Trazabilidad de motor/batería(s)/controlador contra el número de serie del chasis: traslado automático kit → bicicleta armada en la orden de fabricación e impresión sin intervención manual en remito y factura |
+| `website_sale_payment_method_price` | eCommerce: descuento o recargo por medio de pago y por sitio — segundo precio en la grilla, la ficha y el carrito ("con TRANSFERENCIA"), y el descuento real con su IVA al elegir el medio en el checkout |

@@ -1,0 +1,27 @@
+// Segundo precio por medio de pago, debajo del precio del producto
+.o_wspmp_prices {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    margin-top: 0.15rem;
+}
+
+.o_wspmp_price {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    line-height: 1.25;
+}
+
+.o_wspmp_price_amount {
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.o_wspmp_price_label {
+    font-size: 0.8125rem;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    opacity: 0.75;
+}

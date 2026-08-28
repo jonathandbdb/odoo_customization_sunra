@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es">
+<body>
+    <section style="max-width: 980px; margin: 0 auto; padding: 32px 24px; font-family: Arial, Helvetica, sans-serif; color-scheme: var(--o-webclient-color-scheme, normal); color: CanvasText; line-height: 1.55; background: transparent;">
+        <div style="padding: 28px 30px; border: 1px solid ButtonBorder; border-radius: 8px; background: Canvas;">
+            <p style="margin: 0 0 8px; color: LinkText; font-size: 13px; font-weight: 700; text-transform: uppercase;">eCommerce - Precios y medios de pago</p>
+            <h1 style="margin: 0 0 12px; color: CanvasText; font-size: 32px; line-height: 1.2;">website_sale_payment_method_price</h1>
+            <p style="margin: 0; max-width: 760px; color: GrayText; font-size: 16px;">Descuento o recargo por medio de pago en el eCommerce: se muestra como un segundo precio debajo del precio de lista y se aplica de verdad al pedido en el checkout, con su IVA.</p>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 10px; color: LinkText; font-size: 23px;">Objetivo</h2>
+            <p style="margin: 0;">En Argentina es habitual publicar el precio de lista y, debajo, el precio con transferencia o efectivo. Odoo no trae nada de eso: los recargos por medio de pago existieron en el proveedor de pago hasta la v15 y fueron eliminados, y el precio del carrito se calcula <strong>antes</strong> de que el cliente elija como pagar. Este modulo cubre las dos puntas: la vidriera (el segundo precio en la grilla, la ficha y el carrito) y el cobro (el descuento real en el pedido al elegir el medio en el checkout).</p>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 12px; color: LinkText; font-size: 23px;">Funcionalidades principales</h2>
+            <table style="width: 100%; border-collapse: collapse; border: 1px solid ButtonBorder; background: Canvas;">
+                <tbody>
+                    <tr>
+                        <td style="width: 28%; padding: 14px 16px; border-bottom: 1px solid ButtonBorder; font-weight: 700; background: ButtonFace; color: ButtonText;">Configuracion por medio y por sitio</td>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">Cada medio de pago gana una pestana <strong>Website</strong> con una linea por sitio: tipo (descuento o recargo), porcentaje, sobre que aplica (productos, envios o ambos), redondeo y si el precio se publica. Un mismo medio puede tener porcentajes distintos en cada sitio.</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; font-weight: 700; background: ButtonFace; color: ButtonText;">Segundo precio en la vidriera</td>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">Debajo del precio aparece <em>"$ 133.705,00 con Transferencia bancaria"</em> en la grilla del shop y en la ficha del producto, y una fila por medio debajo del Total en el carrito. Se calcula sobre el precio <strong>ya mostrado</strong> (con o sin IVA segun la configuracion del sitio), asi los dos numeros son comparables.</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; font-weight: 700; background: ButtonFace; color: ButtonText;">Redondeo</td>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">El precio resultante puede quedar como multiplo de un valor (100, 1000...), aplicado <strong>despues</strong> del porcentaje. Es la misma semantica que el redondeo de las listas de precios del core. Sirve para publicar precios redondos sin calcular el precio de lista al revés a mano.</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; font-weight: 700; background: ButtonFace; color: ButtonText;">Descuento real en el checkout</td>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">Al elegir el medio, el ajuste se aplica al pedido como una linea <em>"Descuento - &lt;medio&gt;"</em> con su IVA, reusando el descuento global del core, que reparte el importe por combinacion de impuestos. El total cobrado coincide con el precio que se mostro en la vidriera.</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; font-weight: 700; background: ButtonFace; color: ButtonText;">Se cae solo</td>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">Si el cliente cambia de medio de pago, el descuento se quita. Si modifica el carrito, se recalcula. Y al crear la transaccion se revalida que el ajuste corresponda al medio con el que se paga: nunca se cobra un importe distinto al mostrado.</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 14px 16px; font-weight: 700; background: ButtonFace; color: ButtonText;">Solo medios disponibles</td>
+                        <td style="padding: 14px 16px; color: CanvasText;">No se publica el precio de un medio que el cliente no puede elegir: se descartan los medios archivados y los que dependen de un proveedor deshabilitado, sin publicar, de otra compania o restringido a otro sitio.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 12px; color: LinkText; font-size: 23px;">Configuracion</h2>
+            <p style="margin: 0 0 12px;"><strong>Ajustes &rarr; Medios de pago &rarr; abrir un medio &rarr; pestana <em>Website</em></strong> y agregar una linea por sitio. La pestana aparece en los medios primarios (Transferencia, Tarjeta, Mercado Pago Wallet).</p>
+            <div style="padding: 16px 18px; border: 1px solid ButtonBorder; border-radius: 6px; background: Canvas;">
+                <p style="margin: 0 0 6px; font-weight: 700; color: CanvasText;">Ejemplo</p>
+                <p style="margin: 0; color: CanvasText;">Medio <em>Transferencia bancaria</em>, sitio <em>Nokey</em>, Descuento, 15,00, Productos, redondeo 0, Mostrar si. Un producto de $ 157.300,00 publica <strong>$ 133.705,00 con Transferencia bancaria</strong> y el checkout cobra $ 133.705,00.</p>
+            </div>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 10px; color: LinkText; font-size: 23px;">Detalle tecnico</h2>
+            <ul style="margin: 0; padding-left: 20px;">
+                <li style="margin-bottom: 8px;">Modelo nuevo <code>payment.method.website.price</code> (unico por medio y sitio). Todo el calculo vive en <code>_apply_to_price()</code>: porcentaje y despues redondeo, mismo orden que <code>product.pricelist.item</code> del core.</li>
+                <li style="margin-bottom: 8px;">La regla se resuelve <strong>por el medio primario</strong>: el proveedor reescribe el medio de la transaccion con la marca real (<code>card</code> &rarr; <code>visa</code>) al procesar el feedback, asi que buscar por el medio tal cual llega perderia la configuracion.</li>
+                <li style="margin-bottom: 8px;">Vidriera por <code>_get_sales_prices</code> (grilla) y <code>_get_additionnal_combination_info</code> (ficha), con repintado en JS al cambiar de variante. El JS parchea <code>WebsiteSale.prototype</code>, no el mixin: el core copia el mixin al prototipo con <code>Object.assign</code>.</li>
+                <li style="margin-bottom: 8px;">Ruta <code>POST /shop/payment/method_price</code>, que opera solo sobre el carrito de la sesion. El paso de pago se recarga porque el importe vive en el <code>dataset</code> del formulario.</li>
+                <li style="margin-bottom: 0;">No se modifica core ni enterprise: todo es <code>_inherit</code>, <code>t-inherit</code> y <code>patch()</code>.</li>
+            </ul>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 10px; color: LinkText; font-size: 23px;">Dependencias</h2>
+            <p style="margin: 0;"><code>website_sale</code>. Modulo gestionado por SDD: la especificacion vive en <code>specs/website_sale_payment_method_price.md</code> y su version acompana la del manifest.</p>
+        </div>
+    </section>
+</body>
+</html>
