@@ -1,16 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Herencia de la tabla de series de la factura: agrega Motor / Batteries / Controller -->
+    <!-- Herencia de la tabla de series de la factura: agrega Motor / Batteries / Controller / Charger -->
     <template id="stock_account_report_invoice_document" inherit_id="stock_account.stock_account_report_invoice_document">
         <xpath expr="//table[@name='invoice_snln_table']//thead/tr/th[last()]" position="after">
             <th class="text-end pe-1"><span>Motor</span></th>
             <th class="text-end pe-1"><span>Batteries</span></th>
             <th class="text-end pe-1"><span>Controller</span></th>
+            <th class="text-end pe-1"><span>Charger</span></th>
         </xpath>
         <xpath expr="//table[@name='invoice_snln_table']//tbody/tr/td[last()]" position="after">
             <td class="text-end pe-1"><t t-esc="snln_line.get('motor_name', '')"/></td>
             <td class="text-end pe-1"><t t-esc="snln_line.get('battery_names', '')"/></td>
             <td class="text-end pe-1"><t t-esc="snln_line.get('controller_name', '')"/></td>
+            <td class="text-end pe-1"><t t-esc="snln_line.get('charger_name', '')"/></td>
         </xpath>
     </template>
 </odoo>

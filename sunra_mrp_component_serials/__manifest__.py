@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 {
     "name": "sunra_mrp_component_serials",
-    "version": "1.0.0",
-    "summary": "Trazabilidad de numeros de serie de motor/bateria/controlador contra el chasis",
+    "version": "1.1.0",
+    "summary": "Trazabilidad de numeros de serie de motor/bateria/controlador/cargador contra el chasis",
     "description": """
 Trazabilidad de piezas de bicicleta electrica contra el numero de serie del chasis.
-- Padron de piezas (motor, bateria/faja, controlador) montadas contra la serie del chasis (stock.lot).
+- Padron de piezas (motor, bateria/faja, controlador, cargador) montadas contra la serie del chasis (stock.lot).
 - Traslado automatico de las piezas del lote del kit al lote de la bicicleta armada al procesar la Orden de Fabricacion.
 - Reutilizacion del mismo numero de chasis para la bicicleta armada (sin numero nuevo).
-- Impresion automatica de los numeros de motor, bateria(s) y controlador en remito y factura.
+- Impresion automatica de los numeros de motor, bateria(s), controlador y cargador en remito y factura.
     """,
     "category": "Manufacturing",
     "author": "Sunra",

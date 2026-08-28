@@ -73,8 +73,8 @@ class MrpProduction(models.Model):
                 missing.append(_("motor"))
             if not components.filtered(lambda c: c.component_type == "battery"):
                 missing.append(_("at least one battery"))
-            if not components.filtered(lambda c: c.component_type == "controller"):
-                missing.append(_("controller"))
+            # Controlador y cargador NO se exigen: las lineas actuales no traen controlador y el
+            # cargador no siempre viene informado. Ver D21.
             if missing:
                 raise UserError(_(
                     "Chassis %(chassis)s is missing: %(missing)s.",

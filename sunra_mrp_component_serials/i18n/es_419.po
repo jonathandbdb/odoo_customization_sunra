@@ -42,6 +42,11 @@ msgstr "<span>Baterías</span>"
 
 #. module: sunra_mrp_component_serials
 #: model_terms:ir.ui.view,arch_db:sunra_mrp_component_serials.stock_account_report_invoice_document
+msgid "<span>Charger</span>"
+msgstr "<span>Cargador</span>"
+
+#. module: sunra_mrp_component_serials
+#: model_terms:ir.ui.view,arch_db:sunra_mrp_component_serials.stock_account_report_invoice_document
 msgid "<span>Controller</span>"
 msgstr "<span>Controlador</span>"
 
@@ -159,6 +164,18 @@ msgstr ""
 "Número de serie del chasis (stock.lot) en el que está montada actualmente "
 "esta pieza. Vacío significa que la pieza está libre. Es el único origen de "
 "verdad de la asignación."
+
+#. module: sunra_mrp_component_serials
+#: model:ir.model.fields,field_description:sunra_mrp_component_serials.field_stock_lot__charger_id
+#: model:ir.model.fields.selection,name:sunra_mrp_component_serials.selection__sunra_bike_component__component_type__charger
+#: model_terms:ir.ui.view,arch_db:sunra_mrp_component_serials.report_delivery_document
+msgid "Charger"
+msgstr "Cargador"
+
+#. module: sunra_mrp_component_serials
+#: model:ir.model.fields,help:sunra_mrp_component_serials.field_stock_lot__charger_id
+msgid "Charger (faja) shipped with this chassis."
+msgstr "Cargador (faja) entregado con este chasis."
 
 #. module: sunra_mrp_component_serials
 #: model:ir.model.fields,field_description:sunra_mrp_component_serials.field_stock_lot__controller_id

@@ -2,6 +2,9 @@
 from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
 
+# RB12: tipos que admiten UNA sola pieza por chasis (las baterias son N, D11).
+SINGLE_COMPONENT_TYPES = ("motor", "controller", "charger")
+
 
 class SunraBikeComponent(models.Model):
     _name = "sunra.bike.component"
@@ -12,13 +15,14 @@ class SunraBikeComponent(models.Model):
 
     name = fields.Char(
         string="Serial Number", required=True, index=True, tracking=True,
-        help="Serial number printed on the component (motor, battery/faja or controller).",
+        help="Serial number printed on the component (motor, battery/faja, controller or charger).",
     )
     component_type = fields.Selection(
         [
             ("motor", "Motor"),
             ("battery", "Battery"),
             ("controller", "Controller"),
+            ("charger", "Charger"),
         ],
         string="Type", required=True, tracking=True,
         help="Kind of component this serial number identifies.",
@@ -50,10 +54,11 @@ class SunraBikeComponent(models.Model):
             )
 
     @api.constrains("lot_id", "component_type")
-    def _check_single_motor_and_controller(self):
-        # RB12: un chasis admite como maximo un motor y un controlador (las baterias son N, D11).
-        # El domain de la vista no alcanza porque la reasignacion desde la pieza (D10) no pasa por el.
-        for component in self.filtered(lambda c: c.lot_id and c.component_type in ("motor", "controller")):
+    def _check_single_components(self):
+        # RB12: un chasis admite como maximo un motor, un controlador y un cargador (las baterias
+        # son N, D11). El domain de la vista no alcanza porque la reasignacion desde la pieza (D10)
+        # no pasa por el.
+        for component in self.filtered(lambda c: c.lot_id and c.component_type in SINGLE_COMPONENT_TYPES):
             same_type_count = self.env["sunra.bike.component"].search_count([
                 ("lot_id", "=", component.lot_id.id),
                 ("component_type", "=", component.component_type),

@@ -1,10 +1,10 @@
 # sunra_mrp_component_serials
 
-Trazabilidad de motor, batería(s) y controlador contra el número de serie del **chasis** de las
+Trazabilidad de motor, batería(s), controlador y cargador contra el número de serie del **chasis** de las
 bicicletas eléctricas Sunra, con traslado automático a la orden de fabricación e impresión sin
 intervención manual en remito y factura.
 
-- **Versión**: 1.0.0
+- **Versión**: 1.1.0
 - **Licencia**: LGPL-3
 - **Depende de**: `mail`, `mrp`, `sale_stock`, `stock_account`
 
@@ -12,7 +12,7 @@ intervención manual en remito y factura.
 
 Sunra no compra bicicletas armadas: compra **kits en caja**. Cada kit trae el número de serie del
 **chasis** —que es el número de serie del producto en Odoo— más el número de **motor**, el/los
-número(s) de **faja** de la(s) batería(s) y el número de **controlador**. Hoy esos números se
+número(s) de **faja** de la(s) batería(s) y el número de **faja del cargador**. Hoy esos números se
 transcriben a mano al remito y a la factura, y se equivocan; el número de faja es la evidencia
 **anti-fraude de garantía**: identifica qué batería se entregó con qué bicicleta.
 
@@ -30,7 +30,7 @@ El módulo se instala **inerte a propósito** en tres frentes. Si después de in
 pasa nada", revisar esto primero:
 
 1. **Tildar "Pull Kit Component Serials" en la Lista de Materiales (LdM) del producto armado**
-   (pestaña principal, junto a las opciones de fabricación). Es un **opt-in explícito**: sin el
+   (pestaña **Varios**, debajo de *Consumo*). Es un **opt-in explícito**: sin el
    tilde, el override de cierre de la OF (`button_mark_done()`) **no hace absolutamente nada**
    distinto del core — el traslado y el guard de completitud (piezas faltantes) no se ejecutan. Esto
    es **a propósito**: es lo único que evita que el módulo trabe cualquier otra orden de fabricación
@@ -41,7 +41,7 @@ pasa nada", revisar esto primero:
    - **"Mostrar números de serie en la factura"** (`stock_account.group_lot_on_invoice`)
 
    Sin estos dos grupos, el **core** no imprime la tabla de números de serie en remito/factura, y
-   por lo tanto **nuestras tres columnas (Motor / Batteries / Controller) tampoco aparecen** — están
+   por lo tanto **nuestras cuatro columnas (Motor / Batteries / Controller / Charger) tampoco aparecen** — están
    condicionadas por los mismos `t-if`/`groups` nativos. El módulo **no fuerza** estos grupos por
    diseño (activarlos afecta a toda la base, no solo a bicicletas): es responsabilidad de quien
    configura la instancia.
@@ -56,7 +56,7 @@ pasa nada", revisar esto primero:
 | Modelo | Rol |
 |--------|-----|
 | `sunra.bike.component` (nuevo) | **El padrón de piezas.** Un solo modelo para motor, batería y controlador (`component_type`), con `_inherit = ['mail.thread']` para chatter. `lot_id` (M2o a `stock.lot`) es el **único origen de verdad** de qué chasis tiene montada cada pieza: vacío = pieza libre. |
-| `stock.lot` (extendido) | Representa el chasis (o cualquier lote serializado). Agrega `motor_id`, `controller_id` (M2o computados, `store=False`), `battery_ids` (O2m, admite N) y el helper `_sunra_component_report_values()` usado por los reportes. |
+| `stock.lot` (extendido) | Representa el chasis (o cualquier lote serializado). Agrega `motor_id`, `controller_id`, `charger_id` (M2o computados, `store=False`), `battery_ids` (O2m, admite N) y el helper `_sunra_component_report_values()` usado por los reportes. |
 | `mrp.bom` (extendido) | Agrega el opt-in `sunra_pull_kit_components` (Boolean, default `False`) — el interruptor de todo el módulo (prerequisito 1). |
 | `mrp.production` (extendido) | El traslado kit→bici: `_sunra_get_kit_lot()`, `_sunra_pull_kit_components(strict)`, el botón `action_sunra_pull_kit_components()` y el override de `button_mark_done()`. |
 | `account.move` (extendido) | Override de `_get_invoiced_lot_values()` para agregar motor/fajas/controlador a la tabla de series que ya imprime la factura. |
@@ -66,7 +66,7 @@ pasa nada", revisar esto primero:
 1. **Recepción del kit**: se recibe la compra del kit en una caja, con el chasis serializado (el
    número de serie del producto kit = número de chasis).
 2. **Alta de las piezas desde la serie del chasis**: se abre la ficha del lote (`stock.lot`) del
-   chasis recién recibido → grupo **"Bike Components"** → se cargan el **Motor**, el **Controller**
+   chasis recién recibido → grupo **"Bike Components"** → se cargan el **Motor**, el **Charger**, el **Controller** (si la línea lo trae)
    y una o más **Batteries** con "Agregar línea" (quick-create: cada número nuevo que se tipea da de
    alta una `sunra.bike.component` nueva, ya montada en ese chasis). Es carga **manual** al recibir
    cada kit; no hay importador (la planilla del proveedor todavía no llegó).
@@ -77,11 +77,12 @@ pasa nada", revisar esto primero:
      por número de serie);
    - reutiliza **el mismo número de chasis** como serie de la bicicleta terminada (no genera un
      número nuevo);
-   - valida que el chasis tenga **motor + al menos una batería + controlador** (si falta algo, un
-     `UserError` enumera exactamente qué falta y no deja cerrar la OF);
+   - valida que el chasis tenga **motor + al menos una batería** (si falta algo, un `UserError`
+     enumera exactamente qué falta y no deja cerrar la OF). **El controlador y el cargador NO se
+     exigen**: las líneas actuales no traen controlador y el cargador no siempre viene informado;
    - **traslada** (no copia) las piezas del lote del kit al lote de la bici armada.
 4. **Remito**: al entregar la bicicleta (o el kit sin armar, si se vende así), el remito imprime
-   automáticamente el chasis + motor + batería(s) + controlador de las piezas **montadas** en el
+   automáticamente el chasis + motor + batería(s) + controlador + cargador de las piezas **montadas** en el
    lote de esa línea.
 5. **Factura**: idem remito, en la tabla de números de serie de la factura.
 
@@ -97,7 +98,7 @@ formulario —`_onchange_faulty`— como por `write()`/importación). Consecuenc
   domain de selección excluye explícitamente `faulty = True`.
 - **No se imprime** en remito ni factura (los reportes solo leen piezas montadas, y una fallada ya
   no tiene `lot_id`).
-- **No cuenta** para el guard de completitud al cerrar la OF (motor + batería + controlador).
+- **No cuenta** para el guard de completitud al cerrar la OF (motor + batería).
 
 De **qué chasis salió** una pieza fallada queda registrado en su **chatter** (`lot_id` tiene
 `tracking=True`): siempre se puede reconstruir el historial "de dónde salió, cuándo, quién lo hizo".
@@ -122,8 +123,8 @@ de cada pieza (reasignando `lot_id` de vuelta al lote del kit).
   asignación → la duplicación es imposible por construcción. El desplegable de selección (D5) solo
   ofrece piezas **libres y no falladas** del tipo correcto (más la que ya está montada en ese mismo
   chasis, para que el campo no quede sin opción al reabrir la ficha).
-- **Un motor y un controlador como máximo por chasis; baterías, N.** Lo garantiza un
-  `@api.constrains` sobre `sunra.bike.component` (`_check_single_motor_and_controller`), porque la
+- **Un motor, un controlador y un cargador como máximo por chasis; baterías, N.** Lo garantiza un
+  `@api.constrains` sobre `sunra.bike.component` (`_check_single_components`), porque la
   reasignación desde la propia pieza no pasa por el domain de la vista de `stock.lot`.
 - **El número de serie es único por tipo de pieza**: `(component_type, name)` tiene una constraint
   `UNIQUE`. Dar de alta dos veces el mismo número de faja falla — y por lo tanto también falla
@@ -170,10 +171,10 @@ de cada pieza (reasignando `lot_id` de vuelta al lote del kit).
 - **Ficha de la LdM** (`mrp.bom`): campo **"Pull Kit Component Serials"** (el opt-in).
 - **Ficha de la OF** (`mrp.production`): botón **"Pull Kit Component Serials"** en el header, visible
   solo si la LdM tiene el opt-in activo y la OF no está terminada/cancelada.
-- **Factura**: tres columnas (Motor / Batteries / Controller) a continuación de la tabla nativa de
+- **Factura**: cuatro columnas (Motor / Batteries / Controller / Charger) a continuación de la tabla nativa de
   números de serie (`invoice_snln_table`), dentro del `groups="stock_account.group_lot_on_invoice"`
   del core.
-- **Remito**: idem, tres columnas después de la columna de serie nativa, dentro del
+- **Remito**: idem, cuatro columnas después de la columna de serie nativa, dentro del
   `groups="stock.group_lot_on_delivery_slip"` del core.
 
 ## Dependencias

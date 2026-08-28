@@ -14,6 +14,9 @@
                     <field name="controller_id"
                         domain="[('component_type', '=', 'controller'), ('faulty', '=', False), '|', ('lot_id', '=', False), ('lot_id', '=', id)]"
                         context="{'default_component_type': 'controller'}"/>
+                    <field name="charger_id"
+                        domain="[('component_type', '=', 'charger'), ('faulty', '=', False), '|', ('lot_id', '=', False), ('lot_id', '=', id)]"
+                        context="{'default_component_type': 'charger'}"/>
                     <field name="battery_ids" nolabel="1" colspan="2">
                         <list editable="bottom" delete="0">
                             <field name="name"/>

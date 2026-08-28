@@ -3,16 +3,16 @@
 | Campo | Valor |
 |-------|-------|
 | **Modulo** | `sunra_mrp_component_serials` |
-| **Version** | `1.0.0` (== `version` del `__manifest__.py`, formato `x.x.x`) |
+| **Version** | `1.1.0` (== `version` del `__manifest__.py`, formato `x.x.x`) |
 | **Serie Odoo** | `19` (informativa) |
-| **Estado** | `verified` |
-| **Actualizado** | `2026-08-25` |
+| **Estado** | `approved` |
+| **Actualizado** | `2026-08-28` |
 
 ## Objetivo
 
 Sunra no compra bicicletas armadas: compra **kits en caja**. Cada kit trae el numero de serie del
 **chasis** —que es el numero de serie del producto— mas el numero de **motor**, el/los numero(s) de
-**faja** de la(s) bateria(s) y el numero de **controlador**. Hoy esos numeros se transcriben a mano
+**faja** de la(s) bateria(s) y el numero de **faja del cargador**. Hoy esos numeros se transcriben a mano
 al remito y a la factura, y se equivocan; el numero de faja es la evidencia anti-fraude de garantia
 (identifica que bateria se entrego con que bicicleta).
 
@@ -31,7 +31,7 @@ salgan **solos** en remito y factura, sin intervencion manual.
 |---|----------|---------------|
 | D1 | ¿Motor, bateria y controlador son productos de inventario? | **No**: se registran contra la serie del chasis. El kit viene cerrado en una caja; serializar los componentes obligaria a recepciones fantasma. |
 | D2 | ¿BoM con la bateria como producto serializado (propuesta de Luis)? | **Descartada por ahora**. Es el camino de escalada si algun dia compran baterias sueltas. |
-| D3 | ¿Como se modela el padron de piezas? | **UN** modelo `sunra.bike.component` con `component_type` (motor/battery/controller). NO tres modelos gemelos ni campos Char. Unicidad por `(component_type, name)`. |
+| D3 | ¿Como se modela el padron de piezas? | **UN** modelo `sunra.bike.component` con `component_type` (motor/battery/controller/charger). NO tres modelos gemelos ni campos Char. Unicidad por `(component_type, name)`. |
 | D4 | ¿Donde vive la asignacion pieza→chasis? | En `sunra.bike.component.lot_id` (M2o a `stock.lot`) como **unico origen de verdad** → una pieza en dos chasis es imposible por construccion. **No hace falta constraint extra** para eso (la unicidad de motor/controlador por chasis si la exige D18/RB12, que es otra cosa). |
 | D5 | Domain de seleccion de piezas | `[('component_type','=','<tipo>'), ('faulty','=',False), '|', ('lot_id','=',False), ('lot_id','=',id)]`. La rama `lot_id = id` NO es excepcion a la regla: solo re-ofrece la pieza al chasis que **ya la tiene** (sin ella el M2o queda sin opcion al reabrir la ficha). Otro chasis nunca la ve, y una pieza fallada no la ve **nadie** (D18). |
 | D6 | ¿Filtrar el desplegable por stock disponible? | **Descartado.** Es viable (`_search_product_qty` soporta `[('product_qty','>',0)]` y ya acota a internas/transito de `env.companies`), pero exigiria que las baterias entren por recepcion propia → descomponer la compra de kits o duplicar la valuacion (el costo de la bateria ya esta en el del kit). |
@@ -44,16 +44,18 @@ salgan **solos** en remito y factura, sin intervencion manual.
 | D13 | ¿`sunra.bike.component` es multi-compañia? | `[ASUNCION]` **No lleva `company_id`**: el padron es global. Los numeros de serie fisicos son unicos en el mundo, asi que la unicidad global es lo conservador. Si aparece multi-compañia, se agrega `company_id` + `check_company` sobre `lot_id` (cambio menor, ver Notas). |
 | D14 | ¿El modulo fuerza los grupos nativos de impresion de series? | `[ASUNCION]` **No.** `stock.group_lot_on_delivery_slip` y `stock_account.group_lot_on_invoice` son **prerequisito de configuracion**: sin ellos el core no imprime la tabla de series y nuestras columnas tampoco. Se documenta en el README en vez de tocar grupos de usuarios. |
 | D15 | ¿Que pasa si la OF ya tiene otra serie en `lot_producing_ids`? | `[ASUNCION]` Se **reemplaza** por el lote del chasis (D9 manda: no hay numero nuevo) y el hecho se asienta con `message_post` en la OF. El lote huerfano no se borra. |
-| D16 | ¿Como se imprimen las piezas en remito y factura? | `[ASUNCION]` **Tres columnas** (Motor / Batteries / Controller) a continuacion de la columna de serie que ya imprime el core. Varias fajas se listan separadas por coma en una sola celda. |
+| D16 | ¿Como se imprimen las piezas en remito y factura? | `[ASUNCION]` **Cuatro columnas** (Motor / Batteries / Controller / Charger) a continuacion de la columna de serie que ya imprime el core. Varias fajas se listan separadas por coma en una sola celda. Una columna sin pieza sale vacia. |
 | D17 | ¿Como sabe el modulo que una OF es "de kit"? | `[ASUNCION]` Por un **opt-in explicito en la LdM**: `mrp.bom.sunra_pull_kit_components` (Boolean, default `False`). Sin el flag, el override de cierre no hace absolutamente nada → cero impacto sobre cualquier otra fabricacion de la base. Es la unica forma de exigir el guard de completitud (CA10) sin trabar OF ajenas. |
 | D18 | ¿Marcar una pieza como fallada la libera del chasis? | **Si: `faulty = True` limpia `lot_id`** en el mismo acto. `lot_id` significa **una sola cosa** —"la pieza montada AHORA"— para que ninguna lectura futura tenga que acordarse de filtrar `faulty`. La historia no se pierde: el chatter de la pieza deja el rastro (`CHASIS-001 → vacio`) y de ahi se responde "¿de que chasis salio?". Consecuencia: una pieza fallada no se ofrece (D5), no se imprime, no cuenta para el guard de completitud y no se traslada. |
 | D19 | Idioma | UI en **ingles** con `_()`, traduccion en `i18n/es_419.po` (mismo criterio que `helpdesk_service_appointment` y `website_sale_installation_appointment`). Incluye los encabezados **impresos** en remito y factura (Motor / Batteries / Controller), que el cliente ve en castellano. |
+| D21 | ¿El guard de completitud exige controlador? | **No.** Las lineas que Sunra vende hoy **no traen controlador**: la planilla del proveedor informa motor, faja de bateria y faja de **cargador**. El guard (CA10) exige solo **motor + al menos una bateria**; controlador y cargador quedan **opcionales**. El tipo `controller` se conserva para las lineas que si lo traigan, sin tocar codigo. |
+| D22 | ¿Donde se guarda el numero de faja del cargador? | Como una pieza mas del padron: `component_type='charger'`, con su `charger_id` en el chasis. Es la misma evidencia anti-fraude que la faja de bateria (identifica que cargador se entrego con que bicicleta), asi que reusa el modelo existente en vez de un campo Char aparte. |
 | D20 | ¿Cancelar la OF despues del traslado devuelve las piezas al lote del kit? | `[ASUNCION]` **No.** No se engancha `action_cancel`: las piezas quedan montadas en el lote de la bicicleta, que lleva **el mismo numero de chasis** que el del kit (D9), asi que el dato sigue siendo correcto de cara al cliente. Si hay que revertir, se hace a mano desde la pieza. Se documenta en el README. |
 
 ## Alcance
 
 ### Incluye
-- Padron de piezas (`sunra.bike.component`) con motor, bateria y controlador, y su **montaje** contra la serie del chasis (`stock.lot`).
+- Padron de piezas (`sunra.bike.component`) con motor, bateria, controlador y cargador, y su **montaje** contra la serie del chasis (`stock.lot`).
 - **Traslado** de las piezas del lote del kit al lote de la bicicleta armada al procesar la Orden de Fabricacion (boton manual + automatico al cerrar).
 - Reutilizacion del **mismo numero de chasis** para la bicicleta armada (sin numero nuevo).
 - Impresion automatica de los numeros en **remito** y **factura**, tanto para la bicicleta armada como para el **kit vendido sin armar**.
@@ -84,7 +86,7 @@ Atributos: `_order = 'component_type, name'`, `_rec_names_search = ['name']`.
 
 | Modelo | `_inherit` | Que se agrega |
 |--------|-----------|---------------|
-| `stock.lot` | `stock.lot` | Piezas montadas en el chasis: `component_ids`, `battery_ids`, `motor_id`, `controller_id` + helper de reporte. Ya hereda `mail.thread` (chatter gratis). |
+| `stock.lot` | `stock.lot` | Piezas montadas en el chasis: `component_ids`, `battery_ids`, `motor_id`, `controller_id`, `charger_id` + helper de reporte. Ya hereda `mail.thread` (chatter gratis). |
 | `mrp.bom` | `mrp.bom` | Opt-in `sunra_pull_kit_components` (D17). |
 | `mrp.production` | `mrp.production` | Traslado kit→bici: metodos + boton + override de `button_mark_done()` + `related` del opt-in para la visibilidad del boton. |
 | `account.move` | `account.move` | Override de `_get_invoiced_lot_values()` para enriquecer la tabla de series de la factura. |
@@ -94,14 +96,15 @@ Atributos: `_order = 'component_type, name'`, `_rec_names_search = ['name']`.
 | Modelo | Campo | Tipo | String | Requerido | Default | Restricciones / notas |
 |--------|-------|------|--------|-----------|---------|----------------------|
 | `sunra.bike.component` | `name` | Char | Serial Number | Si | - | `tracking=True`, `index=True`. Parte de la unicidad `(component_type, name)`. |
-| `sunra.bike.component` | `component_type` | Selection `[('motor','Motor'),('battery','Battery'),('controller','Controller')]` | Type | Si | - | `tracking=True`. Se precarga por contexto (`default_component_type`) desde cada campo del chasis. |
+| `sunra.bike.component` | `component_type` | Selection `[('motor','Motor'),('battery','Battery'),('controller','Controller'),('charger','Charger')]` | Type | Si | - | `tracking=True`. Se precarga por contexto (`default_component_type`) desde cada campo del chasis. |
 | `sunra.bike.component` | `lot_id` | Many2one `stock.lot` | Assigned Chassis | No | - | `tracking=True`, `index=True`, `ondelete='set null'`. **Unico origen de verdad de la asignacion (D4)**. Vacio = pieza libre. Lo limpia `_onchange`/`write` cuando `faulty` pasa a `True` (D18). |
 | `sunra.bike.component` | `faulty` | Boolean | Faulty | No | `False` | `tracking=True`. **Marcar fallada libera el chasis** (D18/RB09): la pieza deja de estar montada, no se ofrece, no se imprime y no cuenta para el guard de completitud. |
 | `sunra.bike.component` | `display_name` | Char (compute) | - | - | - | `_compute_display_name`: `"<Tipo> / <name>"`. No almacenado. |
-| `stock.lot` | `component_ids` | One2many (`sunra.bike.component`, `lot_id`) | Bike Components | No | - | Tecnico (todas las piezas montadas, sin filtrar por tipo). Es la dependencia de los computes y evita tres One2many gemelos. Sin `tracking` (lo cubren los tres campos de abajo). No se muestra en la vista. |
+| `stock.lot` | `component_ids` | One2many (`sunra.bike.component`, `lot_id`) | Bike Components | No | - | Tecnico (todas las piezas montadas, sin filtrar por tipo). Es la dependencia de los computes y evita tres One2many gemelos. Sin `tracking` (lo cubren los cuatro campos de abajo). No se muestra en la vista. |
 | `stock.lot` | `battery_ids` | One2many (`sunra.bike.component`, `lot_id`) | Batteries | No | - | `domain=[('component_type','=','battery')]`, `context={'default_component_type': 'battery'}`, `tracking=True`. Admite N fajas (D11). |
 | `stock.lot` | `motor_id` | Many2one `sunra.bike.component` | Motor | No | - | `compute='_compute_motor_id'`, **`store=False`** (ver M2 en Notas), `inverse='_inverse_motor_id'`, `tracking=True`, `@api.depends('component_ids.component_type')`. Domain D5 + `context={'default_component_type': 'motor'}`. |
-| `stock.lot` | `controller_id` | Many2one `sunra.bike.component` | Controller | No | - | Idem `motor_id` con `component_type='controller'`. |
+| `stock.lot` | `controller_id` | Many2one `sunra.bike.component` | Controller | No | - | Idem `motor_id` con `component_type='controller'`. **Opcional** (D21). |
+| `stock.lot` | `charger_id` | Many2one `sunra.bike.component` | Charger | No | - | Idem `motor_id` con `component_type='charger'` (D22). **Opcional** (D21). |
 | `mrp.bom` | `sunra_pull_kit_components` | Boolean | Pull Kit Component Serials | No | `False` | D17. Opt-in por LdM: habilita el traslado automatico y el guard de completitud. |
 | `mrp.production` | `sunra_pull_kit_components` | Boolean (related) | Pull Kit Component Serials | No | - | `related='bom_id.sunra_pull_kit_components'`, `readonly=True`, sin store. **Existe solo para la visibilidad del boton**: un `invisible=` de vista NO atraviesa relaciones, asi que el campo tiene que estar en el modelo y en el arch. |
 
@@ -139,14 +142,14 @@ Atributos: `_order = 'component_type, name'`, `_rec_names_search = ['name']`.
 - **Retorna**: `None`
 - **Errores**: `ValidationError`
 
-### `SunraBikeComponent._check_single_motor_and_controller()`
-- **Proposito**: un chasis no puede tener dos motores ni dos controladores (las baterias si son N, D11). El domain de la vista no alcanza: D10 reasigna **desde la pieza**, que no pasa por ese domain.
+### `SunraBikeComponent._check_single_components()`
+- **Proposito**: un chasis no puede tener dos motores, dos controladores ni dos cargadores (las baterias si son N, D11). El domain de la vista no alcanza: D10 reasigna **desde la pieza**, que no pasa por ese domain.
 - **Decoradores**: `@api.constrains('lot_id', 'component_type')`
-- **Logica**: para las piezas afectadas con `lot_id` y `component_type in ('motor', 'controller')`, contar las piezas de ese tipo montadas en el mismo lote; si hay mas de una → `ValidationError`.
+- **Logica**: para las piezas afectadas con `lot_id` y `component_type in SINGLE_COMPONENT_TYPES` (`motor`, `controller`, `charger`), contar las piezas de ese tipo montadas en el mismo lote; si hay mas de una → `ValidationError`.
 - **Errores**: `ValidationError` — `_("Chassis %(chassis)s already has a %(type)s assigned.", ...)`.
 - **Nota**: no contradice D4 (una pieza sigue teniendo un solo chasis) ni D8 (reasignar entre chasis sigue permitido).
 
-### `StockLot._compute_motor_id()` / `StockLot._compute_controller_id()`
+### `StockLot._compute_motor_id()` / `_compute_controller_id()` / `_compute_charger_id()`
 - **Proposito**: derivar el M2o desde las piezas montadas (unica columna de asignacion, D4).
 - **Decoradores**: `@api.depends('component_ids.component_type')`
 - **Logica**: `lot.motor_id = lot.component_ids.filtered(lambda c: c.component_type == 'motor')[:1]`.
@@ -154,7 +157,7 @@ Atributos: `_order = 'component_type, name'`, `_rec_names_search = ['name']`.
 - **Store**: `False` (ver M2 en Notas de implementacion).
 - **Retorna**: `None`
 
-### `StockLot._inverse_motor_id()` / `StockLot._inverse_controller_id()`
+### `StockLot._inverse_motor_id()` / `_inverse_controller_id()` / `_inverse_charger_id()`
 - **Proposito**: escribir la asignacion en la pieza (y solo ahi).
 - **Logica**: ambos delegan en `_sunra_inverse_component(component, component_type)` — la logica es
   identica salvo el tipo, asi que vive en un solo lugar.
@@ -176,7 +179,7 @@ Atributos: `_order = 'component_type, name'`, `_rec_names_search = ['name']`.
 - **Proposito**: unica fuente de los textos que imprimen remito y factura (evita duplicar el join en dos QWeb).
 - **Decoradores**: ninguno
 - **Logica**: sobre `self.sudo()` (mismo criterio que el core, que hace `lot.sudo()` para que un usuario sin permisos de stock pueda imprimir) devuelve
-  `{'motor_name': ..., 'battery_names': ', '.join(...), 'controller_name': ...}`, con `''` donde no hay pieza.
+  `{'motor_name': ..., 'battery_names': ', '.join(...), 'controller_name': ..., 'charger_name': ...}`, con `''` donde no hay pieza.
   **Sin filtro de `faulty`** (D18: la fallada no esta montada).
 - **Retorna**: `dict` (recordset vacio → dict con los tres valores en `''`).
 
@@ -203,7 +206,7 @@ Atributos: `_order = 'component_type, name'`, `_rec_names_search = ['name']`.
      se encontraba un lote preexistente con ese chasis, se creaba un duplicado y reventaba el
      `_check_unique_lot` del core con un error que no menciona ni el kit ni la OF. Hallazgo I2 del
      review de implementacion, reproducido en la base local.
-  5. **Guard de completitud (CA10)**: sobre la **union** de `component_ids` del lote del kit y del lote destino, exigir motor + al menos una bateria + controlador. Si falta alguna → `UserError` enumerando exactamente que falta. (Union ⇒ el metodo es **idempotente**: si ya se trasladaron, no vuelve a fallar. **Sin filtro de `faulty`**: por D18 una pieza fallada ya no esta en `component_ids`, asi que no puede tapar un faltante.)
+  5. **Guard de completitud (CA10)**: sobre la **union** de `component_ids` del lote del kit y del lote destino, exigir motor + al menos una bateria (controlador y cargador NO se exigen, D21). Si falta alguna → `UserError` enumerando exactamente que falta. (Union ⇒ el metodo es **idempotente**: si ya se trasladaron, no vuelve a fallar. **Sin filtro de `faulty`**: por D18 una pieza fallada ya no esta en `component_ids`, asi que no puede tapar un faltante.)
   6. Si `production.lot_producing_ids` esta vacio o difiere del lote destino → `lot_producing_ids = [Command.set(finished_lot.ids)]` + `message_post` dejando rastro del reemplazo (D15).
   7. **Trasladar**: `kit_lot.component_ids.write({'lot_id': finished_lot.id})` — una sola escritura; el chatter de cada pieza registra origen y destino (CA07).
 - **Mensajes**: todos en ingles con `_()` y placeholders `%(name)s` (nunca concatenacion) — D19.
@@ -229,7 +232,7 @@ Atributos: `_order = 'component_type, name'`, `_rec_names_search = ['name']`.
 - **Logica**:
   1. `res = super()`.
   2. Juntar los ids: `lot_ids = {v['lot_id'] for v in res if v.get('lot_id')}` y **browse de una sola vez**: `self.env['stock.lot'].browse(lot_ids).sudo()`, armando `values_by_lot = {lot.id: lot._sunra_component_report_values()}` (nada de `browse` + `sudo()` por fila).
-  3. **Normalizar TODOS los dicts**: cada entrada de `res` recibe las tres claves; las que no tienen `lot_id` reciben `''`. Es obligatorio: `point_of_sale` agrega dicts con `pos_lot_id` y **sin** `lot_id` (`/home/leandro/projects/nexit/19.0/odoo/addons/point_of_sale/models/account_move.py:55`) y `sale_stock_renting` tambien extiende el metodo; si el QWeb indexara duro una clave ausente, la factura entera no se imprimiria.
+  3. **Normalizar TODOS los dicts**: cada entrada de `res` recibe las cuatro claves; las que no tienen `lot_id` reciben `''`. Es obligatorio: `point_of_sale` agrega dicts con `pos_lot_id` y **sin** `lot_id` (`/home/leandro/projects/nexit/19.0/odoo/addons/point_of_sale/models/account_move.py:55`) y `sale_stock_renting` tambien extiende el metodo; si el QWeb indexara duro una clave ausente, la factura entera no se imprimiria.
   4. Cinturon y tiradores: ademas, el QWeb usa `.get('motor_name', '')` (idem las otras dos).
   **No se reimplementa el metodo** (el core devuelve `lot_id` explicitamente para esto).
 - **Retorna**: `list[dict]` — los mismos dicts, todos con `motor_name`, `battery_names` y `controller_name`.
@@ -311,13 +314,13 @@ Atributos: `_order = 'component_type, name'`, `_rec_names_search = ['name']`.
 3. **RB03**: El desplegable de motor/controlador solo ofrece piezas **libres, no falladas** y del tipo correcto, mas la que ya esta montada en ese mismo chasis (D5, D18).
 4. **RB04**: La OF **traslada** las piezas del lote del kit al lote de la bici; nunca las copia (D7).
 5. **RB05**: La bicicleta armada lleva el **mismo numero de chasis** que el kit; la OF no genera numero nuevo (D9, D15).
-6. **RB06**: No se puede cerrar una OF cuya LdM tenga el opt-in (D17) si el chasis no reune **motor + al menos una bateria + controlador**; el error enumera lo que falta.
-7. **RB07**: El historial de la asignacion vive en el **chatter de la pieza** (`lot_id` con `tracking=True`), que registra siempre de donde salio y a donde entro, venga el cambio de la ficha del chasis, de la pieza o del traslado de la OF. El chatter del **lote** registra ademas las ediciones hechas desde la ficha del chasis (`motor_id`, `controller_id`, `battery_ids` con `tracking=True`).
+6. **RB06**: No se puede cerrar una OF cuya LdM tenga el opt-in (D17) si el chasis no reune **motor + al menos una bateria**; el error enumera lo que falta. Controlador y cargador **no se exigen** (D21).
+7. **RB07**: El historial de la asignacion vive en el **chatter de la pieza** (`lot_id` con `tracking=True`), que registra siempre de donde salio y a donde entro, venga el cambio de la ficha del chasis, de la pieza o del traslado de la OF. El chatter del **lote** registra ademas las ediciones hechas desde la ficha del chasis (`motor_id`, `controller_id`, `charger_id`, `battery_ids` con `tracking=True`).
 8. **RB08**: Remito y factura imprimen las piezas **montadas** en el lote de la linea, sea el lote de la bicicleta armada o el del kit vendido sin armar. No hace falta ningun filtro especial: por D18 una pieza fallada ya no tiene `lot_id`.
 9. **RB09**: Marcar una pieza como `faulty` **la libera del chasis en el mismo acto** (D18). A partir de ahi: no se ofrece en ningun desplegable, no se imprime, no cuenta para el guard de completitud y no se traslada en la OF. El rastro de de que chasis salio queda en su chatter.
 10. **RB10**: Sin los dos grupos nativos de impresion activos, el core no imprime la tabla de series y estas columnas tampoco (D14).
 11. **RB11**: Sin el opt-in en la LdM, el modulo **no interviene** en el cierre de ninguna OF (D17).
-12. **RB12**: Un chasis tiene **como maximo un motor y un controlador**; baterias, N (D11). Lo garantiza un `@api.constrains`, porque la reasignacion desde la pieza (D10) no pasa por el domain de la vista.
+12. **RB12**: Un chasis tiene **como maximo un motor, un controlador y un cargador**; baterias, N (D11). Lo garantiza un `@api.constrains`, porque la reasignacion desde la pieza (D10) no pasa por el domain de la vista.
 
 ## Edge cases
 
@@ -331,7 +334,7 @@ Atributos: `_order = 'component_type, name'`, `_rec_names_search = ['name']`.
 - **Chasis incompleto al cerrar**: `UserError` enumerando que falta (CA10) — es un **guard de completitud**, no un lock: el usuario carga la pieza y vuelve a cerrar.
 - **Kit vendido sin armar**: el remito imprime las piezas del lote del kit (nunca se trasladaron) — CA09.
 - **Bicicleta de dos baterias**: `battery_ids` acepta N; ambas fajas se imprimen separadas por coma (D11, D16).
-- **Segundo motor/controlador en el mismo chasis** (tipicamente desde la pieza, que no pasa por el domain): `ValidationError` (RB12).
+- **Segundo motor/controlador/cargador en el mismo chasis** (tipicamente desde la pieza, que no pasa por el domain): `ValidationError` (RB12).
 - **Pieza fallada que se vuelve a marcar como NO fallada**: queda **libre** (su `lot_id` ya se limpio al marcarla). **No vuelve sola a su chasis anterior**: hay que reasignarla a mano, desde la pieza o desde la ficha del chasis. El chatter permite reconstruir de donde salio.
 - **Chasis sin piezas al imprimir**: las columnas salen vacias; no rompe el reporte.
 - **Factura con lineas de Punto de Venta o de alquiler**: esos dicts no traen `lot_id` (POS trae `pos_lot_id`); el override los normaliza con `''` y el QWeb usa `.get()` → la factura imprime igual.
@@ -342,16 +345,16 @@ Atributos: `_order = 'component_type, name'`, `_rec_names_search = ['name']`.
 
 ## Criterios de aceptacion
 
-- [ ] **CA01**: Se recibe un kit con numero de chasis y se dan de alta, **desde su propia serie**, el motor, DOS baterias y el controlador.
-- [ ] **CA02**: Se intenta asignar a otra bicicleta una bateria, un motor y un controlador ya montados en la primera: el desplegable **no los ofrece** (RB03) y forzarlo por importacion tambien **falla** (RB02: el numero repetido choca contra la unicidad). Una pieza nunca queda en dos chasis (RB01).
+- [ ] **CA01**: Se recibe un kit con numero de chasis y se dan de alta, **desde su propia serie**, el motor, DOS baterias y el cargador.
+- [ ] **CA02**: Se intenta asignar a otra bicicleta una bateria, un motor y un cargador ya montados en la primera: el desplegable **no los ofrece** (RB03) y forzarlo por importacion tambien **falla** (RB02: el numero repetido choca contra la unicidad). Una pieza nunca queda en dos chasis (RB01).
 - [ ] **CA03**: Se intenta dar de alta dos veces el mismo numero de faja: el sistema lo **rechaza**.
-- [ ] **CA04**: Al traer las piezas del kit (boton), la bicicleta queda con el **mismo numero de chasis** y con las cuatro piezas montadas.
+- [ ] **CA04**: Al traer las piezas del kit (boton), la bicicleta queda con el **mismo numero de chasis** y con todas sus piezas montadas.
 - [ ] **CA05**: Al cerrar la orden, las piezas quedan montadas en la serie de la bicicleta y **ninguna figura en dos chasis a la vez** (el lote del kit queda sin piezas).
 - [ ] **CA06**: Bateria fallada **antes** de armar: se marca fallada la vieja —con lo que **queda liberada del chasis sola**— y se monta la buena en la serie del kit; la bici se arma con la buena. La fallada no vuelve a aparecer en ningun desplegable.
 - [ ] **CA07**: Bateria reemplazada **despues** de armada: se marca fallada la vieja (se libera del chasis) y se monta la nueva en la misma serie; el historial de la pieza muestra de que chasis salio, cuando y quien lo hizo.
-- [ ] **CA08**: Se entrega y factura la bicicleta: remito y factura salen con chasis + motor + dos fajas + controlador —solo las piezas **montadas**, una fallada no se imprime—, sin intervencion manual.
+- [ ] **CA08**: Se entrega y factura la bicicleta: remito y factura salen con chasis + motor + dos fajas + cargador —solo las piezas **montadas**, una fallada no se imprime—, sin intervencion manual.
 - [ ] **CA09**: Se vende un kit **sin armar** y el remito sale igual de completo.
-- [ ] **CA10**: Se intenta cerrar una OF con la serie del kit **sin piezas cargadas**: el sistema lo impide **indicando que falta**.
+- [ ] **CA10**: Se intenta cerrar una OF con la serie del kit **sin piezas cargadas**: el sistema lo impide **indicando que falta** (motor y/o bateria; el controlador y el cargador no se exigen, D21).
 
 ## Referencias al core
 
@@ -378,7 +381,7 @@ Atributos: `_order = 'component_type, name'`, `_rec_names_search = ['name']`.
 | BoM tipo `phantom` = Kit — **NO usar** | `/home/leandro/projects/nexit/19.0/odoo/addons/mrp/models/mrp_bom.py:29` | Una LdM `phantom` no genera OF: rompe todo el circuito. La LdM es `normal`. |
 | Hook a overridear para la factura | `/home/leandro/projects/nexit/19.0/odoo/addons/sale_stock/models/account_move.py:31` | `_get_invoiced_lot_values()` — se hace `super()` y se enriquece; su base vacia esta en `/home/leandro/projects/nexit/19.0/odoo/addons/stock_account/models/account_move.py:175`. |
 | El core YA devuelve `lot_id` en el dict **para esto** | `/home/leandro/projects/nexit/19.0/odoo/addons/sale_stock/models/account_move.py:111` | `'lot_id': lot.id`, precedido del comentario que dice que esta ahi para que las localizaciones hereden y agreguen campos (`:110`). |
-| ⚠️ Hay dicts **sin** `lot_id` en la lista | `/home/leandro/projects/nexit/19.0/odoo/addons/point_of_sale/models/account_move.py:55` | POS agrega entradas con `pos_lot_id` y sin `lot_id` (y `enterprise/sale_stock_renting` tambien extiende el metodo) → hay que **normalizar las tres claves en todos los dicts** y usar `.get()` en el QWeb. |
+| ⚠️ Hay dicts **sin** `lot_id` en la lista | `/home/leandro/projects/nexit/19.0/odoo/addons/point_of_sale/models/account_move.py:55` | POS agrega entradas con `pos_lot_id` y sin `lot_id` (y `enterprise/sale_stock_renting` tambien extiende el metodo) → hay que **normalizar las cuatro claves en todos los dicts** y usar `.get()` en el QWeb. |
 | El core imprime con `sudo()` | `/home/leandro/projects/nexit/19.0/odoo/addons/sale_stock/models/account_move.py:98` | Justifica el `sudo()` del helper: un usuario sin permisos de stock tiene que poder imprimir. |
 | Template de factura a heredar | `/home/leandro/projects/nexit/19.0/odoo/addons/stock_account/views/report_invoice.xml:3` | `stock_account_report_invoice_document`; la tabla es `invoice_snln_table` (`:8`). |
 | Grupo que muestra series en la factura | `/home/leandro/projects/nexit/19.0/odoo/addons/stock_account/security/stock_account_security.xml:4` | `group_lot_on_invoice` — prerequisito de D14. |
@@ -412,8 +415,8 @@ Atributos: `_order = 'component_type, name'`, `_rec_names_search = ['name']`.
 | **T06** | Herencia del form de `stock.lot` (mismo XML ID `view_production_lot_form`): grupo "Bike Components" con motor/controlador (domain D5 + quick-create) y `battery_ids` como `<list editable="bottom" delete="0">` | T03, T05 | `views/stock_lot_views.xml` | CA01, CA02, CA06 |
 | **T07** | Opt-in `mrp.bom.sunra_pull_kit_components` + `related` en `mrp.production` (I1) + `_sunra_get_kit_lot()`, `_sunra_pull_kit_components(strict)`, `action_sunra_pull_kit_components()`, override de `button_mark_done()`. Todos los `UserError` en ingles con `_()` y `%(name)s` | T03 | `models/mrp_bom.py`, `models/mrp_production.py` | CA04, CA05, CA10 |
 | **T08** | Vistas heredadas (mismos XML IDs `mrp_production_form_view` / `mrp_bom_form_view`): `<field name="sunra_pull_kit_components" invisible="1"/>` + boton "Pull Kit Component Serials" en el header de la OF, y el campo opt-in en el form de la LdM | T07 | `views/mrp_production_views.xml`, `views/mrp_bom_views.xml` | CA04 |
-| **T09** | Factura: override de `_get_invoiced_lot_values()` (super + browse unico + **normalizar las tres claves en TODOS los dicts**) + herencia del template `invoice_snln_table` con las tres columnas leidas con `.get()` | T03 | `models/account_move.py`, `report/account_move_templates.xml` | CA08 |
-| **T10** | Remito: herencia del `thead` de `report_delivery_document` y de `stock_report_delivery_has_serial_move_line` con las tres columnas | T03 | `report/stock_picking_templates.xml` | CA08, CA09 |
+| **T09** | Factura: override de `_get_invoiced_lot_values()` (super + browse unico + **normalizar las cuatro claves en TODOS los dicts**) + herencia del template `invoice_snln_table` con las cuatro columnas leidas con `.get()` | T03 | `models/account_move.py`, `report/account_move_templates.xml` | CA08 |
+| **T10** | Remito: herencia del `thead` de `report_delivery_document` y de `stock_report_delivery_has_serial_move_line` con las cuatro columnas | T03 | `report/stock_picking_templates.xml` | CA08, CA09 |
 | **T11** | Traduccion `i18n/es_419.po`: strings de UI, encabezados impresos (Motor / Batteries / Controller) y mensajes de error del traslado (D19) | T05, T07, T08, T09, T10 | `i18n/es_419.po` | — |
 | **T12** | Doc y cierre: README del modulo (incluidos los prerequisitos de D14/D17 y el comportamiento de D18/D20) + `static/description/index.html` + fila en el README raiz del repo; verificar `version` del manifest == `Version` de la spec (`1.0.0`) | T01, T02, T03, T04, T05, T06, T07, T08, T09, T10, T11 | `README.md`, `static/description/index.html`, `../README.md`, `__manifest__.py`, `specs/sunra_mrp_component_serials.md` | — |
 
