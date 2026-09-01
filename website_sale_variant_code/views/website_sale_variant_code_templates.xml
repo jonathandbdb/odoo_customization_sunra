@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Pagina de producto: codigo interno de la variante elegida, debajo del titulo.
+
+         La pagina se renderiza para la PLANTILLA, no para la variante: el valor inicial sale de
+         la variante que el controller ya resolvio para la combinacion preseleccionada
+         (`product_variant`, website_sale/controllers/main.py) y el JS lo actualiza cuando el
+         cliente cambia la seleccion (static/src/js/website_sale_variant_code.js).
+
+         Antes esto era una leyenda "Cod: ..." escrita a mano en la descripcion del producto: fija,
+         igual para todas las variantes y sin forma de mantenerse al dia. -->
+    <template
+        id="product_title"
+        inherit_id="website_sale.product_title"
+        name="website.sale.product.title.inherit.website_sale_variant_code"
+    >
+        <xpath expr="//h1" position="after">
+            <div
+                t-attf-class="o_wsale_variant_code mb-2 small text-muted #{'d-none' if not product_variant.default_code else ''}"
+            >
+                <span class="o_wsale_variant_code_label">Ref:</span>
+                <span class="o_wsale_variant_code_value" t-out="product_variant.default_code"/>
+            </div>
+        </xpath>
+    </template>
+
+    <!-- Carrito: codigo de la variante de cada linea. Aca no hace falta JS — la linea ya apunta a
+         una variante concreta. El titulo de la linea se muestra sin codigo (el core lo pide con
+         `display_default_code=False`), por eso lo agregamos aparte. -->
+    <template
+        id="cart_lines"
+        inherit_id="website_sale.cart_lines"
+        name="website.sale.cart.lines.inherit.website_sale_variant_code"
+    >
+        <xpath
+            expr="//t[@t-call='website_sale.cart_line_description_following_lines']"
+            position="before"
+        >
+            <div t-if="line.product_id.default_code" class="o_wsale_variant_code text-muted small">
+                Ref: <span t-out="line.product_id.default_code"/>
+            </div>
+        </xpath>
+    </template>
+</odoo>
+<!-- vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4-->

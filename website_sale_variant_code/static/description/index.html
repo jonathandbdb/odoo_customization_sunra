@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<body>
+    <section style="max-width: 980px; margin: 0 auto; padding: 32px 24px; font-family: Arial, Helvetica, sans-serif; color-scheme: var(--o-webclient-color-scheme, normal); color: CanvasText; line-height: 1.55; background: transparent;">
+        <div style="padding: 28px 30px; border: 1px solid ButtonBorder; border-radius: 8px; background: Canvas;">
+            <p style="margin: 0 0 8px; color: LinkText; font-size: 13px; font-weight: 700; text-transform: uppercase;">eCommerce - Variantes</p>
+            <h1 style="margin: 0 0 12px; color: CanvasText; font-size: 32px; line-height: 1.2;">website_sale_variant_code</h1>
+            <p style="margin: 0; max-width: 760px; color: GrayText; font-size: 16px;">Muestra en la tienda el codigo interno de la variante que el cliente esta mirando, y no una leyenda fija con los codigos de todas. Si elige el guardabarro delantero, ve el codigo del delantero.</p>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 10px; color: LinkText; font-size: 23px;">El problema</h2>
+            <p style="margin: 0 0 12px;">Los repuestos se publican como un producto con variantes: <em>Guardabarro - V8 Mini</em> tiene <strong>Delantero</strong> (<code>V8M-070</code>) y <strong>Trasero</strong> (<code>V8M-071</code>), cada una con su referencia interna bien cargada en Odoo. Pero la pagina mostraba una leyenda escrita a mano en la descripcion del producto, con <strong>los dos codigos juntos</strong>, sin importar cual variante estuviera seleccionada — y lo mismo en el carrito. El cliente no sabia cual estaba comprando.</p>
+            <p style="margin: 0;">Al ser texto plano y no un dato calculado, esa leyenda no podia cambiar con la seleccion y envejecia mal: al relevar la base, <strong>22 de 198 productos ya tenian el codigo equivocado</strong>. Ademas se filtraba al feed de Google Merchant, al compartir el producto en redes, y a los presupuestos y mails.</p>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 12px; color: LinkText; font-size: 23px;">Que hace</h2>
+            <table style="width: 100%; border-collapse: collapse; border: 1px solid ButtonBorder; background: Canvas;">
+                <tbody>
+                    <tr>
+                        <td style="width: 28%; padding: 14px 16px; border-bottom: 1px solid ButtonBorder; font-weight: 700; background: ButtonFace; color: ButtonText;">Pagina de producto</td>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">El codigo aparece debajo del titulo y <strong>cambia al elegir otra variante</strong>, sin recargar la pagina. Antes: <code>Cod: V8M-070 | Cod: V8M-071</code> fijo. Ahora: <code>Cod: V8M-070</code>, y al tocar <em>Trasero</em> pasa a <code>Cod: V8M-071</code>.</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; font-weight: 700; background: ButtonFace; color: ButtonText;">Carrito</td>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">Cada linea muestra el codigo de <strong>su propia variante</strong>, uno solo. Aca no hace falta JS: la linea ya apunta a una variante concreta.</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 14px 16px; font-weight: 700; background: ButtonFace; color: ButtonText;">Idioma</td>
+                        <td style="padding: 14px 16px; color: CanvasText;">Se muestra como <code>Ref:</code> en ingles y <code>Cod:</code> en espanol (<code>i18n/es_AR.po</code>), para conservar la estetica que ya tenia el sitio.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 10px; color: LinkText; font-size: 23px;">Como funciona</h2>
+            <p style="margin: 0 0 12px;">La pagina de producto se renderiza para la <strong>plantilla</strong>, no para la variante: por eso el codigo no podia seguir a la seleccion sin ayuda. El modulo cierra ese hueco en tres puntos:</p>
+            <ol style="margin: 0; padding-left: 22px;">
+                <li style="margin-bottom: 8px;"><strong>Backend</strong>: <code>_get_additionnal_combination_info</code> agrega <code>default_code</code> al payload de <code>/website_sale/get_combination_info</code>, que es lo unico que sabe que variante quedo elegida.</li>
+                <li style="margin-bottom: 8px;"><strong>Frontend</strong>: extiende <code>_onChangeCombination</code> de la interaccion <code>WebsiteSale</code> para escribir ese valor en el DOM. El core actualiza precio, imagen, etiquetas y disponibilidad, pero no la referencia interna.</li>
+                <li style="margin-bottom: 8px;"><strong>Templates</strong>: el valor inicial sale de <code>product_variant</code>, la variante de la combinacion preseleccionada que el controller ya resuelve.</li>
+            </ol>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 10px; color: LinkText; font-size: 23px;">Limpieza de las leyendas manuales</h2>
+            <p style="margin: 0 0 12px;">Instalar el modulo <strong>no borra nada</strong>. La limpieza es un paso aparte y explicito, porque toca datos de produccion. Sin ella el resultado seria peor que antes: el modulo agrega el codigo correcto pero la leyenda vieja sigue en la descripcion, y quedarian las dos contradiciendose.</p>
+            <p style="margin: 0 0 12px;">Se corre desde el shell con <code>env['product.template']._clean_manual_code_descriptions()</code> — en <strong>dry run por defecto</strong>, y con <code>dry_run=False</code> para aplicar. Borra solo lo que reconoce como leyenda, deja intacto (y reporta) lo que tenga contenido real mezclado en HTML, <strong>loguea el valor previo</strong> de cada campo antes de borrarlo, recorre todos los idiomas instalados y es idempotente.</p>
+            <p style="margin: 0;"><strong>Ojo con el carrito ya armado:</strong> al agregar un producto, Odoo copia <code>description_sale</code> dentro del nombre de la linea de venta. Los pedidos que ya existian conservan la leyenda vieja congelada; los nuevos salen limpios.</p>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 10px; color: LinkText; font-size: 23px;">Validacion manual</h2>
+            <ol style="margin: 0; padding-left: 22px;">
+                <li style="margin-bottom: 8px;">Abrir un repuesto con dos variantes en la tienda. Con <strong>Delantero</strong> seleccionado debe decir <code>Cod: V8M-070</code>; al tocar <strong>Trasero</strong>, cambia a <code>Cod: V8M-071</code> sin recargar.</li>
+                <li style="margin-bottom: 8px;">Agregarlo al carrito: la linea muestra el codigo de la variante elegida, uno solo.</li>
+                <li style="margin-bottom: 8px;">Abrir un producto sin variantes y sin referencia interna: no debe aparecer ninguna leyenda vacia.</li>
+            </ol>
+        </div>
+
+        <div style="margin-top: 30px; padding: 20px 24px; border: 1px solid ButtonBorder; border-radius: 8px; background: Canvas;">
+            <p style="margin: 0; color: GrayText; font-size: 14px;">Sunra &middot; LGPL-3 &middot; Odoo 19 &middot; depende de <code>website_sale</code></p>
+        </div>
+    </section>
+</body>
+</html>
