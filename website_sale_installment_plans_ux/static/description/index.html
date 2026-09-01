@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<body>
+    <section style="max-width: 980px; margin: 0 auto; padding: 32px 24px; font-family: Arial, Helvetica, sans-serif; color-scheme: var(--o-webclient-color-scheme, normal); color: CanvasText; line-height: 1.55; background: transparent;">
+        <div style="padding: 28px 30px; border: 1px solid ButtonBorder; border-radius: 8px; background: Canvas;">
+            <p style="margin: 0 0 8px; color: LinkText; font-size: 13px; font-weight: 700; text-transform: uppercase;">eCommerce - Cuotas</p>
+            <h1 style="margin: 0 0 12px; color: CanvasText; font-size: 32px; line-height: 1.2;">website_sale_installment_plans_ux</h1>
+            <p style="margin: 0; max-width: 760px; color: GrayText; font-size: 16px;">Ajusta el texto de cuotas que se publica debajo del precio en el eCommerce: saca el total entre parentesis y muestra el importe con el formato de moneda del sitio.</p>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 10px; color: LinkText; font-size: 23px;">Objetivo</h2>
+            <p style="margin: 0 0 14px;">La leyenda que trae el modulo de ADHOC repite el total en cada linea y escribe los importes sin separador de miles, al lado de un precio que Odoo si formatea bien. Este modulo reescribe solo ese texto, sin tocar plantillas ni calculos.</p>
+            <table style="width: 100%; border-collapse: collapse; border: 1px solid ButtonBorder; background: Canvas;">
+                <tbody>
+                    <tr>
+                        <td style="width: 28%; padding: 14px 16px; border-bottom: 1px solid ButtonBorder; font-weight: 700; background: ButtonFace; color: ButtonText;">Antes</td>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">En 6 cuotas de $58823.53 (Total $352941.18) &nbsp; <span style="color: GrayText;">11% de recargo</span></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 14px 16px; font-weight: 700; background: ButtonFace; color: ButtonText;">Despues</td>
+                        <td style="padding: 14px 16px; color: CanvasText;">En 6 cuotas de $ 58.823,53 &nbsp; <span style="color: GrayText;">11% de recargo</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 12px; color: LinkText; font-size: 23px;">Que hace</h2>
+            <table style="width: 100%; border-collapse: collapse; border: 1px solid ButtonBorder; background: Canvas;">
+                <tbody>
+                    <tr>
+                        <td style="width: 28%; padding: 14px 16px; border-bottom: 1px solid ButtonBorder; font-weight: 700; background: ButtonFace; color: ButtonText;">Sin el total</td>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">La linea queda con la cantidad de cuotas y el valor de cada una. El precio total ya esta arriba, en grande.</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; font-weight: 700; background: ButtonFace; color: ButtonText;">Importe formateado</td>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">Usa el formateo nativo de Odoo con la moneda del sitio web, asi que acompana el idioma y la moneda configurados (separador de miles y coma decimal).</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; font-weight: 700; background: ButtonFace; color: ButtonText;">Cuotas segun el Divisor</td>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">La cantidad de cuotas sale del campo Divisor, que es el que representa en cuantas cuotas se divide el total. Ya no hace falta duplicar ese numero en el campo Plan de Cuotas.</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 14px 16px; font-weight: 700; background: ButtonFace; color: ButtonText;">Los dos lugares a la vez</td>
+                        <td style="padding: 14px 16px; color: CanvasText;">Un unico override sobre el metodo por el que pasan tanto la ficha de producto como la grilla del shop.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 10px; color: LinkText; font-size: 23px;">Que no hace</h2>
+            <ul style="margin: 0; padding-left: 20px;">
+                <li style="margin-bottom: 6px;">No cambia las plantillas: la ubicacion de la leyenda, el icono y el campo Mensaje siguen siendo los del modulo de ADHOC.</li>
+                <li style="margin-bottom: 6px;">No toca el calculo: el coeficiente de recargo se aplica igual que antes.</li>
+                <li style="margin-bottom: 6px;">No agrega campos, menus ni configuracion.</li>
+                <li>No modifica el flujo de pago: la leyenda es informativa y el total del carrito no cambia.</li>
+            </ul>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 10px; color: LinkText; font-size: 23px;">Dependencias</h2>
+            <p style="margin: 0;">Depende de <b>website_sale_installment_plans</b> (repo odoo_l10n_ar), que arrastra card_installment y website_sale. Los dos repos de addons tienen que estar en el addons_path.</p>
+        </div>
+
+        <div style="margin-top: 30px; padding-top: 18px; border-top: 1px solid ButtonBorder;">
+            <p style="margin: 0; color: GrayText; font-size: 13px;">Sunra &middot; LGPL-3 &middot; Odoo 19</p>
+        </div>
+    </section>
+</body>
+</html>
