@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     "name": "website_sale_variant_code",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "summary": "eCommerce: muestra el codigo interno de la variante elegida, no el de todas",
     "description": """
 Muestra en el eCommerce el codigo interno (referencia interna) de la variante que el cliente esta

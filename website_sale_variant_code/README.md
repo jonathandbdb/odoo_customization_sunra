@@ -3,7 +3,7 @@
 Mostrar en el eCommerce el **código interno de la variante que el cliente está mirando**, en lugar de
 una leyenda fija con los códigos de todas las variantes.
 
-- **Versión**: 1.0.0
+- **Versión**: 1.1.0
 - **Licencia**: LGPL-3
 - **Depende de**: `website_sale`
 
@@ -85,10 +85,22 @@ El método:
 - recorre **todos los idiomas instalados**, porque el campo es traducible y la leyenda podía estar
   cargada en uno solo.
 
-> ⚠️ **El carrito ya armado no se limpia solo.** Al agregar un producto al carrito, Odoo copia
-> `description_sale` dentro de `sale.order.line.name`
-> (`product.product.get_product_multiline_description_sale`). Los pedidos que ya existían conservan
-> la leyenda vieja congelada en el nombre de la línea. Los nuevos salen limpios.
+### Los carritos ya armados: segundo datafix
+
+Al agregar un producto al carrito, Odoo copia `description_sale` **dentro** de
+`sale.order.line.name` (`product.product.get_product_multiline_description_sale`). Por eso limpiar
+el producto no alcanza: los carritos que ya existían siguen mostrando la leyenda vieja congelada en
+el nombre de la línea, aunque el producto ya esté limpio. Los carritos nuevos salen bien solos.
+
+```python
+env['sale.order.line']._clean_manual_code_names()                 # dry run
+env['sale.order.line']._clean_manual_code_names(dry_run=False)    # aplicar
+env.cr.commit()
+```
+
+Solo toca pedidos **no confirmados** (`draft` / `sent`): un pedido confirmado o facturado es un
+documento cerrado y no se reescribe. Conserva el resto del nombre de la línea (saca únicamente las
+líneas de la leyenda), loguea el nombre previo y es idempotente.
 
 ### Estado relevado (staging, 2026-09-01)
 
