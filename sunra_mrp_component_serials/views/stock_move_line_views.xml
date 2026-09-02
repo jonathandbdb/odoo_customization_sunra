@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Columnas de piezas en el detalle de operaciones del albaran (el que abre "Detailed
+         Operations"). OJO: la columna nativa lot_id lleva column_invisible por picking_code
+         != 'incoming' porque en una entrega Odoo propone la serie con el widget pick_from
+         sobre quant_id; estas columnas NO copian esa condicion, si no desaparecerian justo en
+         la entrega, que es cuando el operario las necesita. -->
+    <record id="view_stock_move_line_detailed_operation_tree" model="ir.ui.view">
+        <field name="name">stock.move.line.operations.list.inherit.sunra_mrp_component_serials</field>
+        <field name="model">stock.move.line</field>
+        <field name="inherit_id" ref="stock.view_stock_move_line_detailed_operation_tree"/>
+        <field name="arch" type="xml">
+            <field name="lot_name" position="after">
+                <field name="sunra_motor_name" readonly="1" optional="show"
+                    groups="stock.group_production_lot" invisible="not lots_visible"/>
+                <field name="sunra_battery_names" readonly="1" optional="show"
+                    groups="stock.group_production_lot" invisible="not lots_visible"/>
+                <field name="sunra_charger_name" readonly="1" optional="show"
+                    groups="stock.group_production_lot" invisible="not lots_visible"/>
+                <field name="sunra_controller_name" readonly="1" optional="hide"
+                    groups="stock.group_production_lot" invisible="not lots_visible"/>
+            </field>
+        </field>
+    </record>
+
+    <!-- Mismas columnas en la lista de lineas del dialogo "Details" de un movimiento. Aca la
+         guarda por producto sin trazabilidad es el campo tracking, que la vista ya declara. -->
+    <record id="view_stock_move_line_operation_tree" model="ir.ui.view">
+        <field name="name">stock.move.line.operations.list.inherit.sunra_mrp_component_serials</field>
+        <field name="model">stock.move.line</field>
+        <field name="inherit_id" ref="stock.view_stock_move_line_operation_tree"/>
+        <field name="arch" type="xml">
+            <field name="lot_name" position="after">
+                <field name="sunra_motor_name" readonly="1" optional="show"
+                    groups="stock.group_production_lot" invisible="tracking == 'none'"/>
+                <field name="sunra_battery_names" readonly="1" optional="show"
+                    groups="stock.group_production_lot" invisible="tracking == 'none'"/>
+                <field name="sunra_charger_name" readonly="1" optional="show"
+                    groups="stock.group_production_lot" invisible="tracking == 'none'"/>
+                <field name="sunra_controller_name" readonly="1" optional="hide"
+                    groups="stock.group_production_lot" invisible="tracking == 'none'"/>
+            </field>
+        </field>
+    </record>
+</odoo>
+<!-- vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4-->

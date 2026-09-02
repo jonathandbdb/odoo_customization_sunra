@@ -88,6 +88,7 @@ msgstr "Cantidad de adjuntos"
 
 #. module: sunra_mrp_component_serials
 #: model:ir.model.fields,field_description:sunra_mrp_component_serials.field_stock_lot__battery_ids
+#: model:ir.model.fields,field_description:sunra_mrp_component_serials.field_stock_move_line__sunra_battery_names
 #: model_terms:ir.ui.view,arch_db:sunra_mrp_component_serials.report_delivery_document
 msgid "Batteries"
 msgstr "Baterías"
@@ -167,6 +168,7 @@ msgstr ""
 
 #. module: sunra_mrp_component_serials
 #: model:ir.model.fields,field_description:sunra_mrp_component_serials.field_stock_lot__charger_id
+#: model:ir.model.fields,field_description:sunra_mrp_component_serials.field_stock_move_line__sunra_charger_name
 #: model:ir.model.fields.selection,name:sunra_mrp_component_serials.selection__sunra_bike_component__component_type__charger
 #: model_terms:ir.ui.view,arch_db:sunra_mrp_component_serials.report_delivery_document
 msgid "Charger"
@@ -179,6 +181,7 @@ msgstr "Cargador (faja) entregado con este chasis."
 
 #. module: sunra_mrp_component_serials
 #: model:ir.model.fields,field_description:sunra_mrp_component_serials.field_stock_lot__controller_id
+#: model:ir.model.fields,field_description:sunra_mrp_component_serials.field_stock_move_line__sunra_controller_name
 #: model:ir.model.fields.selection,name:sunra_mrp_component_serials.selection__sunra_bike_component__component_type__controller
 #: model_terms:ir.ui.view,arch_db:sunra_mrp_component_serials.report_delivery_document
 msgid "Controller"
@@ -320,6 +323,7 @@ msgstr "Mensajes"
 
 #. module: sunra_mrp_component_serials
 #: model:ir.model.fields,field_description:sunra_mrp_component_serials.field_stock_lot__motor_id
+#: model:ir.model.fields,field_description:sunra_mrp_component_serials.field_stock_move_line__sunra_motor_name
 #: model:ir.model.fields.selection,name:sunra_mrp_component_serials.selection__sunra_bike_component__component_type__motor
 #: model_terms:ir.ui.view,arch_db:sunra_mrp_component_serials.report_delivery_document
 msgid "Motor"
@@ -459,3 +463,31 @@ msgid ""
 msgstr ""
 "El componente %(component)s está marcado como fallado y no puede seguir "
 "asignado al chasis %(chassis)s."
+
+#. module: sunra_mrp_component_serials
+#: model:ir.model.fields,help:sunra_mrp_component_serials.field_stock_move_line__sunra_battery_names
+msgid ""
+"Serial numbers (fajas) of the batteries mounted on the chassis being moved."
+msgstr ""
+"Números de serie (fajas) de las baterías montadas en el chasis que se está moviendo."
+
+#. module: sunra_mrp_component_serials
+#: model:ir.model.fields,help:sunra_mrp_component_serials.field_stock_move_line__sunra_charger_name
+msgid ""
+"Serial number (faja) of the charger shipped with the chassis being moved."
+msgstr ""
+"Número de serie (faja) del cargador entregado con el chasis que se está moviendo."
+
+#. module: sunra_mrp_component_serials
+#: model:ir.model.fields,help:sunra_mrp_component_serials.field_stock_move_line__sunra_controller_name
+msgid ""
+"Serial number of the controller mounted on the chassis being moved."
+msgstr ""
+"Número de serie del controlador montado en el chasis que se está moviendo."
+
+#. module: sunra_mrp_component_serials
+#: model:ir.model.fields,help:sunra_mrp_component_serials.field_stock_move_line__sunra_motor_name
+msgid ""
+"Serial number of the motor mounted on the chassis being moved."
+msgstr ""
+"Número de serie del motor montado en el chasis que se está moviendo."

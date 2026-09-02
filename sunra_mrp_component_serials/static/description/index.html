@@ -5,12 +5,12 @@
         <div style="padding: 28px 30px; border: 1px solid ButtonBorder; border-radius: 8px; background: Canvas;">
             <p style="margin: 0 0 8px; color: LinkText; font-size: 13px; font-weight: 700; text-transform: uppercase;">Fabricacion - Trazabilidad de series</p>
             <h1 style="margin: 0 0 12px; color: CanvasText; font-size: 32px; line-height: 1.2;">Sunra MRP Component Serials</h1>
-            <p style="margin: 0; max-width: 760px; color: GrayText; font-size: 16px;">Traza el motor, la(s) bateria(s) y el controlador de cada kit de bicicleta electrica contra el numero de serie del chasis, los traslada solos a la bicicleta armada al cerrar la orden de fabricacion, y los imprime automaticamente en remito y factura.</p>
+            <p style="margin: 0; max-width: 760px; color: GrayText; font-size: 16px;">Traza el motor, la(s) faja(s) de bateria, el controlador y el cargador de cada kit de bicicleta electrica contra el numero de serie del chasis, los traslada solos a la bicicleta armada al cerrar la orden de fabricacion, los muestra en el albaran al momento de entregar y los imprime automaticamente en remito y factura.</p>
         </div>
 
         <div style="margin-top: 30px;">
             <h2 style="margin: 0 0 10px; color: LinkText; font-size: 23px;">Objetivo</h2>
-            <p style="margin: 0;">Sunra compra kits en caja: cada kit trae el numero de serie del chasis mas el numero de motor, el/los numero(s) de faja de la(s) bateria(s) y el numero de controlador. Hoy esos numeros se transcriben a mano al remito y a la factura, y se equivocan; el numero de faja es la evidencia anti-fraude de garantia (identifica que bateria se entrego con que bicicleta). Este modulo da de alta un padron de piezas montadas contra la serie del chasis, y amolda el circuito a la fabricacion estandar de Odoo para que los numeros salgan solos en remito y factura, sin intervencion manual.</p>
+            <p style="margin: 0;">Sunra compra kits en caja: cada kit trae el numero de serie del chasis mas el numero de motor, el/los numero(s) de faja de la(s) bateria(s) y el numero de faja del cargador. Hoy esos numeros se transcriben a mano al remito y a la factura, y se equivocan; el numero de faja es la evidencia anti-fraude de garantia (identifica que bateria se entrego con que bicicleta). Este modulo da de alta un padron de piezas montadas contra la serie del chasis, y amolda el circuito a la fabricacion estandar de Odoo para que los numeros salgan solos en remito y factura, sin intervencion manual.</p>
         </div>
 
         <div style="margin-top: 30px;">
@@ -19,7 +19,7 @@
                 <tbody>
                     <tr>
                         <td style="width: 28%; padding: 14px 16px; border-bottom: 1px solid ButtonBorder; font-weight: 700; background: ButtonFace; color: ButtonText;">Padron de piezas</td>
-                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">Un modelo (motor / bateria / controlador) montado contra la serie del chasis (numero de lote). Una pieza nunca puede quedar montada en dos chasis a la vez, y cada numero de serie es unico por tipo de pieza.</td>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">Un modelo (motor / bateria / controlador / cargador) montado contra la serie del chasis (numero de lote). Una pieza nunca puede quedar montada en dos chasis a la vez, y cada numero de serie es unico por tipo de pieza.</td>
                     </tr>
                     <tr>
                         <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; font-weight: 700; background: ButtonFace; color: ButtonText;">Traslado automatico en la OF</td>
@@ -27,11 +27,15 @@
                     </tr>
                     <tr>
                         <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; font-weight: 700; background: ButtonFace; color: ButtonText;">Guardia de completitud</td>
-                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">No se puede cerrar una orden de fabricacion cuyo chasis no reuna motor, al menos una bateria y controlador: el aviso indica exactamente que falta cargar.</td>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">No se puede cerrar una orden de fabricacion cuyo chasis no reuna motor y al menos una bateria: el aviso indica exactamente que falta cargar. El controlador y el cargador son opcionales (las lineas que Sunra vende hoy no siempre los traen).</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; font-weight: 700; background: ButtonFace; color: ButtonText;">Numeros a la vista al entregar</td>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">En las lineas de operacion del albaran, junto al numero de serie que Odoo propone, aparecen las columnas Motor, Baterias y Cargador (y Controlador, oculta por defecto). Son de solo lectura y salen de las piezas montadas en ese chasis, asi el operario controla la caja fisica contra el sistema antes de validar la entrega.</td>
                     </tr>
                     <tr>
                         <td style="padding: 14px 16px; font-weight: 700; background: ButtonFace; color: ButtonText;">Impresion en remito y factura</td>
-                        <td style="padding: 14px 16px; color: CanvasText;">Tres columnas (Motor / Batteries / Controller) a continuacion de la tabla de numeros de serie que ya imprime el core, tanto para la bicicleta armada como para el kit vendido sin armar. Una pieza marcada como fallada no se imprime.</td>
+                        <td style="padding: 14px 16px; color: CanvasText;">Cuatro columnas (Motor / Baterias / Controlador / Cargador) a continuacion de la tabla de numeros de serie que ya imprime el core, tanto para la bicicleta armada como para el kit vendido sin armar. Una pieza marcada como fallada no se imprime.</td>
                     </tr>
                 </tbody>
             </table>
@@ -48,7 +52,7 @@
 
         <div style="margin-top: 30px;">
             <h2 style="margin: 0 0 10px; color: LinkText; font-size: 23px;">Detalle tecnico</h2>
-            <p style="margin: 0 0 14px;">El padron de piezas (<code>sunra.bike.component</code>) se monta contra <code>stock.lot</code> mediante un unico campo <code>lot_id</code>, que es el origen de verdad de la asignacion. La orden de fabricacion (<code>mrp.production</code>) traslada las piezas del lote del kit al lote de la bicicleta reutilizando el mismo numero de chasis (no genera serie nueva), y la factura (<code>account.move</code>) extiende <code>_get_invoiced_lot_values()</code> para agregar motor, bateria(s) y controlador a la tabla nativa de series. Marcar una pieza como "Faulty" la libera del chasis en el mismo acto: deja de ofrecerse, de imprimirse y de contar para la validacion de completitud; el historial de a que chasis estuvo montada queda en su chatter.</p>
+            <p style="margin: 0 0 14px;">El padron de piezas (<code>sunra.bike.component</code>) se monta contra <code>stock.lot</code> mediante un unico campo <code>lot_id</code>, que es el origen de verdad de la asignacion. La orden de fabricacion (<code>mrp.production</code>) traslada las piezas del lote del kit al lote de la bicicleta reutilizando el mismo numero de chasis (no genera serie nueva), la factura (<code>account.move</code>) extiende <code>_get_invoiced_lot_values()</code> para agregar motor, bateria(s), controlador y cargador a la tabla nativa de series, y las lineas de movimiento (<code>stock.move.line</code>) exponen esos mismos numeros como campos calculados de solo lectura para las columnas del albaran. Marcar una pieza como "Faulty" la libera del chasis en el mismo acto: deja de ofrecerse, de imprimirse y de contar para la validacion de completitud; el historial de a que chasis estuvo montada queda en su chatter.</p>
             <p style="margin: 0; padding: 14px 16px; border-left: 4px solid Highlight; background: color-mix(in srgb, Highlight 14%, Canvas); color: CanvasText;">Cancelar una orden de fabricacion despues de que las piezas ya viajaron al lote de la bicicleta no las devuelve al lote del kit: quedan montadas en la bicicleta, que lleva el mismo numero de chasis, asi que el dato sigue siendo correcto. Si hace falta revertir, se hace a mano desde la ficha de cada pieza.</p>
         </div>
 

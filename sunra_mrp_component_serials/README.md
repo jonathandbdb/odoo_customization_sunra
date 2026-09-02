@@ -1,10 +1,10 @@
 # sunra_mrp_component_serials
 
 Trazabilidad de motor, batería(s), controlador y cargador contra el número de serie del **chasis** de las
-bicicletas eléctricas Sunra, con traslado automático a la orden de fabricación e impresión sin
-intervención manual en remito y factura.
+bicicletas eléctricas Sunra, con traslado automático a la orden de fabricación, visualización de los
+números en el albarán al momento de entregar e impresión sin intervención manual en remito y factura.
 
-- **Versión**: 1.1.0
+- **Versión**: 1.2.0
 - **Licencia**: LGPL-3
 - **Depende de**: `mail`, `mrp`, `sale_stock`, `stock_account`
 
@@ -59,6 +59,7 @@ pasa nada", revisar esto primero:
 | `stock.lot` (extendido) | Representa el chasis (o cualquier lote serializado). Agrega `motor_id`, `controller_id`, `charger_id` (M2o computados, `store=False`), `battery_ids` (O2m, admite N) y el helper `_sunra_component_report_values()` usado por los reportes. |
 | `mrp.bom` (extendido) | Agrega el opt-in `sunra_pull_kit_components` (Boolean, default `False`) — el interruptor de todo el módulo (prerequisito 1). |
 | `mrp.production` (extendido) | El traslado kit→bici: `_sunra_get_kit_lot()`, `_sunra_pull_kit_components(strict)`, el botón `action_sunra_pull_kit_components()` y el override de `button_mark_done()`. |
+| `stock.move.line` (extendido) | Cuatro campos Char **computados y no almacenados** (`sunra_motor_name`, `sunra_battery_names`, `sunra_controller_name`, `sunra_charger_name`) que muestran las piezas del lote de la línea en las listas de operación del albarán. Salen del **mismo** helper que imprime el papel, así pantalla y remito no pueden divergir. |
 | `account.move` (extendido) | Override de `_get_invoiced_lot_values()` para agregar motor/fajas/controlador a la tabla de series que ya imprime la factura. |
 
 ## Flujo de usuario de punta a punta
@@ -81,10 +82,16 @@ pasa nada", revisar esto primero:
      enumera exactamente qué falta y no deja cerrar la OF). **El controlador y el cargador NO se
      exigen**: las líneas actuales no traen controlador y el cargador no siempre viene informado;
    - **traslada** (no copia) las piezas del lote del kit al lote de la bici armada.
-4. **Remito**: al entregar la bicicleta (o el kit sin armar, si se vende así), el remito imprime
+4. **Entrega (en pantalla)**: al preparar el albarán, el botón **☰** de la línea (u **Operaciones
+   detalladas**) abre la lista de líneas de operación, donde junto al número de serie que Odoo
+   propone se ven las columnas **Motor**, **Baterías** y **Cargador** (y **Controlador**, oculta por
+   defecto: se activa desde el selector de columnas ⚙). Son de **solo lectura**: salen de las piezas
+   montadas en ese chasis, no se cargan a mano. Así el operario controla la caja física contra el
+   sistema **antes** de validar la entrega.
+5. **Remito**: al entregar la bicicleta (o el kit sin armar, si se vende así), el remito imprime
    automáticamente el chasis + motor + batería(s) + controlador + cargador de las piezas **montadas** en el
    lote de esa línea.
-5. **Factura**: idem remito, en la tabla de números de serie de la factura.
+6. **Factura**: idem remito, en la tabla de números de serie de la factura.
 
 ## Comportamientos que sorprenden si no se saben
 
@@ -171,6 +178,9 @@ de cada pieza (reasignando `lot_id` de vuelta al lote del kit).
 - **Ficha de la LdM** (`mrp.bom`): campo **"Pull Kit Component Serials"** (el opt-in).
 - **Ficha de la OF** (`mrp.production`): botón **"Pull Kit Component Serials"** en el header, visible
   solo si la LdM tiene el opt-in activo y la OF no está terminada/cancelada.
+- **Líneas de operación del albarán**: las mismas cuatro columnas en `stock.view_stock_move_line_detailed_operation_tree`
+  (*Operaciones detalladas*) y en `stock.view_stock_move_line_operation_tree` (diálogo *Detalles* de
+  un movimiento). Motor / Baterías / Cargador visibles, Controlador `optional="hide"`.
 - **Factura**: cuatro columnas (Motor / Batteries / Controller / Charger) a continuación de la tabla nativa de
   números de serie (`invoice_snln_table`), dentro del `groups="stock_account.group_lot_on_invoice"`
   del core.
@@ -201,6 +211,13 @@ No requiere ningún servicio externo ni configuración de integración.
   `store=True` sobre `stock.lot` forzaría recalcular toda la tabla al instalar/actualizar. El
   `tracking=True` sigue funcionando sin `store` porque `_track_get_fields()` no filtra por `store` y
   el tracking se dispara sobre los campos presentes en el `write()`.
+- **La columna `lot_id` del core está OCULTA en las entregas**: en las dos listas de líneas de
+  operación, `lot_id` lleva `column_invisible` (`context.get('picking_code') != 'incoming'` en
+  *Operaciones detalladas*, `parent.show_quant` en el diálogo *Detalles*), porque en una salida Odoo
+  propone la serie con el widget `pick_from` sobre `quant_id`, no con `lot_id`. Por eso las columnas
+  de este módulo **no copian esa condición**: si se copiara, desaparecerían justo en la entrega, que
+  es el caso que importa. El dato igual está: `_copy_quant_info()` del core escribe `lot_id` a partir
+  del quant elegido, así que los computes tienen de dónde leer.
 - **`button_mark_done()` se overridea llamando al traslado ANTES de `super()`**: con una bicicleta
   por OF (`product_uom_qty == 1`), el core genera el número de serie **en silencio**
   (`_set_quantities()` → `action_generate_serial()`) dentro del mismo `button_mark_done()`, sin
@@ -219,7 +236,7 @@ No requiere ningún servicio externo ni configuración de integración.
 
 El repo no declara política de tests (`.swarm.conf` ausente); la validación acordada con el cliente
 es una **guía de pruebas manual + video** al cierre del proyecto, recorriendo los criterios de
-aceptación de la spec (CA01 a CA10): alta de piezas desde la serie del chasis, intento de asignar
+aceptación de la spec (CA01 a CA11): alta de piezas desde la serie del chasis, intento de asignar
 una pieza ya montada a otro chasis (rechazado), número de faja duplicado (rechazado), traslado por
 botón y al cerrar la OF, batería fallada antes/después de armar, impresión completa en remito y
 factura (bicicleta armada y kit sin armar), y bloqueo al cerrar una OF con el chasis incompleto.

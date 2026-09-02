@@ -3,10 +3,10 @@
 | Campo | Valor |
 |-------|-------|
 | **Modulo** | `sunra_mrp_component_serials` |
-| **Version** | `1.1.0` (== `version` del `__manifest__.py`, formato `x.x.x`) |
+| **Version** | `1.2.0` (== `version` del `__manifest__.py`, formato `x.x.x`) |
 | **Serie Odoo** | `19` (informativa) |
 | **Estado** | `approved` |
-| **Actualizado** | `2026-08-28` |
+| **Actualizado** | `2026-09-02` |
 
 ## Objetivo
 
@@ -50,6 +50,7 @@ salgan **solos** en remito y factura, sin intervencion manual.
 | D19 | Idioma | UI en **ingles** con `_()`, traduccion en `i18n/es_419.po` (mismo criterio que `helpdesk_service_appointment` y `website_sale_installation_appointment`). Incluye los encabezados **impresos** en remito y factura (Motor / Batteries / Controller), que el cliente ve en castellano. |
 | D21 | ¿El guard de completitud exige controlador? | **No.** Las lineas que Sunra vende hoy **no traen controlador**: la planilla del proveedor informa motor, faja de bateria y faja de **cargador**. El guard (CA10) exige solo **motor + al menos una bateria**; controlador y cargador quedan **opcionales**. El tipo `controller` se conserva para las lineas que si lo traigan, sin tocar codigo. |
 | D22 | ¿Donde se guarda el numero de faja del cargador? | Como una pieza mas del padron: `component_type='charger'`, con su `charger_id` en el chasis. Es la misma evidencia anti-fraude que la faja de bateria (identifica que cargador se entrego con que bicicleta), asi que reusa el modelo existente en vez de un campo Char aparte. |
+| D23 | ¿Como se ven los numeros **en pantalla** al entregar? | **Cuatro columnas en las listas de lineas de operacion** del albaran, alimentadas por el MISMO helper que imprime remito y factura (`_sunra_component_report_values()`), no por campos `related` a `motor_id`/`charger_id`. Motivos: (a) papel y pantalla no pueden divergir; (b) `battery_ids` es N y el helper ya resuelve el `', '.join`; (c) `motor_id`/`controller_id`/`charger_id` son `store=False` (M2 en Notas) y un `related` a un compute no almacenado no aporta nada sobre un compute propio; (d) el helper ya hace el `sudo()` que necesita un usuario sin permisos de Inventario. Motor / Baterias / Cargador salen visibles; Controlador queda `optional="hide"` (D21: las lineas que Sunra vende hoy no lo traen). |
 | D20 | ¿Cancelar la OF despues del traslado devuelve las piezas al lote del kit? | `[ASUNCION]` **No.** No se engancha `action_cancel`: las piezas quedan montadas en el lote de la bicicleta, que lleva **el mismo numero de chasis** que el del kit (D9), asi que el dato sigue siendo correcto de cara al cliente. Si hay que revertir, se hace a mano desde la pieza. Se documenta en el README. |
 
 ## Alcance
@@ -59,6 +60,7 @@ salgan **solos** en remito y factura, sin intervencion manual.
 - **Traslado** de las piezas del lote del kit al lote de la bicicleta armada al procesar la Orden de Fabricacion (boton manual + automatico al cerrar).
 - Reutilizacion del **mismo numero de chasis** para la bicicleta armada (sin numero nuevo).
 - Impresion automatica de los numeros en **remito** y **factura**, tanto para la bicicleta armada como para el **kit vendido sin armar**.
+- **Visualizacion en pantalla** de motor, faja(s) de bateria y cargador en las lineas de operacion del albaran (entrega y recepcion), junto al numero de serie que Odoo propone.
 - Registro del cambio de asignacion en el **chatter** de la pieza (de donde salio, a donde entro, cuando, quien).
 
 ### NO incluye
@@ -89,6 +91,7 @@ Atributos: `_order = 'component_type, name'`, `_rec_names_search = ['name']`.
 | `stock.lot` | `stock.lot` | Piezas montadas en el chasis: `component_ids`, `battery_ids`, `motor_id`, `controller_id`, `charger_id` + helper de reporte. Ya hereda `mail.thread` (chatter gratis). |
 | `mrp.bom` | `mrp.bom` | Opt-in `sunra_pull_kit_components` (D17). |
 | `mrp.production` | `mrp.production` | Traslado kit→bici: metodos + boton + override de `button_mark_done()` + `related` del opt-in para la visibilidad del boton. |
+| `stock.move.line` | `stock.move.line` | Cuatro Char computados (no almacenados) con los numeros de las piezas del lote de la linea, para verlos al operar el albaran. |
 | `account.move` | `account.move` | Override de `_get_invoiced_lot_values()` para enriquecer la tabla de series de la factura. |
 
 ## Campos
@@ -105,6 +108,10 @@ Atributos: `_order = 'component_type, name'`, `_rec_names_search = ['name']`.
 | `stock.lot` | `motor_id` | Many2one `sunra.bike.component` | Motor | No | - | `compute='_compute_motor_id'`, **`store=False`** (ver M2 en Notas), `inverse='_inverse_motor_id'`, `tracking=True`, `@api.depends('component_ids.component_type')`. Domain D5 + `context={'default_component_type': 'motor'}`. |
 | `stock.lot` | `controller_id` | Many2one `sunra.bike.component` | Controller | No | - | Idem `motor_id` con `component_type='controller'`. **Opcional** (D21). |
 | `stock.lot` | `charger_id` | Many2one `sunra.bike.component` | Charger | No | - | Idem `motor_id` con `component_type='charger'` (D22). **Opcional** (D21). |
+| `stock.move.line` | `sunra_motor_name` | Char (compute) | Motor | No | - | `compute='_compute_sunra_component_names'`, **no almacenado**, solo lectura. Sale de `lot_id` via el helper de reporte (D23). |
+| `stock.move.line` | `sunra_battery_names` | Char (compute) | Batteries | No | - | Idem. Varias fajas separadas por coma (mismo formato que el impreso). |
+| `stock.move.line` | `sunra_controller_name` | Char (compute) | Controller | No | - | Idem. Columna `optional="hide"` (D21). |
+| `stock.move.line` | `sunra_charger_name` | Char (compute) | Charger | No | - | Idem. |
 | `mrp.bom` | `sunra_pull_kit_components` | Boolean | Pull Kit Component Serials | No | `False` | D17. Opt-in por LdM: habilita el traslado automatico y el guard de completitud. |
 | `mrp.production` | `sunra_pull_kit_components` | Boolean (related) | Pull Kit Component Serials | No | - | `related='bom_id.sunra_pull_kit_components'`, `readonly=True`, sin store. **Existe solo para la visibilidad del boton**: un `invisible=` de vista NO atraviesa relaciones, asi que el campo tiene que estar en el modelo y en el arch. |
 
@@ -182,6 +189,15 @@ Atributos: `_order = 'component_type, name'`, `_rec_names_search = ['name']`.
   `{'motor_name': ..., 'battery_names': ', '.join(...), 'controller_name': ..., 'charger_name': ...}`, con `''` donde no hay pieza.
   **Sin filtro de `faulty`** (D18: la fallada no esta montada).
 - **Retorna**: `dict` (recordset vacio → dict con los tres valores en `''`).
+
+### `StockMoveLine._compute_sunra_component_names()`
+- **Proposito**: alimentar las cuatro columnas de pantalla del albaran desde el lote de la linea.
+- **Decoradores**: `@api.depends('lot_id', 'lot_id.component_ids.name', 'lot_id.component_ids.component_type')`
+- **Logica**: un solo compute para los cuatro campos; delega en
+  `line.lot_id._sunra_component_report_values()` (D23) y asigna las cuatro claves. Un `lot_id` vacio
+  devuelve el dict con los cuatro valores en `''`, asi que no hace falta guardia.
+- **Store**: `False`. No hay CA que pida buscar ni agrupar lineas por motor/faja.
+- **Retorna**: `None`
 
 ### `MrpProduction._sunra_get_kit_lot()`
 - **Proposito**: identificar el lote del kit consumido por la OF.
@@ -269,6 +285,20 @@ Atributos: `_order = 'component_type, name'`, `_rec_names_search = ['name']`.
 - `motor_id` / `controller_id`: `domain="[('component_type','=','motor'), ('faulty','=',False), '|', ('lot_id','=',False), ('lot_id','=',id)]"` (D5) + `context="{'default_component_type': 'motor'}"` para el quick-create (D12).
 - `battery_ids`: `<list editable="bottom" delete="0">` con `name` y `faulty` — sacar una bateria del chasis se hace desde la pieza (D10) o marcandola fallada (D18), asi no se borra del padron por error.
 
+### `view_stock_move_line_detailed_operation_tree` y `view_stock_move_line_operation_tree`
+Herencias de `stock.view_stock_move_line_detailed_operation_tree` (la lista que abre
+*Operaciones detalladas* del albaran) y de `stock.view_stock_move_line_operation_tree` (la del
+dialogo *Detalles* de un movimiento). En ambas, `<field name="lot_name" position="after">` con
+`sunra_motor_name`, `sunra_battery_names`, `sunra_charger_name` (`optional="show"`) y
+`sunra_controller_name` (`optional="hide"`), todos `readonly="1"` y `groups="stock.group_production_lot"`.
+
+⚠️ **Las columnas nuevas NO copian el `column_invisible` de la columna `lot_id` del core**: esa
+condicion (`context.get('picking_code') != 'incoming'` en la detallada, `parent.show_quant` en la
+otra) **oculta el lote justo en las entregas**, porque en outgoing Odoo propone la serie con el
+widget `pick_from` sobre `quant_id`. Copiarla dejaria las columnas invisibles en el unico caso que
+importa. La guarda por producto sin trazabilidad se hace por fila con el campo que cada vista ya
+declara: `invisible="not lots_visible"` en la detallada, `invisible="tracking == 'none'"` en la otra.
+
 ### `mrp_production_form_view` (herencia de `mrp.mrp_production_form_view`)
 - `<field name="sunra_pull_kit_components" invisible="1"/>` en el `<header>` **antes** del boton (un `invisible=` no atraviesa relaciones: el campo tiene que estar en el arch).
 - Boton `action_sunra_pull_kit_components`, string **"Pull Kit Component Serials"**, `type="object"`,
@@ -321,6 +351,7 @@ Atributos: `_order = 'component_type, name'`, `_rec_names_search = ['name']`.
 10. **RB10**: Sin los dos grupos nativos de impresion activos, el core no imprime la tabla de series y estas columnas tampoco (D14).
 11. **RB11**: Sin el opt-in en la LdM, el modulo **no interviene** en el cierre de ninguna OF (D17).
 12. **RB12**: Un chasis tiene **como maximo un motor, un controlador y un cargador**; baterias, N (D11). Lo garantiza un `@api.constrains`, porque la reasignacion desde la pieza (D10) no pasa por el domain de la vista.
+13. **RB13**: Las columnas de pantalla del albaran son **derivadas y de solo lectura**: leen las piezas montadas en el lote de la linea (`lot_id`) por el mismo helper que imprime el papel (D23). No hay carga manual desde el albaran ni forma de desincronizar pantalla y remito.
 
 ## Edge cases
 
@@ -337,6 +368,8 @@ Atributos: `_order = 'component_type, name'`, `_rec_names_search = ['name']`.
 - **Segundo motor/controlador/cargador en el mismo chasis** (tipicamente desde la pieza, que no pasa por el domain): `ValidationError` (RB12).
 - **Pieza fallada que se vuelve a marcar como NO fallada**: queda **libre** (su `lot_id` ya se limpio al marcarla). **No vuelve sola a su chasis anterior**: hay que reasignarla a mano, desde la pieza o desde la ficha del chasis. El chatter permite reconstruir de donde salio.
 - **Chasis sin piezas al imprimir**: las columnas salen vacias; no rompe el reporte.
+- **Linea de albaran sin lote todavia** (recepcion antes de tipear la serie, o producto no serializado): el helper sobre un `stock.lot` vacio devuelve los cuatro valores en `''` → columnas vacias, sin error. En producto no serializado las columnas se ocultan por fila (`lots_visible` / `tracking`).
+- **Entrega cuyo lote es el del kit y no el de la bici**: las columnas muestran lo que este montado en el lote de la linea (RB08); ambos lotes llevan el mismo numero de chasis (D9).
 - **Factura con lineas de Punto de Venta o de alquiler**: esos dicts no traen `lot_id` (POS trae `pos_lot_id`); el override los normaliza con `''` y el QWeb usa `.get()` → la factura imprime igual.
 - **Usuario sin permisos de Inventario imprimiendo factura/remito**: resuelto con `sudo()` en el helper de reporte.
 - **Borrar un lote**: `lot_id` de la pieza pasa a `False` (`ondelete='set null'`) → la pieza vuelve al padron como libre, no se pierde el numero.
@@ -354,6 +387,7 @@ Atributos: `_order = 'component_type, name'`, `_rec_names_search = ['name']`.
 - [ ] **CA07**: Bateria reemplazada **despues** de armada: se marca fallada la vieja (se libera del chasis) y se monta la nueva en la misma serie; el historial de la pieza muestra de que chasis salio, cuando y quien lo hizo.
 - [ ] **CA08**: Se entrega y factura la bicicleta: remito y factura salen con chasis + motor + dos fajas + cargador —solo las piezas **montadas**, una fallada no se imprime—, sin intervencion manual.
 - [ ] **CA09**: Se vende un kit **sin armar** y el remito sale igual de completo.
+- [x] **CA11**: En el albaran de **entrega**, la lista de lineas de operacion muestra junto al numero de serie que Odoo propone el numero de **motor**, de **faja(s) de bateria** y de **faja del cargador**, de solo lectura y sin carga manual. Funciona igual en **recepcion**; un lote sin piezas muestra las columnas vacias sin error y un producto no serializado no se ve afectado. El remito sigue imprimiendo las cuatro columnas.
 - [ ] **CA10**: Se intenta cerrar una OF con la serie del kit **sin piezas cargadas**: el sistema lo impide **indicando que falta** (motor y/o bateria; el controlador y el cargador no se exigen, D21).
 
 ## Referencias al core
@@ -388,37 +422,34 @@ Atributos: `_order = 'component_type, name'`, `_rec_names_search = ['name']`.
 | Template de remito (fila) a heredar | `/home/leandro/projects/nexit/19.0/odoo/addons/stock/report/report_deliveryslip.xml:232` | `stock_report_delivery_has_serial_move_line`; el xpath va sobre `<t name="move_line_lot">` (`:254`). |
 | Encabezado de la tabla del remito | `/home/leandro/projects/nexit/19.0/odoo/addons/stock/report/report_deliveryslip.xml:120` | `<th name="lot_serial">` dentro de un `t-else` → las columnas nuevas llevan su propio `t-if="has_serial_number"`. |
 | Grupo que muestra series en el remito | `/home/leandro/projects/nexit/19.0/odoo/addons/stock/security/stock_security.xml:42` | `group_lot_on_delivery_slip` — prerequisito de D14. |
+| Lista de *Operaciones detalladas* a heredar | `/home/leandro/projects/nexit/19.0/odoo/addons/stock/views/stock_move_views.xml:216` | `view_stock_move_line_detailed_operation_tree`; la abre `action_detailed_operations()` (`/home/leandro/projects/nexit/19.0/odoo/addons/stock/models/stock_picking.py:1217`, boton en `/home/leandro/projects/nexit/19.0/odoo/addons/stock/views/stock_picking_views.xml:188`). |
+| Lista del dialogo *Detalles* a heredar | `/home/leandro/projects/nexit/19.0/odoo/addons/stock/views/stock_move_views.xml:166` | `view_stock_move_line_operation_tree`, embebida en `view_stock_move_operations` (`:120`). |
+| ⚠️ `lot_id` esta oculto en las entregas | `/home/leandro/projects/nexit/19.0/odoo/addons/stock/views/stock_move_views.xml:243` | `column_invisible="context.get('picking_code') != 'incoming' or ..."` → D23: las columnas nuevas llevan su propia condicion. |
+| El lote SI viaja desde el quant elegido | `/home/leandro/projects/nexit/19.0/odoo/addons/stock/models/stock_move_line.py:1021` | `_copy_quant_info()` escribe `lot_id` desde el quant; lo llaman el `@api.onchange('quant_id')` (`:192`) y `create()` (`:354`). Es lo que garantiza que las columnas tengan dato en outgoing pese al `column_invisible` de arriba. |
+| Guarda por producto sin trazabilidad | `/home/leandro/projects/nexit/19.0/odoo/addons/stock/models/stock_move_line.py:75` | `lots_visible` (compute) y `tracking` (`:90`, related de `product_id.tracking`). |
 | Prioridad Normal/Urgente (fuera de alcance) | `/home/leandro/projects/nexit/19.0/odoo/addons/stock/models/stock_move.py:15` | `PROCUREMENT_PRIORITIES` vive en `stock.move`: agregar "Critico" impactaria movimientos y transferencias de toda la base. |
 
 ## Documentacion afectada
 
 | Archivo | Accion | Que reflejar |
 |---------|--------|--------------|
-| `sunra_mrp_component_serials/README.md` | **crear** | Objetivo de negocio, modelos, flujo (recepcion del kit → carga de piezas → OF → remito/factura), seguridad, **prerequisitos de configuracion** (los dos grupos de D14 + el opt-in de la LdM de D17), el comportamiento de "fallada libera" (D18), la no-reversion al cancelar (D20) y gotchas de v19. |
-| `sunra_mrp_component_serials/static/description/index.html` | **crear** | Funcionalidad visible: padron de piezas, montaje contra el chasis, traslado automatico en la OF, numeros en remito y factura. |
-| `sunra_mrp_component_serials/i18n/es_419.po` | **crear** | Traduccion es_419 de los strings de UI y, sobre todo, de los **encabezados impresos** en remito y factura (Motor / Batteries / Controller) y de los `UserError` del traslado (D19). |
-| `extra-addons/odoo_customization_sunra/README.md` | **actualizar** | Agregar la fila del modulo al indice de modulos del repo (es modulo nuevo). |
+| `sunra_mrp_component_serials/README.md` | **actualizar** | Objetivo de negocio, modelos, flujo (recepcion del kit → carga de piezas → OF → remito/factura), seguridad, **prerequisitos de configuracion** (los dos grupos de D14 + el opt-in de la LdM de D17), el comportamiento de "fallada libera" (D18), la no-reversion al cancelar (D20) y gotchas de v19. |
+| `sunra_mrp_component_serials/static/description/index.html` | **actualizar** | Funcionalidad visible: padron de piezas, montaje contra el chasis, traslado automatico en la OF, numeros en remito y factura, y **columnas de motor / fajas / cargador en el albaran** (D23). |
+| `sunra_mrp_component_serials/i18n/es_419.po` | **actualizar** | Traduccion es_419 de los strings de UI y, sobre todo, de los **encabezados impresos** en remito y factura (Motor / Batteries / Controller) y de los `UserError` del traslado (D19). |
+| `extra-addons/odoo_customization_sunra/README.md` | **sin cambios** | La fila del modulo ya esta en el indice del repo. |
 
 ## Plan del cambio en curso
 
-> Build inicial del modulo. `version` del manifest nace en `1.0.0` y la `Version` de esta spec ya lo
-> espeja; T12 verifica el sync. **Sin tarea de tests**: el repo no declara politica (`.swarm.conf`
-> ausente) y la validacion acordada es guia de pruebas manual + video al cierre del proyecto.
+> Cambio **1.1.0 -> 1.2.0**: los numeros de las piezas se ven **en pantalla** al operar el albaran
+> (Plane #34). El padron, el traslado kit->bici y la impresion en remito/factura no se tocan.
+> **Sin tarea de tests**: el repo no declara politica (`.swarm.conf` ausente).
 
 | Tarea | Descripcion | Depende de | Archivos | Cubre |
 |-------|-------------|------------|----------|-------|
-| **T01** | Esqueleto: `__init__.py`, `__manifest__.py` (`version` 1.0.0, `depends = ["mail", "mrp", "sale_stock", "stock_account"]`, author/website/license Sunra, `data` a completar), `models/__init__.py` | — | `__init__.py`, `__manifest__.py`, `models/__init__.py` | — |
-| **T02** | Modelo `sunra.bike.component`: campos, `models.Constraint` de unicidad (v19, NO `_sql_constraints`), `_inherit = ['mail.thread']` con tracking, `_order`, `_rec_names_search`, `_compute_display_name`, **override de `write` + `_onchange_faulty` + `@api.constrains` `_check_faulty_not_assigned` (D18: fallada libera el chasis; el constraint es la garantia estructural, cubre `create` e importacion)** y `@api.constrains` de un motor / un controlador por chasis (RB12) | T01 | `models/sunra_bike_component.py` | CA02, CA03, CA06 |
-| **T03** | Extension `stock.lot`: `component_ids`, `battery_ids` (`tracking`), `motor_id`/`controller_id` (compute `store=False` + inverse + `tracking` + domain D5 con `faulty=False` + contexts) y helper `_sunra_component_report_values()` con `sudo()` | T02 | `models/stock_lot.py` | CA01, CA02, CA07 |
-| **T04** | Seguridad: ACLs de `sunra.bike.component` (stock user r/w/c, stock manager r/w/c/u) | T02 | `security/ir.model.access.csv` | CA01 |
-| **T05** | Vistas de `sunra.bike.component` (list/form con chatter/search sin `<group>`) + accion + menu bajo Inventario → Productos | T02, T04 | `views/sunra_bike_component_views.xml`, `views/sunra_mrp_component_serials_menus.xml` | CA06, CA07 |
-| **T06** | Herencia del form de `stock.lot` (mismo XML ID `view_production_lot_form`): grupo "Bike Components" con motor/controlador (domain D5 + quick-create) y `battery_ids` como `<list editable="bottom" delete="0">` | T03, T05 | `views/stock_lot_views.xml` | CA01, CA02, CA06 |
-| **T07** | Opt-in `mrp.bom.sunra_pull_kit_components` + `related` en `mrp.production` (I1) + `_sunra_get_kit_lot()`, `_sunra_pull_kit_components(strict)`, `action_sunra_pull_kit_components()`, override de `button_mark_done()`. Todos los `UserError` en ingles con `_()` y `%(name)s` | T03 | `models/mrp_bom.py`, `models/mrp_production.py` | CA04, CA05, CA10 |
-| **T08** | Vistas heredadas (mismos XML IDs `mrp_production_form_view` / `mrp_bom_form_view`): `<field name="sunra_pull_kit_components" invisible="1"/>` + boton "Pull Kit Component Serials" en el header de la OF, y el campo opt-in en el form de la LdM | T07 | `views/mrp_production_views.xml`, `views/mrp_bom_views.xml` | CA04 |
-| **T09** | Factura: override de `_get_invoiced_lot_values()` (super + browse unico + **normalizar las cuatro claves en TODOS los dicts**) + herencia del template `invoice_snln_table` con las cuatro columnas leidas con `.get()` | T03 | `models/account_move.py`, `report/account_move_templates.xml` | CA08 |
-| **T10** | Remito: herencia del `thead` de `report_delivery_document` y de `stock_report_delivery_has_serial_move_line` con las cuatro columnas | T03 | `report/stock_picking_templates.xml` | CA08, CA09 |
-| **T11** | Traduccion `i18n/es_419.po`: strings de UI, encabezados impresos (Motor / Batteries / Controller) y mensajes de error del traslado (D19) | T05, T07, T08, T09, T10 | `i18n/es_419.po` | — |
-| **T12** | Doc y cierre: README del modulo (incluidos los prerequisitos de D14/D17 y el comportamiento de D18/D20) + `static/description/index.html` + fila en el README raiz del repo; verificar `version` del manifest == `Version` de la spec (`1.0.0`) | T01, T02, T03, T04, T05, T06, T07, T08, T09, T10, T11 | `README.md`, `static/description/index.html`, `../README.md`, `__manifest__.py`, `specs/sunra_mrp_component_serials.md` | — |
+| **T01** | Extension `stock.move.line`: cuatro Char computados no almacenados alimentados por `_sunra_component_report_values()` (D23) | — | `models/stock_move_line.py`, `models/__init__.py` | CA11 |
+| **T02** | Herencia de las dos listas de lineas de operacion con las cuatro columnas, **sin** copiar el `column_invisible` del `lot_id` del core (D23) | T01 | `views/stock_move_line_views.xml`, `__manifest__.py` | CA11 |
+| **T03** | Traduccion `i18n/es_419.po`: referencias de los campos nuevos a las etiquetas que ya existen (Motor / Batteries / Controller / Charger) + los cuatro `help` nuevos | T01, T02 | `i18n/es_419.po` | — |
+| **T04** | Doc y cierre: README + `static/description/index.html`; `version` del manifest == `Version` de la spec (`1.2.0`) | T01, T02, T03 | `README.md`, `static/description/index.html`, `__manifest__.py`, `specs/sunra_mrp_component_serials.md` | — |
 
 ## Notas de implementacion
 
