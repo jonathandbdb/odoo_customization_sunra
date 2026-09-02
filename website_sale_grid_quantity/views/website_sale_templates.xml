@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Selector de cantidad en la tarjeta del listado, arriba de la fila de acciones (que es
+         donde vive "Agregar al carrito").
+
+         No lleva JavaScript propio a proposito. El core bindea el manejador de mas/menos POR
+         SELECTOR (`a.js_add_cart_json`) en toda la interaccion `.oe_website_sale`, que incluye el
+         listado, y ese manejador busca el input dentro del `.input-group` mas cercano
+         (website_sale/static/src/interactions/website_sale.js). El alta al carrito del listado ya
+         pasa por el mismo `_updateRootProduct()`, que lee la cantidad de `input[name="add_qty"]`
+         dentro del form de la tarjeta.
+
+         Por eso los nombres `add_qty` / `remove_one` y la clase `js_add_cart_json` no son
+         decorativos: son el contrato con el core. Usamos `o_wsale_grid_quantity` en vez de la
+         clase `css_quantity` de la ficha para que la logica de variantes de la pagina de producto
+         (variant_mixin) no pueda alcanzar este bloque. -->
+    <template
+        id="shop_product_buttons"
+        inherit_id="website_sale.shop_product_buttons"
+        name="website.sale.shop.product.buttons.inherit.website_sale_grid_quantity"
+    >
+        <xpath expr="//div[hasclass('o_wsale_product_action_row')]" position="before">
+            <div
+                t-if="website.show_grid_quantity and product._website_show_quick_add()"
+                class="o_wsale_grid_quantity input-group d-inline-flex align-middle border rounded mb-2"
+                contenteditable="false"
+            >
+                <a
+                    t-attf-href="#"
+                    class="btn btn-link pe-2 js_add_cart_json border-0"
+                    aria-label="Remove one"
+                    title="Remove one"
+                    name="remove_one"
+                >
+                    <i class="oi oi-minus text-600"/>
+                </a>
+                <input
+                    type="text"
+                    class="form-control quantity text-center border-0"
+                    data-min="1"
+                    name="add_qty"
+                    t-att-value="1"
+                />
+                <a
+                    t-attf-href="#"
+                    class="btn btn-link ps-2 js_add_cart_json border-0"
+                    aria-label="Add one"
+                    title="Add one"
+                >
+                    <i class="oi oi-plus text-600"/>
+                </a>
+            </div>
+        </xpath>
+    </template>
+</odoo>
+<!-- vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4-->
