@@ -40,6 +40,16 @@
                 Ref: <span t-out="line.product_id.default_code"/>
             </div>
         </xpath>
+        <!-- La descripcion de la linea (lineas 2..n de sale.order.line.name) repite el codigo que
+             ya mostramos arriba: en los sitios que lo pidan se oculta. El valor NO se toca — sigue
+             en el producto, en la linea del pedido, en la busqueda del sitio y en el PDF de la
+             cotizacion; solo deja de mostrarse en el resumen del carrito. -->
+        <xpath
+            expr="//t[@t-call='website_sale.cart_line_description_following_lines']"
+            position="attributes"
+        >
+            <attribute name="t-if">not website.hide_cart_line_description</attribute>
+        </xpath>
     </template>
 </odoo>
 <!-- vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4-->

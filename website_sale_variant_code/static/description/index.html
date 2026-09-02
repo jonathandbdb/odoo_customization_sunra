@@ -27,8 +27,12 @@
                         <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">Cada linea muestra el codigo de <strong>su propia variante</strong>, uno solo. Aca no hace falta JS: la linea ya apunta a una variante concreta.</td>
                     </tr>
                     <tr>
-                        <td style="padding: 14px 16px; font-weight: 700; background: ButtonFace; color: ButtonText;">Idioma</td>
-                        <td style="padding: 14px 16px; color: CanvasText;">Se muestra como <code>Ref:</code> en ingles y <code>Cod:</code> en espanol (<code>i18n/es_AR.po</code>), para conservar la estetica que ya tenia el sitio.</td>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; font-weight: 700; background: ButtonFace; color: ButtonText;">Idioma</td>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">Se muestra como <code>Ref:</code> en ingles y <code>Cod:</code> en espanol (<code>i18n/es_AR.po</code>), para conservar la estetica que ya tenia el sitio.</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 14px 16px; font-weight: 700; background: ButtonFace; color: ButtonText;">Sin duplicados</td>
+                        <td style="padding: 14px 16px; color: CanvasText;">Un ajuste <strong>por sitio web</strong> oculta la descripcion de venta en el carrito, donde repetia el codigo. El dato no se borra: sigue en el producto, en la busqueda del sitio y en el PDF.</td>
                     </tr>
                 </tbody>
             </table>
@@ -53,11 +57,23 @@
         </div>
 
         <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 10px; color: LinkText; font-size: 23px;">El codigo aparecia dos veces en el carrito</h2>
+            <p style="margin: 0 0 12px;">El codigo de la variante se muestra en cada linea del carrito, pero muchos productos ademas lo tienen escrito a mano en la <strong>descripcion de venta</strong>, que Odoo copia a la linea del pedido y renderiza debajo del titulo. En el resumen de la orden el mismo codigo salia <strong>dos veces</strong>.</p>
+            <p style="margin: 0 0 12px;">La descripcion no se puede borrar sin mas: es lo que alimenta la busqueda de la tienda (el repuestero busca por codigo con la lupa) y lo que sale en el PDF de la cotizacion. Por eso se oculta <em>solo en el carrito</em>, con un ajuste por sitio:</p>
+            <p style="margin: 0 0 12px; padding: 12px 16px; border-left: 3px solid LinkText; background: ButtonFace; color: ButtonText;"><strong>Ajustes &rarr; Sitio Web &rarr; Comercio electronico &rarr; &laquo;Ocultar la descripcion de venta en el carrito&raquo;</strong></p>
+            <p style="margin: 0 0 12px;">Al ser por sitio web, se puede prender en el sitio de concesionarios y dejarlo apagado en el sitio al consumidor final. Lo que el ajuste <strong>no</strong> toca: el valor en el producto y en la linea del pedido, la busqueda por codigo, el PDF de la cotizacion ni el backend. Solo cambia el render del resumen de la orden.</p>
+            <p style="margin: 0; color: GrayText; font-size: 14px;">Nota: la descripcion de venta es tambien lo que hace aparecer el codigo en las tarjetas del listado, porque el core la renderiza ahi. Mantenerla poblada es lo que muestra el codigo en la grilla sin escribir codigo extra.</p>
+        </div>
+
+        <div style="margin-top: 30px;">
             <h2 style="margin: 0 0 10px; color: LinkText; font-size: 23px;">Validacion manual</h2>
             <ol style="margin: 0; padding-left: 22px;">
                 <li style="margin-bottom: 8px;">Abrir un repuesto con dos variantes en la tienda. Con <strong>Delantero</strong> seleccionado debe decir <code>Cod: V8M-070</code>; al tocar <strong>Trasero</strong>, cambia a <code>Cod: V8M-071</code> sin recargar.</li>
                 <li style="margin-bottom: 8px;">Agregarlo al carrito: la linea muestra el codigo de la variante elegida, uno solo.</li>
                 <li style="margin-bottom: 8px;">Abrir un producto sin variantes y sin referencia interna: no debe aparecer ninguna leyenda vacia.</li>
+                <li style="margin-bottom: 8px;">Prender el ajuste y volver al carrito: el codigo queda <strong>una sola vez</strong> por linea. Apagarlo: la descripcion vuelve (confirma que el dato nunca se borro).</li>
+                <li style="margin-bottom: 8px;">Imprimir el PDF del pedido con el ajuste prendido: la descripcion debe salir <strong>completa</strong>.</li>
+                <li style="margin-bottom: 8px;">Repetir en el otro sitio web con el ajuste apagado: el carrito debe quedar igual que antes.</li>
             </ol>
         </div>
 

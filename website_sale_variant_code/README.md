@@ -57,6 +57,39 @@ podía "seguir" a la selección sin ayuda. El módulo cierra ese hueco en tres p
    sale de `product_variant` (la variante de la combinación preseleccionada, que el controller ya
    resuelve). En el carrito no hace falta JS: la línea ya apunta a una variante concreta.
 
+## Ocultar la descripción de venta en el carrito
+
+El código de la variante se muestra en cada línea del carrito (arriba), pero muchos productos
+además tienen el código escrito a mano en la **descripción de venta** (`description_sale`), que
+Odoo copia a la línea del pedido y renderiza debajo del título. Resultado: **el código aparece dos
+veces** en el resumen de la orden.
+
+La descripción no se puede borrar sin más — es lo que alimenta la búsqueda de la tienda (el
+repuestero busca por código con la lupa) y es lo que sale en el PDF de la cotización. Así que se
+oculta solo en el carrito:
+
+**Ajustes → Sitio Web → Comercio electrónico → «Ocultar la descripción de venta en el carrito»**
+
+Es **por sitio web**: se puede prender en el sitio de concesionarios y dejarlo apagado en el sitio
+al consumidor final.
+
+Lo que el ajuste NO toca:
+
+| | |
+|---|---|
+| El valor en el producto y en la línea del pedido | intacto |
+| La búsqueda de la tienda por código | sigue funcionando |
+| El PDF de la cotización y el mail | siguen mostrando la descripción completa |
+| El backend (presupuesto, factura) | sin cambios |
+
+Solo cambia el render del resumen de la orden en el sitio. Está implementado agregando un `t-if`
+al `t-call` de `website_sale.cart_line_description_following_lines`, sin duplicar el nodo del core.
+
+> **Ojo con el listado**: la descripción de venta es también lo que hace aparecer el código en las
+> tarjetas de la tienda (el core la renderiza ahí). Si se decide vaciar `description_sale` con el
+> datafix de abajo, el código desaparece del listado. Mantenerla poblada es lo que hace que el
+> código se vea en la grilla sin código extra.
+
 ## Limpieza de las leyendas manuales
 
 Instalar el módulo **no borra nada**. La limpieza es un paso aparte y explícito, porque toca datos
@@ -126,3 +159,9 @@ referencia interna de la variante, que es de donde sale el dato ahora.
 3. Agregar al carrito y verificar que la línea muestre el código de la variante elegida, uno solo.
 4. Abrir un producto **sin** variantes y sin referencia interna: no debe aparecer ninguna leyenda
    vacía.
+5. En **Ajustes → Sitio Web**, prender «Ocultar la descripción de venta en el carrito» y volver al
+   carrito: el código tiene que quedar **una sola vez** por línea y las líneas siguientes de la
+   descripción no deben aparecer.
+6. Apagar el ajuste: la descripción vuelve a mostrarse (confirma que el dato nunca se borró).
+7. Imprimir el PDF del pedido con el ajuste prendido: la descripción tiene que salir **completa**.
+8. Repetir en el otro sitio web con el ajuste apagado: el carrito debe quedar igual que antes.

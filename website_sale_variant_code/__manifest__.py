@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     "name": "website_sale_variant_code",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "summary": "eCommerce: muestra el codigo interno de la variante elegida, no el de todas",
     "description": """
 Muestra en el eCommerce el codigo interno (referencia interna) de la variante que el cliente esta
@@ -12,6 +12,9 @@ mirando, en lugar de una leyenda fija con los codigos de todas las variantes.
 - En el carrito cada linea muestra el codigo de su propia variante.
 - Incluye la limpieza de las leyendas "Cod: ..." que se cargaban a mano en las descripciones del
   producto, que quedaban desactualizadas y no distinguian variantes (ver README.md).
+- Ajuste por sitio web para ocultar la descripcion de venta en el carrito, donde repetia el codigo
+  que ya se muestra en cada linea. El valor no se borra: sigue disponible para la busqueda del
+  sitio y para el PDF de la cotizacion.
     """,
     "category": "Website/Website",
     "author": "Sunra",
@@ -21,6 +24,7 @@ mirando, en lugar de una leyenda fija con los codigos de todas las variantes.
         "website_sale",
     ],
     "data": [
+        "views/res_config_settings_views.xml",
         "views/website_sale_variant_code_templates.xml",
     ],
     "assets": {
