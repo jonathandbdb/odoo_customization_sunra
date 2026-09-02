@@ -1,0 +1,61 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* website_sale_wire_transfer_ux
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-09-02 16:19+0000\n"
+"PO-Revision-Date: 2026-09-02 16:19+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: website_sale_wire_transfer_ux
+#: model_terms:ir.ui.view,arch_db:website_sale_wire_transfer_ux.payment_confirmation_status
+msgid "<b>CBU: </b>"
+msgstr "<b>CBU: </b>"
+
+#. module: website_sale_wire_transfer_ux
+#. odoo-python
+#: code:addons/website_sale_wire_transfer_ux/models/payment_transaction.py:0
+msgid "CBU:"
+msgstr "CBU:"
+
+#. module: website_sale_wire_transfer_ux
+#: model_terms:ir.ui.view,arch_db:website_sale_wire_transfer_ux.payment_confirmation_status
+msgid "Change payment method"
+msgstr "Cambiar medio de pago"
+
+#. module: website_sale_wire_transfer_ux
+#. odoo-python
+#: code:addons/website_sale_wire_transfer_ux/models/payment_transaction.py:0
+msgid "Communication:"
+msgstr "Comunicación:"
+
+#. module: website_sale_wire_transfer_ux
+#. odoo-javascript
+#: code:addons/website_sale_wire_transfer_ux/static/src/js/wire_transfer_confirmation.js:0
+msgid "Copied!"
+msgstr "¡Copiado!"
+
+#. module: website_sale_wire_transfer_ux
+#: model_terms:ir.ui.view,arch_db:website_sale_wire_transfer_ux.payment_confirmation_status
+msgid "Copy CBU"
+msgstr "Copiar CBU"
+
+#. module: website_sale_wire_transfer_ux
+#. odoo-javascript
+#: code:addons/website_sale_wire_transfer_ux/static/src/js/wire_transfer_confirmation.js:0
+msgid "Press Ctrl+C to copy"
+msgstr "Presioná Ctrl+C para copiar"
+
+#. module: website_sale_wire_transfer_ux
+#. odoo-python
+#: code:addons/website_sale_wire_transfer_ux/controllers/website_sale_wire_transfer_ux.py:0
+msgid "The customer chose another payment method."
+msgstr "El cliente eligió otro medio de pago."

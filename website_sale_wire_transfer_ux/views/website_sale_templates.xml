@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Confirmacion del eCommerce: boton para copiar el CBU y link para cambiar de medio de pago.
+         Va dentro del bloque del proveedor custom, al lado de la Comunicacion. El campo "Mensaje
+         pendiente" no sirve para esto: es HTML sanitizado y el sanitizer borra botones y JS. -->
+    <template
+        id="payment_confirmation_status"
+        inherit_id="website_sale.payment_confirmation_status"
+        name="website_sale.payment_confirmation_status.inherit.website_sale_wire_transfer_ux"
+    >
+        <xpath expr="//div[@id='order_reference']" position="after">
+            <t t-if="tx_sudo.state == 'pending' and tx_sudo.provider_id.sudo().custom_mode == 'wire_transfer'">
+                <!-- El CBU sale de la cuenta bancaria de la compania (acc_type 'cbu' de la
+                     localizacion argentina), no del texto del mensaje: asi el boton nunca copia
+                     un numero desactualizado. Sin cuenta cargada, no se dibuja el bloque. -->
+                <t t-set="cbu_account_sudo" t-value="tx_sudo.provider_id.sudo()._get_wire_transfer_cbu_account()"/>
+                <div
+                    t-if="cbu_account_sudo"
+                    class="o_swt_transfer_data d-flex flex-wrap align-items-center gap-2 mt-2"
+                >
+                    <span><b>CBU: </b><span t-out="cbu_account_sudo.acc_number"/></span>
+                    <button
+                        type="button"
+                        class="btn btn-sm btn-primary o_swt_copy"
+                        aria-live="polite"
+                        t-att-data-swt-value="cbu_account_sudo.acc_number"
+                    >Copy CBU</button>
+                </div>
+                <!-- Solo mientras el pedido siga siendo reabrible: si ya se confirmo a mano, el
+                     link llevaria a la tienda sin explicacion. Es POST porque cancela el pago. -->
+                <form
+                    t-if="order.state in ('draft', 'sent')"
+                    action="/shop/wire-transfer/change-payment-method"
+                    method="post"
+                    class="mt-2"
+                >
+                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                    <button type="submit" class="btn btn-link p-0 align-baseline">Change payment method</button>
+                </form>
+            </t>
+        </xpath>
+    </template>
+</odoo>
+<!-- vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4-->

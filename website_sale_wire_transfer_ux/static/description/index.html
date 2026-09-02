@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<body>
+    <section style="max-width: 980px; margin: 0 auto; padding: 32px 24px; font-family: Arial, Helvetica, sans-serif; color-scheme: var(--o-webclient-color-scheme, normal); color: CanvasText; line-height: 1.55; background: transparent;">
+        <div style="padding: 28px 30px; border: 1px solid ButtonBorder; border-radius: 8px; background: Canvas;">
+            <p style="margin: 0 0 8px; color: LinkText; font-size: 13px; font-weight: 700; text-transform: uppercase;">eCommerce - Transferencia bancaria</p>
+            <h1 style="margin: 0 0 12px; color: CanvasText; font-size: 32px; line-height: 1.2;">website_sale_wire_transfer_ux</h1>
+            <p style="margin: 0; max-width: 760px; color: GrayText; font-size: 16px;">Cuando el cliente paga con Transferencia bancaria y el pedido queda pendiente, la pagina de confirmacion del eCommerce le muestra el CBU con un boton para copiarlo y un link para elegir otro medio de pago; el mail de la orden pendiente lleva los mismos datos bancarios.</p>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 10px; color: LinkText; font-size: 23px;">Objetivo</h2>
+            <p style="margin: 0;">Al elegir <strong>Transferencia bancaria</strong>, Odoo deja el pedido en pago pendiente y muestra un mensaje de texto libre (por ejemplo, con el CBU escrito a mano) en la pagina de confirmacion y en el mail. Ese mensaje es HTML sanitizado: no puede llevar un boton funcional, y si el CBU de la empresa cambia, hay que acordarse de editarlo a mano en cada lugar donde este escrito. Este modulo separa las dos cosas: el CBU se toma de la <strong>cuenta bancaria cargada en la empresa</strong> (siempre el dato real y actual) y se agrega, aparte del mensaje, un boton para copiarlo y un camino para que el cliente cambie de medio de pago sin tener que rehacer el pedido.</p>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 12px; color: LinkText; font-size: 23px;">Funcionalidades principales</h2>
+            <table style="width: 100%; border-collapse: collapse; border: 1px solid ButtonBorder; background: Canvas;">
+                <tbody>
+                    <tr>
+                        <td style="width: 28%; padding: 14px 16px; border-bottom: 1px solid ButtonBorder; font-weight: 700; background: ButtonFace; color: ButtonText;">Boton "Copiar CBU"</td>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">En la confirmacion del pedido, junto al mensaje de pago pendiente, aparece el CBU de la empresa con un boton al lado. Un clic lo copia al portapapeles y el boton avisa "Copiado!" por un momento; el cliente lo pega directo en su banco, sin transcribir numeros a mano.</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; font-weight: 700; background: ButtonFace; color: ButtonText;">CBU siempre el real</td>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">El numero que se copia sale de la cuenta bancaria cargada en la empresa, no del texto que un administrador escribio en el mensaje de pago pendiente. Si la empresa cambia de banco, alcanza con actualizar esa cuenta: el boton y el mail reflejan el CBU vigente sin tocar ningun texto.</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; font-weight: 700; background: ButtonFace; color: ButtonText;">Link "Cambiar medio de pago"</td>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">Debajo del CBU hay un link para volver al paso de pago y elegir otro medio (por ejemplo, tarjeta o Mercado Pago en lugar de transferencia). Sin este link, el cliente que se arrepiente de la transferencia tiene que armar el pedido de nuevo desde cero: el pedido pendiente queda "trabado" en presupuesto y el carrito de su sesion se pierde.</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 14px 16px; font-weight: 700; background: ButtonFace; color: ButtonText;">CBU en el mail de orden pendiente</td>
+                        <td style="padding: 14px 16px; color: CanvasText;">El mail "Orden pendiente" que envia Odoo al confirmar el pedido con transferencia incluye, ademas del mensaje configurado, el CBU de la cuenta bancaria y la Comunicacion (referencia) del pago. Asi el cliente que cierra la pestana del navegador sin copiar el CBU lo tiene igual en su casilla de correo.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 12px; color: LinkText; font-size: 23px;">Configuracion</h2>
+            <ol style="margin: 0; padding-left: 22px;">
+                <li style="margin-bottom: 8px;">Cargar el CBU como <strong>cuenta bancaria de la compania</strong>: <strong>Ajustes &rarr; Usuarios y compañias &rarr; Compañias</strong> (o el contacto de la empresa) &rarr; pestana <em>Cuentas bancarias</em> &rarr; agregar una cuenta con el CBU. Odoo detecta solo el tipo <em>CBU</em> cuando el numero valida como tal (lo agrega la localizacion argentina).</li>
+                <li style="margin-bottom: 8px;">Verificar que el proveedor de pago <strong>Transferencia bancaria</strong> este publicado y con su <em>Mensaje pendiente</em> configurado como de costumbre: ese mensaje se sigue mostrando igual, el boton y el CBU se agregan al lado.</li>
+                <li>Sin una cuenta bancaria con CBU cargada, el boton y el bloque de CBU no se muestran (ni en la pagina ni en el mail); el link para cambiar de medio de pago si sigue disponible.</li>
+            </ol>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 10px; color: LinkText; font-size: 23px;">Detalle tecnico</h2>
+            <ul style="margin: 0; padding-left: 20px;">
+                <li style="margin-bottom: 8px;">Hereda el template <code>website_sale.payment_confirmation_status</code> y agrega el bloque solo si la transaccion esta <code>pending</code> con el proveedor <em>custom</em> en modo <code>wire_transfer</code>.</li>
+                <li style="margin-bottom: 8px;"><code>payment.provider._get_wire_transfer_cbu_account()</code> devuelve la cuenta de <code>res.partner.bank</code> con <code>acc_type = 'cbu'</code> de la compania del proveedor.</li>
+                <li style="margin-bottom: 8px;">El boton de copiar usa una <em>Interaction</em> de Odoo (JS) con la Clipboard API del navegador y una reserva (textarea + copy) para cuando el contexto no es seguro (http).</li>
+                <li style="margin-bottom: 8px;">La ruta <code>/shop/wire-transfer/change-payment-method</code> solo actua sobre el pedido de la propia sesion (<code>sale_last_order_id</code>) y solo si todavia no se cobro: cancela la transaccion pendiente, devuelve el pedido a presupuesto y vuelve a apuntar el carrito antes de redirigir a <code>/shop/payment</code>.</li>
+                <li style="margin-bottom: 0;">Un <code>post_init_hook</code> inserta el bloque de datos bancarios en la plantilla del core <code>sale.mail_template_sale_payment_executed</code> (en todos los idiomas activos de la base); el <code>uninstall_hook</code> lo retira. No se modifica ningun archivo de core ni de enterprise.</li>
+            </ul>
+            <p style="margin: 14px 0 0; padding: 14px 16px; border-left: 4px solid Highlight; background: color-mix(in srgb, Highlight 14%, Canvas); color: CanvasText;">Si se edita a mano la plantilla de mail del core despues de instalar este modulo, el hook puede no encontrar el punto de insercion; en ese caso deja un aviso en el log y no toca la plantilla, y el mail sale sin los datos bancarios (el bloque se puede pegar a mano; ver el README del modulo).</p>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 10px; color: LinkText; font-size: 23px;">Dependencias</h2>
+            <ul style="margin: 0; padding-left: 22px;">
+                <li><code>website_sale</code> (core) - checkout y pagina de confirmacion del eCommerce.</li>
+                <li><code>payment_custom</code> (core) - proveedor de pago "Transferencia bancaria" (<code>custom_mode = wire_transfer</code>).</li>
+            </ul>
+        </div>
+
+        <p style="margin: 34px 0 0; padding-top: 18px; border-top: 1px solid ButtonBorder; color: GrayText; font-size: 14px;">Desarrollado por Sunra - https://github.com/sunraargsh</p>
+    </section>
+</body>
+</html>
