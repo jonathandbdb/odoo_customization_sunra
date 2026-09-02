@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+<body>
+    <section style="max-width: 980px; margin: 0 auto; padding: 32px 24px; font-family: Arial, Helvetica, sans-serif; color-scheme: var(--o-webclient-color-scheme, normal); color: CanvasText; line-height: 1.55; background: transparent;">
+        <div style="padding: 28px 30px; border: 1px solid ButtonBorder; border-radius: 8px; background: Canvas;">
+            <p style="margin: 0 0 8px; color: LinkText; font-size: 13px; font-weight: 700; text-transform: uppercase;">eCommerce - Stock</p>
+            <h1 style="margin: 0 0 12px; color: CanvasText; font-size: 32px; line-height: 1.2;">website_sale_stock_level_indicator</h1>
+            <p style="margin: 0; max-width: 760px; color: GrayText; font-size: 16px;">Semaforo de stock en el listado y en la ficha: sin stock, poco stock, stock normal, stock alto. Texto, color y cantidades configurables por sitio web, con la cantidad de niveles que haga falta.</p>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 10px; color: LinkText; font-size: 23px;">El problema</h2>
+            <p style="margin: 0 0 12px;">El comprador de repuestos necesita saber de un vistazo, sin abrir cada producto, si hay disponibilidad. Un numero exacto de unidades no sirve —es informacion interna y cambia todo el tiempo— pero un semaforo si.</p>
+            <p style="margin: 0;">Odoo trae solo <strong>dos estados</strong>: un cartel rojo <em>Sin existencias</em> y uno amarillo cuando la cantidad baja de un umbral. Y en el <strong>listado no muestra nada</strong>: hay que entrar al producto para saber si hay.</p>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 12px; color: LinkText; font-size: 23px;">Configuracion</h2>
+            <p style="margin: 0 0 12px; padding: 12px 16px; border-left: 3px solid LinkText; background: ButtonFace; color: ButtonText;"><strong>Ajustes &rarr; Sitio Web &rarr; Comercio electronico &rarr; &laquo;Indicador de nivel de stock&raquo;</strong></p>
+            <p style="margin: 0 0 12px;">Al prenderlo aparece la lista de niveles del sitio, una linea por nivel:</p>
+            <table style="width: 100%; border-collapse: collapse; border: 1px solid ButtonBorder; background: Canvas;">
+                <tbody>
+                    <tr>
+                        <td style="width: 30%; padding: 14px 16px; border-bottom: 1px solid ButtonBorder; font-weight: 700; background: ButtonFace; color: ButtonText;">Desde cantidad</td>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">El nivel aplica cuando la disponibilidad llega a este numero y no llega al siguiente.</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; font-weight: 700; background: ButtonFace; color: ButtonText;">Etiqueta</td>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">El texto del cartel. Es <strong>traducible</strong>: se puede poner <em>Poco stock</em>, <em>Pocas unidades</em>, <em>Ultimas unidades</em> o lo que use el negocio.</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; font-weight: 700; background: ButtonFace; color: ButtonText;">Color</td>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">Una de las clases contextuales de Bootstrap (rojo, naranja, verde, celeste, azul, gris, negro), para que el cartel herede el tema del sitio.</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 14px 16px; font-weight: 700; background: ButtonFace; color: ButtonText;">Color personalizado</td>
+                        <td style="padding: 14px 16px; color: CanvasText;">Opcional. Un color CSS libre (ej. <code>#B4E933</code>) para un color de marca que no este en la lista. Si esta cargado, gana sobre el anterior.</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p style="margin: 14px 0 8px;">Configuracion de ejemplo, la que se usa en Sunra:</p>
+            <table style="width: 100%; border-collapse: collapse; border: 1px solid ButtonBorder; background: Canvas;">
+                <tbody>
+                    <tr><td style="width: 30%; padding: 10px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;"><code>0</code></td><td style="padding: 10px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">Sin stock &middot; rojo</td></tr>
+                    <tr><td style="padding: 10px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;"><code>1</code></td><td style="padding: 10px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">Poco stock &middot; naranja</td></tr>
+                    <tr><td style="padding: 10px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;"><code>11</code></td><td style="padding: 10px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">Stock normal &middot; celeste</td></tr>
+                    <tr><td style="padding: 10px 16px; color: CanvasText;"><code>101</code></td><td style="padding: 10px 16px; color: CanvasText;">Stock alto &middot; verde</td></tr>
+                </tbody>
+            </table>
+            <p style="margin: 12px 0 0;">Gana el nivel de <strong>mayor &laquo;desde cantidad&raquo; que la disponibilidad alcanza</strong>. Un solo numero por nivel, en lugar de un par minimo/maximo, hace imposible por construccion que queden huecos o rangos solapados. Y como la cantidad de niveles es libre, mas adelante se puede agregar un quinto (por ejemplo <em>Por ingresar</em>, para productos con orden de compra pendiente) sin tocar codigo.</p>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 12px; color: LinkText; font-size: 23px;">Donde aparece</h2>
+            <ul style="margin: 0; padding-left: 22px;">
+                <li style="margin-bottom: 8px;"><strong>Listado de la tienda</strong>: arriba del titulo de la tarjeta. Describe la variante que la tarjeta ya esta mostrando, que es la que su boton agrega al carrito, y no un agregado de todas las variantes, que seria enganoso.</li>
+                <li style="margin-bottom: 8px;"><strong>Ficha de producto</strong>: debajo del titulo, y <strong>cambia al elegir otra variante</strong> sin recargar.</li>
+                <li style="margin-bottom: 8px;"><strong>No lleva cartel</strong>: los productos no almacenables (servicios, consumibles), porque no tienen disponibilidad que medir. Es el mismo criterio del core.</li>
+            </ul>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 12px; color: LinkText; font-size: 23px;">Como funciona</h2>
+            <p style="margin: 0 0 12px;"><strong>La disponibilidad se mide con el deposito del sitio.</strong> Se usa el mismo helper que el resto del eCommerce, que resuelve <code>free_qty</code> en el deposito configurado en el sitio. Con dos sitios web en la misma base y depositos distintos, cada uno mira el suyo. El stock negativo (sobreventa) se pisa en cero: para el que compra es simplemente sin stock.</p>
+            <p style="margin: 0 0 12px;"><strong>El listado resuelve las cantidades en una sola consulta.</strong> <code>product.template</code> no tiene <code>free_qty</code> en Odoo 19 (solo <code>product.product</code>), y el helper del core recibe un registro suelto. Llamarlo por tarjeta hace N+1: cada <code>with_context()</code> sobre un registro abre su propio bucket de cache y rompe el prefetch, asi que una grilla de repuestos terminaria haciendo una consulta por producto. Por eso el helper recibe ademas <strong>todas</strong> las variantes que se estan renderizando y resuelve la pagina entera de una vez.</p>
+            <p style="margin: 0;"><strong>La ficha sigue a la variante elegida.</strong> La pagina se renderiza para la plantilla, asi que el unico lugar donde se sabe que variante quedo seleccionada es el payload de <code>/website_sale/get_combination_info</code>: el modulo le agrega los datos del nivel y un parche de <code>_onChangeCombination</code> repinta el cartel. El cartel va debajo del titulo y <strong>no</strong> dentro del <code>div.availability_messages</code> del core, porque ese contenedor lo reescribe entero el JS de disponibilidad y borraria el nodo.</p>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 10px; color: LinkText; font-size: 23px;">Validacion manual</h2>
+            <ol style="margin: 0; padding-left: 22px;">
+                <li style="margin-bottom: 8px;">Prender el indicador y cargar los cuatro niveles del ejemplo.</li>
+                <li style="margin-bottom: 8px;">Poner en un producto cantidades de 0, 5, 50 y 500: el cartel pasa por <em>Sin stock</em>, <em>Poco stock</em>, <em>Stock normal</em> y <em>Stock alto</em>.</li>
+                <li style="margin-bottom: 8px;">Cambiarle el texto a un nivel (<em>Poco stock</em> &rarr; <em>Pocas unidades</em>) y confirmar que el cartel lo refleja.</li>
+                <li style="margin-bottom: 8px;">Abrir un producto con variantes y cambiar de variante: el cartel cambia sin recargar.</li>
+                <li style="margin-bottom: 8px;">Abrir un <strong>servicio</strong>: no debe aparecer ningun cartel.</li>
+                <li style="margin-bottom: 8px;">Configurar depositos distintos en cada sitio y confirmar que cada uno mira el suyo.</li>
+                <li style="margin-bottom: 8px;">En el otro sitio web, con el indicador apagado: listado y ficha quedan <strong>identicos</strong> a antes.</li>
+            </ol>
+        </div>
+
+        <div style="margin-top: 30px; padding: 20px 24px; border: 1px solid ButtonBorder; border-radius: 8px; background: Canvas;">
+            <p style="margin: 0; color: GrayText; font-size: 14px;">Sunra &middot; LGPL-3 &middot; Odoo 19 &middot; depende de <code>website_sale_stock</code></p>
+        </div>
+    </section>
+</body>
+</html>

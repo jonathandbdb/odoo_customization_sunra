@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Listado de la tienda: cartel del nivel de stock arriba del titulo de la tarjeta.
+
+         `variant` es la variante que la propia tarjeta esta mostrando y la que su boton agrega al
+         carrito, asi que el cartel describe exactamente lo que el cliente va a comprar (no un
+         agregado de todas las variantes, que seria enganoso).
+
+         `product_variants` es el diccionario {plantilla: variante} que ya arma el controller de la
+         tienda: se lo pasamos para que la disponibilidad de la pagina entera se resuelva en una
+         sola consulta. En los snippets dinamicos esa variable no existe (QWeb la resuelve como
+         None) y el helper cae al calculo de una sola variante. -->
+    <template
+        id="products_item"
+        inherit_id="website_sale.products_item"
+        name="website.sale.products.item.inherit.website_sale_stock_level_indicator"
+    >
+        <xpath expr="//h2[hasclass('o_wsale_products_item_title')]" position="before">
+            <t
+                t-set="stock_level"
+                t-value="website._get_variant_stock_level(variant, page_variants=product_variants)"
+            />
+            <div t-if="stock_level" class="o_wsale_stock_level_tile mb-1">
+                <span
+                    t-attf-class="badge text-uppercase #{stock_level._get_badge_class()}"
+                    t-attf-style="#{stock_level._get_badge_style()}"
+                    t-out="stock_level.name"
+                />
+            </div>
+        </xpath>
+    </template>
+
+    <!-- Pagina de producto: mismo cartel debajo del titulo.
+
+         Va aca y no en el `div.availability_messages` del core a proposito: ese contenedor lo
+         reescribe entero el JS de disponibilidad de website_sale_stock y borraria nuestro nodo. El
+         contenedor se renderiza siempre (aunque vacio) para que el JS pueda actualizarlo al
+         cambiar de variante. -->
+    <template
+        id="product_title"
+        inherit_id="website_sale.product_title"
+        name="website.sale.product.title.inherit.website_sale_stock_level_indicator"
+    >
+        <xpath expr="//h1" position="after">
+            <t
+                t-set="stock_level"
+                t-value="website._get_variant_stock_level(product_variant)"
+            />
+            <div t-if="website.show_stock_level" class="o_wsale_stock_level mb-2">
+                <span
+                    t-attf-class="o_wsale_stock_level_badge badge text-uppercase #{stock_level._get_badge_class() if stock_level else ''} #{'d-none' if not stock_level else ''}"
+                    t-attf-style="#{stock_level._get_badge_style() if stock_level else ''}"
+                    t-out="stock_level.name or ''"
+                />
+            </div>
+        </xpath>
+    </template>
+</odoo>
+<!-- vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4-->
