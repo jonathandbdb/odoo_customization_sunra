@@ -1,0 +1,132 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* website_sale_stock_level_indicator
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: es_AR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: \n"
+
+
+#. module: website_sale_stock_level_indicator
+#: model:ir.model,name:website_sale_stock_level_indicator.model_website_stock_level
+msgid "Website Stock Level"
+msgstr "Nivel de stock del sitio web"
+
+#. module: website_sale_stock_level_indicator
+#: model:ir.model.fields,field_description:website_sale_stock_level_indicator.field_res_config_settings__show_stock_level
+#: model:ir.model.fields,field_description:website_sale_stock_level_indicator.field_website__show_stock_level
+#: model_terms:ir.ui.view,arch_db:website_sale_stock_level_indicator.res_config_settings_view_form
+msgid "Stock Level Indicator"
+msgstr "Indicador de nivel de stock"
+
+#. module: website_sale_stock_level_indicator
+#: model:ir.model.fields,help:website_sale_stock_level_indicator.field_res_config_settings__show_stock_level
+#: model:ir.model.fields,help:website_sale_stock_level_indicator.field_website__show_stock_level
+msgid "Show a label with the stock level of each product (out of stock, low stock, normal stock...) in the shop list and on the product page. The levels are configured below, one per website."
+msgstr "Muestra un cartel con el nivel de stock de cada producto (sin stock, poco stock, stock normal...) en el listado de la tienda y en la ficha. Los niveles se configuran abajo, por sitio web."
+
+#. module: website_sale_stock_level_indicator
+#: model:ir.model.fields,field_description:website_sale_stock_level_indicator.field_res_config_settings__stock_level_ids
+#: model:ir.model.fields,field_description:website_sale_stock_level_indicator.field_website__stock_level_ids
+#: model_terms:ir.ui.view,arch_db:website_sale_stock_level_indicator.website_stock_level_view_list
+msgid "Stock Levels"
+msgstr "Niveles de stock"
+
+#. module: website_sale_stock_level_indicator
+#: model_terms:ir.ui.view,arch_db:website_sale_stock_level_indicator.website_stock_level_view_form
+msgid "Stock Level"
+msgstr "Nivel de stock"
+
+#. module: website_sale_stock_level_indicator
+#: model:ir.model.fields,field_description:website_sale_stock_level_indicator.field_website_stock_level__name
+msgid "Label"
+msgstr "Etiqueta"
+
+#. module: website_sale_stock_level_indicator
+#: model:ir.model.fields,help:website_sale_stock_level_indicator.field_website_stock_level__name
+msgid "Text shown on the product, e.g. \"Low stock\"."
+msgstr "Texto que se muestra en el producto, por ejemplo \"Poco stock\"."
+
+#. module: website_sale_stock_level_indicator
+#: model:ir.model.fields,field_description:website_sale_stock_level_indicator.field_website_stock_level__min_qty
+msgid "From Quantity"
+msgstr "Desde cantidad"
+
+#. module: website_sale_stock_level_indicator
+#: model:ir.model.fields,help:website_sale_stock_level_indicator.field_website_stock_level__min_qty
+msgid "This level applies when the available quantity reaches this number and does not reach the next level. Use 0 for the out of stock level."
+msgstr "Este nivel aplica cuando la cantidad disponible llega a este número y no llega al nivel siguiente. Usá 0 para el nivel de sin stock."
+
+#. module: website_sale_stock_level_indicator
+#: model:ir.model.fields,field_description:website_sale_stock_level_indicator.field_website_stock_level__color
+msgid "Color"
+msgstr "Color"
+
+#. module: website_sale_stock_level_indicator
+#: model:ir.model.fields,field_description:website_sale_stock_level_indicator.field_website_stock_level__color_custom
+msgid "Custom Color"
+msgstr "Color personalizado"
+
+#. module: website_sale_stock_level_indicator
+#: model:ir.model.fields,help:website_sale_stock_level_indicator.field_website_stock_level__color_custom
+msgid "Optional CSS color (e.g. #B4E933) used instead of the color above, for a brand color that is not in the list."
+msgstr "Color CSS opcional (por ejemplo #B4E933) que se usa en lugar del color de arriba, para un color de marca que no está en la lista."
+
+#. module: website_sale_stock_level_indicator
+#: model:ir.model.fields,field_description:website_sale_stock_level_indicator.field_website_stock_level__website_id
+msgid "Website"
+msgstr "Sitio web"
+
+#. module: website_sale_stock_level_indicator
+#: model:ir.model.fields.selection,name:website_sale_stock_level_indicator.selection__website_stock_level__color__danger
+msgid "Red"
+msgstr "Rojo"
+
+#. module: website_sale_stock_level_indicator
+#: model:ir.model.fields.selection,name:website_sale_stock_level_indicator.selection__website_stock_level__color__warning
+msgid "Orange"
+msgstr "Naranja"
+
+#. module: website_sale_stock_level_indicator
+#: model:ir.model.fields.selection,name:website_sale_stock_level_indicator.selection__website_stock_level__color__success
+msgid "Green"
+msgstr "Verde"
+
+#. module: website_sale_stock_level_indicator
+#: model:ir.model.fields.selection,name:website_sale_stock_level_indicator.selection__website_stock_level__color__info
+msgid "Light blue"
+msgstr "Celeste"
+
+#. module: website_sale_stock_level_indicator
+#: model:ir.model.fields.selection,name:website_sale_stock_level_indicator.selection__website_stock_level__color__primary
+msgid "Blue"
+msgstr "Azul"
+
+#. module: website_sale_stock_level_indicator
+#: model:ir.model.fields.selection,name:website_sale_stock_level_indicator.selection__website_stock_level__color__secondary
+msgid "Grey"
+msgstr "Gris"
+
+#. module: website_sale_stock_level_indicator
+#: model:ir.model.fields.selection,name:website_sale_stock_level_indicator.selection__website_stock_level__color__dark
+msgid "Black"
+msgstr "Negro"
+
+#. module: website_sale_stock_level_indicator
+#: model_terms:ir.ui.view,arch_db:website_sale_stock_level_indicator.res_config_settings_view_form
+msgid "Show a label with the stock level of each product. Configure one line per level: the quantity it starts at, the text and the color."
+msgstr "Muestra un cartel con el nivel de stock de cada producto. Configurá una línea por nivel: la cantidad desde la que aplica, el texto y el color."
+
+#. module: website_sale_stock_level_indicator
+#. odoo-python
+#: code:addons/website_sale_stock_level_indicator/models/website_stock_level.py:0
+msgid "The quantity of a stock level cannot be negative."
+msgstr "La cantidad de un nivel de stock no puede ser negativa."

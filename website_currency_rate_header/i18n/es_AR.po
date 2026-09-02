@@ -14,6 +14,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: \n"
 
+
 #. module: website_currency_rate_header
 #: model:ir.model.fields,field_description:website_currency_rate_header.field_res_config_settings__show_currency_rate
 #: model:ir.model.fields,field_description:website_currency_rate_header.field_website__show_currency_rate
@@ -22,13 +23,36 @@ msgid "Exchange Rate in Header"
 msgstr "Cotización en el encabezado"
 
 #. module: website_currency_rate_header
+#: model:ir.model.fields,help:website_currency_rate_header.field_res_config_settings__show_currency_rate
+#: model:ir.model.fields,help:website_currency_rate_header.field_website__show_currency_rate
+msgid "Show the current exchange rate of a currency in the website header. Useful when prices are listed in a foreign currency but invoiced in the company currency."
+msgstr "Muestra la cotización vigente de una moneda en el encabezado del sitio. Útil cuando los precios están en una moneda extranjera pero se facturan en la moneda de la compañía."
+
+#. module: website_currency_rate_header
 #: model:ir.model.fields,field_description:website_currency_rate_header.field_res_config_settings__currency_rate_currency_id
 #: model:ir.model.fields,field_description:website_currency_rate_header.field_website__currency_rate_currency_id
 msgid "Rate Currency"
 msgstr "Moneda de la cotización"
 
 #. module: website_currency_rate_header
+#: model:ir.model.fields,help:website_currency_rate_header.field_res_config_settings__currency_rate_currency_id
+#: model:ir.model.fields,help:website_currency_rate_header.field_website__currency_rate_currency_id
+msgid "Currency the rate is expressed in. The header shows how much one unit of the company currency is worth in this currency: with the company in USD and this set to ARS, it shows the pesos per dollar."
+msgstr "Moneda en la que se expresa la cotización. El encabezado muestra cuánto vale una unidad de la moneda de la compañía en esta moneda: con la compañía en USD y esto en ARS, muestra los pesos por dólar."
+
+#. module: website_currency_rate_header
 #: model:ir.model.fields,field_description:website_currency_rate_header.field_res_config_settings__currency_rate_label
 #: model:ir.model.fields,field_description:website_currency_rate_header.field_website__currency_rate_label
 msgid "Rate Label"
 msgstr "Texto de la cotización"
+
+#. module: website_currency_rate_header
+#: model:ir.model.fields,help:website_currency_rate_header.field_res_config_settings__currency_rate_label
+#: model:ir.model.fields,help:website_currency_rate_header.field_website__currency_rate_label
+msgid "Text shown before the rate in the header, e.g. \"Official Exchange Rate:\"."
+msgstr "Texto que se muestra antes de la cotización en el encabezado, por ejemplo \"Tipo de Cambio Oficial:\"."
+
+#. module: website_currency_rate_header
+#: model_terms:ir.ui.view,arch_db:website_currency_rate_header.res_config_settings_view_form
+msgid "Show the current exchange rate of a currency in the website header, for catalogs priced in a foreign currency but invoiced in the company currency."
+msgstr "Muestra la cotización vigente de una moneda en el encabezado del sitio, para catálogos con precios en moneda extranjera que se facturan en la moneda de la compañía."

@@ -14,8 +14,31 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: \n"
 
+
 #. module: website_sale_variant_code
 #: model_terms:ir.ui.view,arch_db:website_sale_variant_code.cart_lines
 #: model_terms:ir.ui.view,arch_db:website_sale_variant_code.product_title
 msgid "Ref:"
 msgstr "Cod:"
+
+#. module: website_sale_variant_code
+#: model:ir.model.fields,field_description:website_sale_variant_code.field_res_config_settings__hide_cart_line_description
+#: model:ir.model.fields,field_description:website_sale_variant_code.field_website__hide_cart_line_description
+#: model_terms:ir.ui.view,arch_db:website_sale_variant_code.res_config_settings_view_form
+msgid "Hide Sales Description in Cart"
+msgstr "Ocultar la descripción de venta en el carrito"
+
+#. module: website_sale_variant_code
+#: model:ir.model.fields,help:website_sale_variant_code.field_res_config_settings__hide_cart_line_description
+#: model:ir.model.fields,help:website_sale_variant_code.field_website__hide_cart_line_description
+msgid ""
+"Do not display the sales description of the order line in the shopping cart.\n"
+"The value is not removed: it stays on the product and on the order line, so it remains available for the website search and for the quotation PDF. It is only hidden from the cart summary, where it duplicates the internal reference already shown for each line."
+msgstr ""
+"No muestra la descripción de venta de la línea del pedido en el carrito.\n"
+"El valor no se borra: sigue en el producto y en la línea del pedido, así que queda disponible para la búsqueda del sitio y para el PDF de la cotización. Solo se oculta del resumen del carrito, donde repite la referencia interna que ya se muestra en cada línea."
+
+#. module: website_sale_variant_code
+#: model_terms:ir.ui.view,arch_db:website_sale_variant_code.res_config_settings_view_form
+msgid "The internal reference is already shown on each cart line. Hide the sales description to avoid showing the code twice."
+msgstr "La referencia interna ya se muestra en cada línea del carrito. Ocultar la descripción de venta evita que el código aparezca dos veces."
