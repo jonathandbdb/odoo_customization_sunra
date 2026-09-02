@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es">
+<body>
+    <section style="max-width: 980px; margin: 0 auto; padding: 32px 24px; font-family: Arial, Helvetica, sans-serif; color-scheme: var(--o-webclient-color-scheme, normal); color: CanvasText; line-height: 1.55; background: transparent;">
+        <div style="padding: 28px 30px; border: 1px solid ButtonBorder; border-radius: 8px; background: Canvas;">
+            <p style="margin: 0 0 8px; color: LinkText; font-size: 13px; font-weight: 700; text-transform: uppercase;">Sitio web - Encabezado</p>
+            <h1 style="margin: 0 0 12px; color: CanvasText; font-size: 32px; line-height: 1.2;">website_currency_rate_header</h1>
+            <p style="margin: 0; max-width: 760px; color: GrayText; font-size: 16px;">Muestra la cotizacion vigente de una moneda en el encabezado del sitio, por ejemplo <code>Tipo de Cambio Oficial: $ 1.480,00</code>. Se activa por sitio web.</p>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 10px; color: LinkText; font-size: 23px;">El problema</h2>
+            <p style="margin: 0 0 12px;">El catalogo esta en <strong>dolares</strong> (la compania y las listas de precios estan en USD) pero se factura en <strong>pesos</strong>. El concesionario mira precios en dolares y quiere saber con que cotizacion los esta mirando, porque al momento de facturar el importe en pesos puede variar.</p>
+            <p style="margin: 0;">Odoo no muestra la cotizacion en ningun lugar del sitio.</p>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 12px; color: LinkText; font-size: 23px;">Configuracion</h2>
+            <p style="margin: 0 0 12px; padding: 12px 16px; border-left: 3px solid LinkText; background: ButtonFace; color: ButtonText;"><strong>Ajustes &rarr; Sitio Web &rarr; General</strong></p>
+            <table style="width: 100%; border-collapse: collapse; border: 1px solid ButtonBorder; background: Canvas;">
+                <tbody>
+                    <tr>
+                        <td style="width: 34%; padding: 14px 16px; border-bottom: 1px solid ButtonBorder; font-weight: 700; background: ButtonFace; color: ButtonText;">Cotizacion en el encabezado</td>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">Prende o apaga la linea en este sitio.</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; font-weight: 700; background: ButtonFace; color: ButtonText;">Moneda de la cotizacion</td>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">La moneda en la que se expresa el importe.</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 14px 16px; font-weight: 700; background: ButtonFace; color: ButtonText;">Texto de la cotizacion</td>
+                        <td style="padding: 14px 16px; color: CanvasText;">El texto que va antes del importe. Es <strong>traducible</strong>. Por defecto <em>Official Exchange Rate:</em>; en el sitio en espanol se pone <em>Tipo de Cambio Oficial:</em>.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 12px; color: LinkText; font-size: 23px;">La direccion de la cotizacion</h2>
+            <p style="margin: 0 0 12px;">En la semantica de Odoo, <code>rate</code> es <strong>cuantas unidades de esa moneda vale una unidad de la moneda de la compania</strong>. El campo <code>rate_string</code> del backend lo dice literal: <code>1 USD = 1480.000000 ARS</code>.</p>
+            <p style="margin: 0 0 12px;">Entonces, con la compania en <strong>USD</strong> y la moneda de la cotizacion en <strong>ARS</strong>, se muestran los pesos por dolar, que es exactamente lo que necesita ver el concesionario. El importe se formatea en la moneda elegida, con su simbolo y separadores.</p>
+            <p style="margin: 0;">Si la moneda elegida es la misma que la de la compania no se muestra nada: cotizarla contra si misma daria siempre 1.</p>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 12px; color: LinkText; font-size: 23px;">Como funciona</h2>
+            <p style="margin: 0 0 12px;">El dato sale del tipo de cambio estandar de Odoo (<code>res.currency</code>), asi que funciona con cualquier origen: carga manual o sincronizacion automatica. En este workspace lo mantiene <code>l10n_ar_currency_exchange_bna</code>, que sincroniza la venta del Banco Nacion por cron cada hora; el modulo del encabezado <strong>no depende</strong> de el.</p>
+            <p style="margin: 0 0 12px;">Se engancha en <code>website.placeholder_header_text_element</code>, un template <strong>vacio</strong> del core que invocan <strong>todas</strong> las variantes de encabezado (default, hamburger, stretch, vertical, search y mobile). Es el unico punto de extension estable: si el cliente cambia el estilo de encabezado del sitio, la cotizacion sigue apareciendo. El core usa ese mismo mecanismo en <code>website.header_text_element</code>, de donde sale la estructura del <code>&lt;li&gt;</code> y las variables de contexto que pasan los encabezados.</p>
+            <p style="margin: 0;">El calculo corre con <code>sudo()</code> porque la linea se renderiza para el visitante anonimo, que no tiene acceso de lectura a las cotizaciones.</p>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 10px; color: LinkText; font-size: 23px;">Validacion manual</h2>
+            <ol style="margin: 0; padding-left: 22px;">
+                <li style="margin-bottom: 8px;">Prender la cotizacion, elegir la moneda y escribir el texto.</li>
+                <li style="margin-bottom: 8px;">Confirmar que el importe coincide con la <em>Tasa actual</em> de esa moneda en el backend.</li>
+                <li style="margin-bottom: 8px;">Cambiar el estilo de encabezado del sitio y confirmar que la cotizacion <strong>sigue apareciendo</strong>.</li>
+                <li style="margin-bottom: 8px;">Cambiar la cotizacion en el backend (o correr el cron): el encabezado refleja el valor nuevo.</li>
+                <li style="margin-bottom: 8px;">Elegir como moneda la misma de la compania: no debe mostrarse nada.</li>
+                <li style="margin-bottom: 8px;">En el otro sitio web, con la cotizacion apagada: el encabezado queda <strong>identico</strong> a antes.</li>
+            </ol>
+        </div>
+
+        <div style="margin-top: 30px; padding: 20px 24px; border: 1px solid ButtonBorder; border-radius: 8px; background: Canvas;">
+            <p style="margin: 0; color: GrayText; font-size: 14px;">Sunra &middot; LGPL-3 &middot; Odoo 19 &middot; depende de <code>website</code></p>
+        </div>
+    </section>
+</body>
+</html>

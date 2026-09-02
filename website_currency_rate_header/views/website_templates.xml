@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Cotizacion en el encabezado.
+
+         Se engancha en `website.placeholder_header_text_element`, que es un template vacio que
+         invocan TODAS las variantes de encabezado del core (default, hamburger, stretch, vertical,
+         search y mobile). Es el unico punto de extension estable: si el cliente cambia el estilo
+         de encabezado del sitio, la cotizacion sigue apareciendo. El core usa este mismo mecanismo
+         en `website.header_text_element`, de donde sale la estructura del `<li>` y las variables
+         de contexto `_item_class` / `_div_class` que pasan los encabezados. -->
+    <template
+        id="header_currency_rate"
+        inherit_id="website.placeholder_header_text_element"
+        name="Header Exchange Rate"
+        active="True"
+    >
+        <xpath expr="." position="inside">
+            <t t-set="header_currency_rate" t-value="website._get_currency_rate_display()"/>
+            <li t-if="header_currency_rate" t-attf-class="#{_item_class}">
+                <div
+                    t-attf-class="s_text_block o_website_header_currency_rate #{_div_class}"
+                    data-name="Exchange Rate"
+                >
+                    <small class="d-flex align-items-center">
+                        <i class="fa fa-1x fa-fw fa-usd me-1" role="presentation"/>
+                        <span t-out="website.currency_rate_label"/>
+                        <span
+                            class="ms-1 o_force_ltr"
+                            t-out="header_currency_rate"
+                            t-options="{'widget': 'monetary', 'display_currency': website.currency_rate_currency_id}"
+                        />
+                    </small>
+                </div>
+            </li>
+        </xpath>
+    </template>
+</odoo>
+<!-- vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4-->

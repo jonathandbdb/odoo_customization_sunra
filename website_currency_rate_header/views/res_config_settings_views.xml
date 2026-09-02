@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Toggle y moneda a cotizar, en el bloque General de los ajustes de Sitio Web. -->
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.website_currency_rate_header</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="website.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <block id="website_info_settings" position="inside">
+                <setting
+                    id="show_currency_rate_setting"
+                    string="Exchange Rate in Header"
+                    help="Show the current exchange rate of a currency in the website header, for catalogs priced in a foreign currency but invoiced in the company currency."
+                >
+                    <field name="show_currency_rate"/>
+                    <div class="mt-2" invisible="not show_currency_rate">
+                        <div>
+                            <label for="currency_rate_currency_id" class="o_light_label me-2"/>
+                            <field name="currency_rate_currency_id" required="show_currency_rate"/>
+                        </div>
+                        <div class="mt-1">
+                            <label for="currency_rate_label" class="o_light_label me-2"/>
+                            <field name="currency_rate_label" placeholder="Official Exchange Rate:"/>
+                        </div>
+                    </div>
+                </setting>
+            </block>
+        </field>
+    </record>
+</odoo>
+<!-- vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4-->
