@@ -110,13 +110,6 @@ msgid "Choose the day and time when our crew will do the installation."
 msgstr "Elegí el día y la hora en que nuestro equipo va a hacer la instalación."
 
 #. module: website_sale_installation_appointment
-#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.appointment_form
-msgid ""
-"Clear, well-lit photos of your door from the outside, from the inside and\n"
-"                        the door edge (where the lock sits). They help the crew know what to expect."
-msgstr "Fotos claras y bien iluminadas de tu puerta desde afuera, desde adentro y del canto (el borde donde entra la cerradura). Le sirven al equipo para saber con qué se va a encontrar."
-
-#. module: website_sale_installation_appointment
 #: model:website.checkout.step,main_button_label:website_sale_installation_appointment.checkout_step_installation
 msgid "Continue"
 msgstr "Continuar"
@@ -517,10 +510,10 @@ msgid "This is how each photo should look:"
 msgstr "Así tiene que salir cada foto:"
 
 #. module: website_sale_installation_appointment
-#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation_photos_message
 msgid ""
-"Upload clear, well-lit photos showing your door from the outside,\n"
-"                                from the inside, and the door edge (where the lock sits)."
+"Upload clear, well-lit photos showing your door from the outside, from the inside,\n"
+"            and the door edge (where the lock sits)."
 msgstr "Subí fotos claras y bien iluminadas donde se vea tu puerta desde afuera, desde adentro y el canto (el borde donde entra la cerradura)."
 
 #. module: website_sale_installation_appointment
@@ -581,3 +574,29 @@ msgid ""
 "⏳ Installation duration: set aside between 2 and 4 hours (it varies\n"
 "                            depending on the complexity of the door)."
 msgstr "⏳ Duración de la instalación: reservate entre 2 y 4 horas (varía según la complejidad de la puerta)."
+
+#. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.appointment_type_view_form
+msgid "Installation Site Photos"
+msgstr "Fotos del lugar de instalación"
+
+#. module: website_sale_installation_appointment
+#: model:ir.model.fields,help:website_sale_installation_appointment.field_appointment_type__installation_photos_message
+msgid ""
+"Instructions shown above the photo upload, both in the eCommerce checkout "
+"and in the appointment form of the link shared by Nokey. Leave empty to show"
+" the default text of the module."
+msgstr ""
+"Consigna que se muestra arriba de la subida de fotos, tanto en el checkout "
+"del eCommerce como en el formulario de la cita del link que comparte Nokey. "
+"Vacío = se muestra el texto por defecto del módulo."
+
+#. module: website_sale_installation_appointment
+#: model:ir.model.fields,field_description:website_sale_installation_appointment.field_appointment_type__installation_photos_message
+msgid "Site Photos Message"
+msgstr "Consigna de las fotos del lugar"
+
+#. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.appointment_type_view_form
+msgid "e.g. \"Upload clear, well-lit photos of your door...\""
+msgstr "p. ej. \"Subí fotos claras y bien iluminadas de tu puerta...\""

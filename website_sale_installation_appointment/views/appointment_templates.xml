@@ -32,14 +32,13 @@
                     Photos of the site<t t-if="appointment_type.installation_min_photos"> *</t>
                 </label>
                 <div class="col-sm-9">
+                    <!-- Misma consigna que el paso del checkout, del campo del tipo de cita: un solo
+                         texto para los dos caminos, editable sin tocar la plantilla. -->
+                    <t t-call="website_sale_installation_appointment.installation_photos_message"/>
                     <t t-call="website_sale_installation_appointment.installation_photo_examples"/>
                     <input type="file" id="installation_photos" name="installation_photos"
                            class="form-control" multiple="multiple" accept="image/*"
                            t-att-required="appointment_type.installation_min_photos and '1' or None"/>
-                    <div class="form-text">
-                        Clear, well-lit photos of your door from the outside, from the inside and
-                        the door edge (where the lock sits). They help the crew know what to expect.
-                    </div>
                 </div>
             </div>
         </xpath>
@@ -58,6 +57,31 @@
                    t-attf-name="question_#{question.id}"
                    t-att-required="question.question_required or None"
                    t-att-placeholder="question.placeholder"/>
+        </xpath>
+    </template>
+
+    <!-- El "antes de agendar" tiene que leerse ANTES de elegir el turno. El core pinta
+         `message_intro` al final de la pagina, bajo el titulo "Descripcion": para una instalacion
+         (pilas, direccion completa, cuanto dura, como se paga) eso llega tarde. En el tipo de cita
+         del link se sube arriba del calendario y se apaga el bloque de abajo para no repetirlo.
+         Solo el tipo del LINK (`installation_fsm_project_id`, que es justamente el marcador de las
+         instalaciones agendadas fuera del eCommerce): en la compra el checklist ya se lee en el
+         paso "Instalacion" del checkout, repetirlo en la pagina del turno seria ruido.
+         El bloque va FUERA de `o_appointment_info_main`, que es `o_not_editable`: asi el `t-field`
+         sigue siendo editable en linea desde el editor, igual que el bloque nativo. -->
+    <template id="appointment_info" inherit_id="appointment.appointment_info">
+        <!-- Primero se apaga el bloque nativo del final y DESPUES se agrega el de arriba: los dos
+             pintan el mismo `t-field` y el xpath resuelve por el primero que encuentra, asi que al
+             reves este `attributes` caeria sobre el bloque nuevo. La clase `o_appointment_intro`
+             del nativo viaja en un `t-attf-class` (es dinamica), por eso `hasclass()` no la ve y se
+             ancla por el `t-field`. -->
+        <xpath expr="//div[@t-field='appointment_type.message_intro']/.." position="attributes">
+            <attribute name="t-if">not appointment_type.installation_fsm_project_id</attribute>
+        </xpath>
+        <xpath expr="//div[hasclass('o_appointment_info_main')]" position="before">
+            <div t-if="appointment_type.installation_fsm_project_id and not is_html_empty(appointment_type.message_intro)"
+                 class="alert alert-light border mb-4"
+                 t-field="appointment_type.message_intro"/>
         </xpath>
     </template>
 </odoo>

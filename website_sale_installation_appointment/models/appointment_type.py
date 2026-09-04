@@ -23,5 +23,18 @@ class AppointmentType(models.Model):
         string="Minimum Site Photos",
         help="Photos required to book. 0 shows the upload box without blocking the booking.",
     )
+    # La consigna de las fotos es texto que el funcional cambia sin avisar (que se tiene que ver,
+    # cuantas fotos, con que luz). Va en un campo y no en la plantilla: editar la plantilla desde el
+    # editor web crea una copia por sitio que deja de recibir las actualizaciones del modulo.
+    # `sanitize_attributes=False` espeja a `message_intro` del core: sin eso el editor pierde los
+    # estilos que deja al escribir.
+    installation_photos_message = fields.Html(
+        string="Site Photos Message",
+        translate=True,
+        sanitize_attributes=False,
+        help="Instructions shown above the photo upload, both in the eCommerce checkout and in the "
+             "appointment form of the link shared by Nokey. Leave empty to show the default text of "
+             "the module.",
+    )
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

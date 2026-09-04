@@ -33,6 +33,20 @@
         </div>
     </template>
 
+    <!-- Consigna de las fotos: sale del campo `installation_photos_message` del tipo de cita, que
+         el funcional edita desde el backend sin tocar plantillas (editar la plantilla desde el
+         editor web crea una copia por sitio que deja de recibir las actualizaciones del modulo).
+         Vacio -> el texto por defecto del modulo, para que una instalacion nueva ya diga algo.
+         Lo llaman los dos caminos: el paso del checkout y el formulario de la cita del link. -->
+    <template id="installation_photos_message" name="Installation Photos Message">
+        <div t-if="not is_html_empty(appointment_type.installation_photos_message)"
+             class="mb-3" t-field="appointment_type.installation_photos_message"/>
+        <p t-else="" class="text-muted">
+            Upload clear, well-lit photos showing your door from the outside, from the inside,
+            and the door edge (where the lock sits).
+        </p>
+    </template>
+
     <!-- Guia visual de las fotos que hay que subir. Antes solo habia un parrafo describiendo las
          tomas y el cliente subia cualquier cosa: aca ve como tiene que salir cada una ANTES de
          elegir los archivos. Es un template aparte porque lo llaman los dos caminos: el paso del
@@ -92,10 +106,17 @@
                 <h4 class="mb-1">Let's get your installation ready</h4>
                 <p class="text-muted">We need these two things before confirming your appointment.</p>
 
-                <!-- Checklist adaptado de la guia historica en JotForm que este paso reemplaza.
-                     OJO: a proposito NO incluye las condiciones de pago en efectivo/transferencia
-                     del JotForm original: aca el pago es online en el checkout, no aplican. -->
-                <div class="alert alert-light border mb-4">
+                <!-- Que tiene que saber el cliente antes de agendar. Sale de `message_intro` del
+                     tipo de cita (campo NATIVO, traducible, que el funcional edita desde el backend
+                     o en linea sobre la propia pagina) y es el MISMO texto que el link muestra
+                     antes del calendario. Por tipo de cita a proposito: el del eCommerce cobra
+                     online y el del link cobra el dia del turno, asi que las condiciones difieren.
+                     Vacio -> el checklist por defecto del modulo, adaptado de la guia historica en
+                     JotForm que este paso reemplaza (sin las condiciones de pago en efectivo del
+                     JotForm original: aca el pago es online). -->
+                <div t-if="not is_html_empty(appointment_type.message_intro)"
+                     class="alert alert-light border mb-4" t-field="appointment_type.message_intro"/>
+                <div t-else="" class="alert alert-light border mb-4">
                     <h6 class="alert-heading">Before you schedule</h6>
                     <ul class="mb-0 ps-3">
                         <li>
@@ -159,10 +180,7 @@
                     <div class="card mb-4">
                         <div class="card-body">
                             <h5 class="card-title">2. Upload photos of the site</h5>
-                            <p class="text-muted">
-                                Upload clear, well-lit photos showing your door from the outside,
-                                from the inside, and the door edge (where the lock sits).
-                            </p>
+                            <t t-call="website_sale_installation_appointment.installation_photos_message"/>
                             <t t-call="website_sale_installation_appointment.installation_photo_examples"/>
 
                             <!-- Fotos ya subidas: se pueden quitar antes de pagar. -->

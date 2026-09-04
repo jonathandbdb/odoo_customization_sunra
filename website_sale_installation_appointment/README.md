@@ -54,20 +54,24 @@ hacia abajo:
 0. **Encabezado** — "Preparemos tu instalación / Necesitamos estos tres datos antes de confirmar
    el turno", y debajo los tres pedidos **numerados y cada uno en su propia tarjeta** (antes el de
    las fotos quedaba suelto y se leía distinto de los otros dos).
-1. **Checklist previo** ("Antes de agendar") — puntos adaptados del JotForm: pilas AA/AAA
-   necesarias el día de la instalación, dirección completa, duración estimada (2 a 4 horas) y
-   garantía de 1 año por fallas de fábrica.
-   - **Adaptación deliberada**: el JotForm original incluía una condición de **pago en efectivo o
-     transferencia el día del turno**. Acá **no aplica y no se muestra**: el pago de este flujo es
-     **online, en el checkout**, antes de que la instalación quede agendada como Cita.
+1. **Checklist previo** ("Antes de agendar") — sale del campo **nativo** `message_intro` del tipo
+   de cita (ver *Textos configurables*), así que lo edita el funcional sin tocar código. Si está
+   vacío se muestra el texto por defecto del módulo, adaptado del JotForm: pilas AA/AAA necesarias
+   el día de la instalación, dirección completa, duración estimada (2 a 4 horas) y garantía de 1 año
+   por fallas de fábrica.
+   - **Adaptación deliberada del texto por defecto**: el JotForm original incluía una condición de
+     **pago en efectivo o transferencia el día del turno**. En la compra online **no aplica**: el
+     pago es **en el checkout**, antes de que la instalación quede agendada como Cita. En el tipo de
+     cita del **link** sí corresponde, y por eso el texto es **por tipo de cita**.
 > El paso pide **dos** cosas, no tres. La tarjeta *"Medí tu puerta antes de agendar"* se eliminó:
 > al mudar los diagramas junto a la pregunta quedaba como un recordatorio suelto sin imágenes. Las
 > medidas se preguntan como `appointment.question` al agendar y su guía aparece ahí (ver *Guía de
 > medidas* abajo).
 2. **Día y hora** (existente) — se delega en la página nativa de Citas.
-3. **Guía de fotos** — texto adaptado del JotForm sobre qué fotos subir (puerta desde afuera, desde
-   adentro, y el canto/borde donde entra la cerradura), junto al input de subida, **con un ejemplo
-   visual de cada toma** (template `installation_photo_examples`): antes solo estaba el párrafo y el
+3. **Guía de fotos** — la consigna sale del campo `installation_photos_message` del tipo de cita
+   (ver *Textos configurables*; vacío = texto por defecto del módulo, adaptado del JotForm: puerta
+   desde afuera, desde adentro, y el canto/borde donde entra la cerradura), junto al input de
+   subida, **con un ejemplo visual de cada toma** (template `installation_photo_examples`): antes solo estaba el párrafo y el
    cliente subía cualquier cosa. La toma "desde adentro" todavía no tiene foto propia: se muestra
    como recuadro con ícono hasta que Nokey la provea.
    - Las fotos **se suben apenas se eligen** (`static/src/js/installation_photos.js`) y el paso
@@ -112,6 +116,33 @@ Los **ejemplos de las fotos a subir** viven en el template `installation_photo_e
 `views/website_sale_installation_templates.xml`) y se llaman con `t-call` desde los dos caminos, justo
 arriba del input de archivos: uno solo para mantener, mismo mensaje compre por donde compre.
 
+## Textos configurables
+
+Los dos textos que el funcional cambia seguido **no viven en las plantillas**: viven en campos del
+**tipo de cita**, traducibles, y se editan desde *Citas → Tipos de cita → pestaña Comunicación* (o en
+línea sobre la propia página, con el editor del sitio).
+
+| Texto | Campo | Dónde se ve |
+|---|---|---|
+| Checklist "antes de agendar" (condiciones, duración, qué incluye el servicio) | `message_intro` (**nativo**) | Paso *Instalación* del checkout **y** arriba del calendario en la página del link |
+| Consigna de las fotos del lugar | `installation_photos_message` | Arriba del input de fotos, en el checkout **y** en el formulario de la cita |
+
+Los dos caen al **texto por defecto del módulo** si el campo está vacío, así que una base recién
+instalada ya dice algo coherente.
+
+> ⚠️ **Por qué en campos y no editando la plantilla desde el editor web.** Editar una plantilla desde
+> el editor crea una **copia por sitio (COW)**: esa copia queda congelada y **nunca más recibe las
+> actualizaciones del módulo**. Ya pasó en producción — se editó `installation_photo_examples` desde
+> el editor y la guía de fotos quedó vacía **en los dos flujos** durante una semana, sin que ningún
+> deploy la arreglara. Un campo se guarda en el registro: sobrevive upgrades, es traducible y lo leen
+> los dos caminos.
+
+> El checklist es **por tipo de cita** a propósito: el tipo del eCommerce cobra online y el del link
+> se cobra el día del turno. Son condiciones distintas y tienen que poder decirse distinto.
+
+Para bloques libres (banners, promos) están las zonas de snippets que ya trae cada página: el
+`oe_structure` del paso del checkout y el de la página de la cita.
+
 ## Qué agrega
 
 ### Campos
@@ -129,6 +160,7 @@ arriba del input de archivos: uno solo para mantener, mismo mensaje compre por d
 | `appointment.type` | `installation_fsm_project_id` | Proyecto de Field Service donde crear la tarea cuando la cita se agenda **sin** pasar por el eCommerce (link compartido). Vacío = la tarea la genera el pedido. |
 | `appointment.type` | `installation_request_photos` | Pedir fotos del lugar en el formulario de la cita. |
 | `appointment.type` | `installation_min_photos` | Fotos necesarias para reservar (0 = opcionales pero visibles). |
+| `appointment.type` | `installation_photos_message` | Consigna de las fotos del lugar (Html, traducible). Vacío = texto por defecto del módulo. |
 | `appointment.question` | `answer_format` | Formato esperado de la respuesta: texto libre, número entero, número, teléfono o documento (DNI/CUIT). |
 | `calendar.event` | `installation_task_id` | Tarea de Field Service generada por una cita agendada fuera del eCommerce. |
 

@@ -23,6 +23,18 @@
                 <field name="installation_request_photos"/>
                 <field name="installation_min_photos" invisible="not installation_request_photos"/>
             </xpath>
+            <!-- La consigna de las fotos va junto a los otros textos que ve el cliente (pestana
+                 Comunicacion), no perdida entre los campos tecnicos: es el lugar donde el funcional
+                 ya entra a cambiar el mensaje de introduccion y el de confirmacion. Sin `invisible`:
+                 el tipo del eCommerce pide las fotos en el paso del checkout, no en el formulario
+                 de la cita, asi que tiene `installation_request_photos` apagado y igual necesita el
+                 texto. -->
+            <xpath expr="//page[@name='messages']//field[@name='message_confirmation']" position="after">
+                <separator string="Installation Site Photos"/>
+                <field colspan="2" name="installation_photos_message" class="border border-1 rounded"
+                    nolabel="1" options="{'height': 120}"
+                    placeholder="e.g. &quot;Upload clear, well-lit photos of your door...&quot;"/>
+            </xpath>
         </field>
     </record>
 </odoo>
