@@ -5,7 +5,7 @@
 | **Modulo** | `website_sale_payment_method_price` |
 | **Version** | `1.0.2` (== `version` del `__manifest__.py`, formato `x.x.x`) |
 | **Serie Odoo** | `19` (informativa) |
-| **Estado** | `implemented` (validado end-to-end a mano; falta pasada de @reviewer) |
+| **Estado** | `verified` (validado end-to-end a mano + pasada de @reviewer sobre 1.0.1/1.0.2: 0 criticos) |
 | **Actualizado** | `2026-09-04` |
 
 ## Objetivo
@@ -283,7 +283,9 @@ hay dato de terceros). No hacen falta record rules: el filtro real es `website_i
 | **T17** | Fix del boton de pagar trabado tras la recarga: restaurar la seleccion antes del super (D15) | T10 | `static/src/js/payment_form_price.js` | CA16 |
 | **T18** | Blindar la restauracion (`try/catch` + id validado) para que nunca tumbe el `willStart` | T17 | `static/src/js/payment_form_price.js` | CA17 |
 
-> T01..T15, T17 y T18 cerradas. T16 pendiente.
+> T01..T18 cerradas (T16 = review de opus sobre 1.0.1/1.0.2: 0 criticos; sus hallazgos
+> accionables se cerraron en T18 y los no accionables quedaron anotados como riesgos
+> conocidos en las notas de implementacion).
 
 ## Notas de implementacion
 
