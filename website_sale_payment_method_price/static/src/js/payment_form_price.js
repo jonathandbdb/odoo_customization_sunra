@@ -10,31 +10,23 @@ const SELECTED_OPTION_PARAM = "wspmp_pm";
 patch(PaymentForm.prototype, {
 
     /**
-     * Volver a marcar el medio elegido despues de la recarga.
+     * Volver a marcar el medio elegido antes de que el core arme el formulario.
      *
      * El ajuste del pedido se aplica en el servidor y el paso de pago se recarga, con lo cual la
      * seleccion del radio se perderia y el boton de pagar quedaria deshabilitado. El id viaja en la
-     * URL y aca se re-marca; el rpc que dispara ese click devuelve reload=false porque el ajuste ya
-     * corresponde al medio, asi que no hay bucle de recargas.
+     * URL y aca se re-marca ANTES del super: el willStart del core, al encontrar un radio marcado,
+     * despliega el formulario inline del medio y habilita el boton, igual que cuando hay un solo
+     * medio de pago.
+     *
+     * No se puede simular la eleccion con un click(): los listeners de dynamicContent se enganchan
+     * recien cuando willStart resuelve (colibri.js:L51), asi que el evento change no lo escucharia
+     * nadie y el boton quedaria trabado.
      *
      * @override
      */
     async willStart() {
+        this._wspmpRestoreSelectedOption();
         await super.willStart(...arguments);
-
-        if (!this._wspmpIsShopCheckout()) {
-            return;
-        }
-        const optionId = new URL(browser.location.href).searchParams.get(SELECTED_OPTION_PARAM);
-        if (!optionId) {
-            return;
-        }
-        const radio = this.el.querySelector(
-            `input[name="o_payment_radio"][data-payment-option-id="${optionId}"]`
-        );
-        if (radio && !radio.checked) {
-            radio.click();
-        }
     },
 
     /**
@@ -68,6 +60,41 @@ patch(PaymentForm.prototype, {
             const url = new URL(browser.location.href);
             url.searchParams.set(SELECTED_OPTION_PARAM, optionId);
             browser.location.assign(url.toString());
+        }
+    },
+
+    /**
+     * Marcar el radio del medio que viaja en la URL, sin disparar eventos.
+     *
+     * Se marca la propiedad `checked` a mano en vez de clickear porque el radio tiene que quedar
+     * elegido para cuando corra el willStart del core, que es el que despliega el formulario inline
+     * y habilita el boton de pagar.
+     *
+     * @return {void}
+     */
+    _wspmpRestoreSelectedOption() {
+        if (!this._wspmpIsShopCheckout()) {
+            return;
+        }
+        const optionId = new URL(browser.location.href).searchParams.get(SELECTED_OPTION_PARAM);
+        if (!optionId) {
+            return;
+        }
+        const radio = this.el.querySelector(
+            `input[name="o_payment_radio"][data-payment-option-id="${optionId}"]`
+        );
+        if (!radio || radio.checked) {
+            return;
+        }
+        radio.checked = true;
+        // Con tokens guardados el core colapsa la lista de medios: si el elegido es uno de esos,
+        // hay que desplegarla o quedaria marcado un medio que el cliente no ve.
+        const collapsedSection = radio.closest("#o_payment_methods.collapse:not(.show)");
+        if (collapsedSection) {
+            collapsedSection.classList.add("show");
+            this.el
+                .querySelector('[name="o_payment_expand_button"]')
+                ?.classList.add("d-none");
         }
     },
 
