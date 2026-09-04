@@ -3,7 +3,7 @@
 | Campo | Valor |
 |-------|-------|
 | **Modulo** | `website_sale_payment_method_price` |
-| **Version** | `1.0.1` (== `version` del `__manifest__.py`, formato `x.x.x`) |
+| **Version** | `1.0.2` (== `version` del `__manifest__.py`, formato `x.x.x`) |
 | **Serie Odoo** | `19` (informativa) |
 | **Estado** | `implemented` (validado end-to-end a mano; falta pasada de @reviewer) |
 | **Actualizado** | `2026-09-04` |
@@ -37,7 +37,7 @@ el precio del carrito se calcula antes de que el cliente elija como pagar.
 | D8 | ¿Por que medio se busca la regla? | Por **`primary_payment_method_id`**. En el checkout el radio es siempre el primario (`card`), pero el proveedor **reescribe** `payment_method_id` con la marca real (`visa`) al procesar el feedback. Buscar por el medio tal cual llega perderia la configuracion. |
 | D9 | ¿Como se sincroniza el medio preseleccionado? | En el servidor, dentro de `_get_shop_payment_values`, espejando la condicion del core (`/home/leandro/projects/nexit/19.0/odoo/addons/payment/views/payment_form_templates.xml:L38`), y **solo si el pedido no tiene ya una regla**. Si la tiene es porque el cliente eligio un medio, y quitarsela pelearia contra esa eleccion en cada recarga. |
 | D10 | ¿Por que se recarga el paso de pago? | El importe se lee del `dataset` del formulario en el `setup()` de la interaccion (`/home/leandro/projects/nexit/19.0/odoo/addons/payment/static/src/interactions/payment_form.js:L23`), asi que un refresh parcial dejaria un numero viejo. Atajo deliberado; la seleccion del radio se conserva con el parametro `wspmp_pm`. |
-| D15 | ¿Como se restaura la seleccion tras la recarga? | Marcando `radio.checked` **antes** de `super.willStart()`, sin disparar eventos: el `willStart` del core, al encontrar un radio marcado, despliega el formulario inline y habilita el boton (`/home/leandro/projects/nexit/19.0/odoo/addons/payment/static/src/interactions/payment_form.js:L36`). **No** con `radio.click()`: los listeners de `dynamicContent` se enganchan recien cuando `willStart` resuelve (`/home/leandro/projects/nexit/19.0/odoo/addons/web/static/src/public/colibri.js:L51`), asi que el `change` no lo escucha nadie y el boton de pagar queda deshabilitado. |
+| D15 | ¿Como se restaura la seleccion tras la recarga? | Marcando `radio.checked` **antes** de `super.willStart()`, sin disparar eventos: el `willStart` del core, al encontrar un radio marcado, despliega el formulario inline y habilita el boton (`/home/leandro/projects/nexit/19.0/odoo/addons/payment/static/src/interactions/payment_form.js:L36`). **No** con `radio.click()`: los listeners de `dynamicContent` se enganchan recien cuando `willStart` resuelve (`/home/leandro/projects/nexit/19.0/odoo/addons/web/static/src/public/colibri.js:L51`), asi que el `change` no lo escucha nadie y el boton de pagar queda deshabilitado. **Consecuencia**: el `_prepareInlineForm` del proveedor pasa a correr dentro del `willStart` (en Mercado Pago eso es cargar el SDK y montar el brick de tarjeta, `/home/leandro/projects/nexit/19.0/odoo/addons/payment_mercado_pago/static/src/interactions/payment_form.js:L33`), y por eso la seccion colapsada se despliega **antes** del super: el brick tiene que montar en un contenedor visible. Como todo esto corre antes que el core, la restauracion va **blindada** (`try/catch` + el id validado como numerico): un throw nuestro dejaria al framework sin enganchar ningun listener y reproduciria el mismo boton trabado. |
 | D11 | ¿Donde se cuelga el JS de la ficha? | En **`WebsiteSale.prototype`**, no en `VariantMixin`: el core copia el mixin al prototipo con `Object.assign` (`/home/leandro/projects/nexit/19.0/odoo/addons/website_sale/static/src/interactions/website_sale.js:L651`), asi que un `patch()` sobre el mixin llega tarde. Comprobado en vivo: la primera version parcheaba el mixin y no repintaba. |
 | D12 | ¿Reserva de stock al pagar por transferencia? | **Como lo hace Odoo** (pedido en presupuesto, sin reserva). Decision explicita de la cliente → sin desarrollo. |
 | D13 | Convivencia con otras promociones | El ajuste **se suma** a lo que haya (decision comercial de la cliente). El objetivo se calcula sobre el precio final de cada linea, ya con sus descuentos. |
@@ -213,6 +213,7 @@ hay dato de terceros). No hacen falta record rules: el filtro real es `website_i
 | **CA13** | Cambiar cantidades recalcula el ajuste (15 % del nuevo total) | OK |
 | **CA14** | El total cobrado coincide con el precio publicado en la vidriera | OK |
 | **CA15** | Las cadenas visibles salen en castellano (`con <medio>`) | OK |
+| **CA17** | Un `wspmp_pm` invalido o inexistente no rompe el paso de pago: la pagina arranca normal y el medio se puede elegir a mano | OK |
 | **CA16** | Tras la recarga por cambio de medio, el boton de pagar queda habilitado y el formulario inline del medio (p. ej. la tarjeta de Mercado Pago) se despliega, sin volver a tocar el radio | OK (reproducido y verificado en el navegador local, 4-sep-2026) |
 
 ## Referencias al core
@@ -232,6 +233,7 @@ hay dato de terceros). No hacen falta record rules: el filtro real es `website_i
 | Interaccion del formulario de pago | `/home/leandro/projects/nexit/19.0/odoo/addons/payment/static/src/interactions/payment_form.js:L23` | El importe se lee del `dataset` en el setup: fundamenta la recarga (D10). |
 | Handler del radio | `/home/leandro/projects/nexit/19.0/odoo/addons/payment/static/src/interactions/payment_form.js:L55` | `selectPaymentOption`, el metodo que se parchea. |
 | `willStart` del formulario de pago | `/home/leandro/projects/nexit/19.0/odoo/addons/payment/static/src/interactions/payment_form.js:L36` | Si encuentra un radio marcado despliega el inline form y habilita el boton: es el camino que usa la restauracion (D15). |
+| Inline form de Mercado Pago | `/home/leandro/projects/nexit/19.0/odoo/addons/payment_mercado_pago/static/src/interactions/payment_form.js:L33` | `_prepareInlineForm` lee el radio marcado del `document` y monta el brick: exige que la restauracion ocurra antes del super (D15). |
 | Arranque de una Interaction | `/home/leandro/projects/nexit/19.0/odoo/addons/web/static/src/public/colibri.js:L51` | Los listeners se enganchan **despues** de `willStart`: fundamenta D15. |
 | Colapso de la lista de medios | `/home/leandro/projects/nexit/19.0/odoo/addons/payment/views/payment_form_templates.xml:L91` | `#o_payment_methods` nace `collapse` cuando hay tokens. |
 | Chequeo de importe al crear la transaccion | `/home/leandro/projects/nexit/19.0/odoo/addons/website_sale/controllers/payment.py:L64` | Aborta si el form y `amount_total` difieren: es el candado que obliga al flujo. |
@@ -279,8 +281,9 @@ hay dato de terceros). No hacen falta record rules: el filtro real es `website_i
 | **T15** | Validacion manual end-to-end en la base local | T14 | — | — |
 | **T16** | Pasada de @reviewer | T15 | — | — |
 | **T17** | Fix del boton de pagar trabado tras la recarga: restaurar la seleccion antes del super (D15) | T10 | `static/src/js/payment_form_price.js` | CA16 |
+| **T18** | Blindar la restauracion (`try/catch` + id validado) para que nunca tumbe el `willStart` | T17 | `static/src/js/payment_form_price.js` | CA17 |
 
-> T01..T15 y T17 cerradas. T16 pendiente.
+> T01..T15, T17 y T18 cerradas. T16 pendiente.
 
 ## Notas de implementacion
 
@@ -296,6 +299,14 @@ hay dato de terceros). No hacen falta record rules: el filtro real es `website_i
   quedaba marcado pero el boton de pagar deshabilitado y el formulario de tarjeta sin montar. El
   cliente lo vivia como "el boton de pagar queda trabado"; se destrababa eligiendo otro medio y
   volviendo (ese segundo click si tiene listener). Corregido en 1.0.1 (D15).
+- **Riesgos conocidos anotados en la review de 1.0.1 (no corregidos, con su porque)**:
+  - `wspmp_pm` lleva solo el id, sin el tipo de opcion. Un `payment.token` con el mismo id
+    numerico que el medio elegido restauraria el radio equivocado (los tokens se renderizan
+    primero). Verificado el 4-sep-2026 en PROD: `payment_token` esta **vacio** (0 filas), asi que
+    hoy no puede pasar; si algun dia se guardan tarjetas, mandar tipo+id en el parametro.
+  - Si el SDK de Mercado Pago no carga (adblock, caida del CDN), el `willStart` del core rechaza
+    y el formulario queda inerte en vez de degradar solo ese medio. Es el mismo comportamiento
+    que el core tiene cuando hay un solo medio de pago; sin alternativa dentro del alcance.
 - **Dos trampas encontradas en vivo, no por lectura**: el patch del mixin que no tenia efecto (D11) y
   la pelea entre el sync del servidor y la eleccion del cliente (D9). Las dos aparecieron probando en
   el navegador, no revisando codigo: cualquier cambio en esta zona se valida en el sitio, no solo en

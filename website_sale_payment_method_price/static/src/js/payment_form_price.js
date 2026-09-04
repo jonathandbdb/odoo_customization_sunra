@@ -25,7 +25,15 @@ patch(PaymentForm.prototype, {
      * @override
      */
     async willStart() {
-        this._wspmpRestoreSelectedOption();
+        try {
+            this._wspmpRestoreSelectedOption();
+        } catch (error) {
+            // Nunca dejar que esto tumbe el willStart: si rechaza, el framework no engancha
+            // NINGUN listener (colibri.js:L58) y el paso de pago queda inutilizable — el mismo
+            // sintoma que este metodo viene a arreglar. Restaurar la seleccion es una comodidad;
+            // el cliente siempre puede volver a elegir el medio a mano.
+            console.warn("wspmp: no se pudo restaurar el medio de pago elegido", error);
+        }
         await super.willStart(...arguments);
     },
 
@@ -77,7 +85,9 @@ patch(PaymentForm.prototype, {
             return;
         }
         const optionId = new URL(browser.location.href).searchParams.get(SELECTED_OPTION_PARAM);
-        if (!optionId) {
+        // El valor viaja en la URL y se interpola en un selector: si no es un id, ni se intenta
+        // (un valor con comillas o corchetes haria que querySelector tire SyntaxError).
+        if (!optionId || !/^\d+$/.test(optionId)) {
             return;
         }
         const radio = this.el.querySelector(
