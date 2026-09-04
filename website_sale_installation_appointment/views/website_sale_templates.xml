@@ -20,5 +20,21 @@
             </h5>
         </xpath>
     </template>
+
+    <!-- Carrito: la linea de pilas gratis se ve pero no se puede tocar (D20). El selector de
+         cantidad y el link al producto ya quedan cubiertos por el override de _is_sellable()
+         (sin xpath); esto solo saca el boton Eliminar, en los dos nodos (desktop y mobile). NO
+         se ocultan los contenedores completos: el de desktop tambien lleva el selector de
+         cantidad de las lineas de combo. -->
+    <template id="cart_lines" inherit_id="website_sale.cart_lines">
+        <xpath expr="//div[@name='o_wsale_cart_line_button_container']//a[hasclass('js_delete_product')]"
+               position="attributes">
+            <attribute name="t-if">not line.is_free_battery_line</attribute>
+        </xpath>
+        <xpath expr="//div[@name='o_wsale_cart_line_button_container_mobile']//button[hasclass('js_delete_product')]"
+               position="attributes">
+            <attribute name="t-if">not line.is_free_battery_line</attribute>
+        </xpath>
+    </template>
 </odoo>
 <!-- vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4-->

@@ -9,6 +9,7 @@
             <group name="delivery_details" position="inside">
                 <field name="installation_appointment_type_id"/>
                 <field name="installation_min_photos" invisible="not installation_appointment_type_id"/>
+                <field name="includes_free_batteries"/>
             </group>
         </field>
     </record>

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     "name": "website_sale_installation_appointment",
-    "version": "1.7.0",
+    "version": "1.8.0",
     "summary": "Envio con instalacion en el eCommerce: agenda la cita y pide fotos del lugar en el checkout",
     "description": """
 Permite vender un envio "con instalacion incluida" desde el eCommerce y que esa venta quede agendada
@@ -15,6 +15,9 @@ como Cita (app Citas), con las fotos del lugar y los datos que cargo el cliente.
   pagina nativa de Citas y su control de capacidad) y sube las fotos del lugar de instalacion.
 - Al confirmarse/pagarse el pedido, el mecanismo nativo (website_appointment_sale) convierte la
   reserva en Cita y este modulo copia las fotos a la Cita y a la tarea de Field Service.
+- El metodo de envio tambien puede incluir sin cargo las pilas que necesitan los productos del
+  carrito (configurables en la ficha del producto): se agrega automaticamente la linea a $0,
+  sincronizada en el carrito web, en el backend y al confirmar.
     """,
     "category": "Website/Website",
     "author": "Sunra",
@@ -29,6 +32,7 @@ como Cita (app Citas), con las fotos del lugar y los datos que cargo el cliente.
     "data": [
         "data/website_checkout_step_data.xml",
         "views/delivery_carrier_views.xml",
+        "views/product_template_views.xml",
         "views/sale_order_views.xml",
         "views/website_sale_installation_templates.xml",
         "views/website_sale_templates.xml",

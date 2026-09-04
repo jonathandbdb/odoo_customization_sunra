@@ -39,6 +39,12 @@ msgid "\"%(question)s\": the ID number is not valid."
 msgstr "\"%(question)s\": el número de documento no es válido."
 
 #. module: website_sale_installation_appointment
+#. odoo-python
+#: code:addons/website_sale_installation_appointment/models/product_template.py:0
+msgid "%(product)s cannot be configured as its own free battery product."
+msgstr "%(product)s no se puede configurar como su propio producto de pila incluida."
+
+#. module: website_sale_installation_appointment
 #: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation
 msgid "1. Pick the day and time"
 msgstr "1. Elegí el día y el horario"
@@ -59,6 +65,15 @@ msgstr "<span>Solo imágenes. Le sirven al equipo para saber con qué se va a en
 #: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation_measure_guide
 msgid "A) How thick is the door (width of the door edge)."
 msgstr "A) Qué tan gruesa es la puerta (el ancho del canto)."
+
+#. module: website_sale_installation_appointment
+#: model:ir.model.fields,help:website_sale_installation_appointment.field_delivery_carrier__includes_free_batteries
+msgid ""
+"Adds the batteries configured on the products in the cart at $0, because "
+"their cost is already covered by this shipping method. Do not repeat the "
+"request for batteries in the appointment type's checklist message if it "
+"applies."
+msgstr "Agrega a $0 las pilas configuradas en los productos del carrito, porque el costo ya está cubierto por este método de envío. Si el checklist del tipo de cita pide pilas, sacá ese punto para no repetirlo."
 
 #. module: website_sale_installation_appointment
 #: model:ir.model.fields,field_description:website_sale_installation_appointment.field_appointment_question__answer_format
@@ -88,6 +103,18 @@ msgid "Back to installation"
 msgstr "Volver a la instalación"
 
 #. module: website_sale_installation_appointment
+#: model:ir.model.fields,field_description:website_sale_installation_appointment.field_product_template__free_battery_uom_name
+msgid "Battery Unit"
+msgstr "Unidad de la pila"
+
+#. module: website_sale_installation_appointment
+#: model:ir.model.fields,help:website_sale_installation_appointment.field_product_template__free_battery_product_id
+msgid ""
+"Battery product added to the order at no cost, but only when the chosen "
+"shipping method has 'Includes Free Batteries' enabled."
+msgstr "Producto de pila que se agrega al pedido sin cargo, pero solo si el método de envío elegido tiene tildado 'Incluye pilas sin cargo'."
+
+#. module: website_sale_installation_appointment
 #: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation
 msgid "Before you schedule"
 msgstr "Antes de agendar"
@@ -108,6 +135,15 @@ msgstr "Controla lo que escribe el cliente antes de reservar. Texto libre acepta
 #: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation
 msgid "Choose the day and time when our crew will do the installation."
 msgstr "Elegí el día y la hora en que nuestro equipo va a hacer la instalación."
+
+#. module: website_sale_installation_appointment
+#. odoo-python
+#: code:addons/website_sale_installation_appointment/models/product_template.py:0
+msgid ""
+"Configure both the free battery product and its quantity for %(product)s "
+"(the quantity is expressed in the battery product's own unit of measure), "
+"or leave both empty."
+msgstr "Configurá el producto de pila incluida y su cantidad para %(product)s (la cantidad se expresa en la unidad de medida del producto de pila), o dejá los dos vacíos."
 
 #. module: website_sale_installation_appointment
 #: model:website.checkout.step,main_button_label:website_sale_installation_appointment.checkout_step_installation
@@ -171,6 +207,16 @@ msgid ""
 msgstr "Para los tipos de cita que se agendan SIN pasar por el eCommerce (el link que comparte Nokey cuando el cliente paga por fuera): la visita reservada acá crea una tarea en este proyecto de Field Service, así la cuadrilla la tiene en su planificación. Dejalo vacío en los tipos de cita cuya tarea ya la genera el pedido de venta."
 
 #. module: website_sale_installation_appointment
+#: model:ir.model.fields,field_description:website_sale_installation_appointment.field_product_template__free_battery_qty
+msgid "Free Batteries Quantity"
+msgstr "Cantidad de pilas incluidas"
+
+#. module: website_sale_installation_appointment
+#: model:ir.model.fields,field_description:website_sale_installation_appointment.field_product_template__free_battery_product_id
+msgid "Free Battery Product"
+msgstr "Producto de pila incluida"
+
+#. module: website_sale_installation_appointment
 #: model:ir.model.fields.selection,name:website_sale_installation_appointment.selection__appointment_question__answer_format__free
 msgid "Free text"
 msgstr "Texto libre"
@@ -209,6 +255,17 @@ msgstr "Si se define, este método de envío incluye instalación: el cliente ti
 #: code:addons/website_sale_installation_appointment/models/calendar_booking.py:0
 msgid "Included in the %(carrier)s shipping method — no extra charge."
 msgstr "Incluido en el método de envío %(carrier)s — sin cargo adicional."
+
+#. module: website_sale_installation_appointment
+#. odoo-python
+#: code:addons/website_sale_installation_appointment/models/sale_order.py:0
+msgid "Included with your shipping method — no extra charge."
+msgstr "Incluidas con tu método de envío, sin cargo adicional."
+
+#. module: website_sale_installation_appointment
+#: model:ir.model.fields,field_description:website_sale_installation_appointment.field_delivery_carrier__includes_free_batteries
+msgid "Includes Free Batteries"
+msgstr "Incluye pilas sin cargo"
 
 #. module: website_sale_installation_appointment
 #: model:ir.model.fields,help:website_sale_installation_appointment.field_sale_order__installation_required
@@ -269,6 +326,11 @@ msgstr "Tarea de instalación"
 #: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.delivery_address_list
 msgid "Installation address"
 msgstr "Dirección de la instalación"
+
+#. module: website_sale_installation_appointment
+#: model:ir.model.fields,field_description:website_sale_installation_appointment.field_sale_order_line__is_free_battery_line
+msgid "Is a Free Battery Line"
+msgstr "Es una línea de pila sin cargo"
 
 #. module: website_sale_installation_appointment
 #: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation
@@ -400,6 +462,13 @@ msgid ""
 msgstr "No se otorgó el acceso al portal automáticamente: el cliente no tiene email."
 
 #. module: website_sale_installation_appointment
+#: model:ir.model.fields,help:website_sale_installation_appointment.field_product_template__free_battery_qty
+msgid ""
+"Quantity to add for free, expressed in the battery product's own unit of "
+"measure: for batteries sold in packs of 4, 1 means one pack (4 batteries)."
+msgstr "Cantidad a incluir sin cargo, en la unidad de medida del producto de pila elegido (no en cantidad de pilas sueltas): si se vende en paquetes de 4, 1 significa un paquete (4 pilas)."
+
+#. module: website_sale_installation_appointment
 #: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation
 msgid "Remove"
 msgstr "Quitar"
@@ -436,6 +505,13 @@ msgid ""
 msgstr "Muestra la carga de fotos en el formulario de la cita: la cuadrilla necesita saber con qué se va a encontrar en el lugar."
 
 #. module: website_sale_installation_appointment
+#: model:ir.model.fields,help:website_sale_installation_appointment.field_sale_order_line__is_free_battery_line
+msgid ""
+"Technical flag marking the lines generated by the free battery "
+"configuration, so they can be removed without guessing by product."
+msgstr "Marca técnica de las líneas generadas por la configuración de pilas incluidas, para poder identificarlas sin adivinar por producto."
+
+#. module: website_sale_installation_appointment
 #. odoo-python
 #: code:addons/website_sale_installation_appointment/models/delivery_carrier.py:0
 msgid ""
@@ -443,6 +519,13 @@ msgid ""
 "it must have a payment step and a booking product, otherwise the appointment"
 " cannot be linked to the eCommerce order."
 msgstr "El tipo de cita %(appointment_type)s no se puede usar para instalaciones: necesita paso de pago y un producto de reserva, si no la cita no puede quedar vinculada al pedido del eCommerce."
+
+#. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation
+msgid ""
+"The batteries your lock needs are included with your shipping method — no\n"
+"                    extra charge."
+msgstr "Las pilas que necesita tu cerradura están incluidas en este método de envío, sin cargo adicional."
 
 #. module: website_sale_installation_appointment
 #. odoo-python
@@ -478,6 +561,12 @@ msgstr "El archivo %(filename)s no es una imagen que podamos leer. Si es de un i
 #: code:addons/website_sale_installation_appointment/controllers/website_sale_installation_appointment.py:0
 msgid "The file %(filename)s is too big (maximum %(max_size)s MB)."
 msgstr "El archivo %(filename)s es demasiado grande (máximo %(max_size)s MB)."
+
+#. module: website_sale_installation_appointment
+#. odoo-python
+#: code:addons/website_sale_installation_appointment/models/product_template.py:0
+msgid "The free batteries quantity of %(product)s cannot be negative."
+msgstr "La cantidad de pilas incluidas de %(product)s no puede ser negativa."
 
 #. module: website_sale_installation_appointment
 #: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation_measure_guide

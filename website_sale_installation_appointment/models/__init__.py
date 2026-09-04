@@ -4,6 +4,7 @@ from . import appointment_type
 from . import calendar_booking
 from . import calendar_event
 from . import delivery_carrier
+from . import product_template
 from . import sale_order
 from . import sale_order_line
 from . import website

@@ -25,6 +25,13 @@ class DeliveryCarrier(models.Model):
         help="Minimum amount of photos of the installation site the customer must upload before "
              "paying. Set to 0 to make photos optional.",
     )
+    includes_free_batteries = fields.Boolean(
+        string="Includes Free Batteries",
+        default=False,
+        help="Adds the batteries configured on the products in the cart at $0, because their "
+             "cost is already covered by this shipping method. Do not repeat the request for "
+             "batteries in the appointment type's checklist message if it applies.",
+    )
 
     @api.constrains("installation_appointment_type_id")
     def _check_installation_appointment_type(self):

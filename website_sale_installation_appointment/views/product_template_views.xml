@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Producto: configuracion de las pilas incluidas sin costo (D14). Va en el grupo "upsell"
+         ("Upsell & Cross-Sell") de la pestaña Sales, junto a optional_product_ids y
+         accessory_product_ids: es donde el funcional ya configura este tipo de cruce de venta. -->
+    <record id="product_template_view_form" model="ir.ui.view">
+        <field name="name">product.template.view.form.inherit.website_sale_installation_appointment</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="arch" type="xml">
+            <group name="upsell" position="inside">
+                <field name="free_battery_product_id"
+                       domain="['|', ('company_id', '=', False), ('company_id', '=', company_id)]"
+                       placeholder="Batteries included for free with some shipping methods"/>
+                <!-- La UoM real del producto de pila queda a la derecha del numero (D15, riesgo
+                     funcional #1): "1" tiene que leerse como "un paquete de 4", no como "una
+                     pila". Molde: is_storable + qty_available de product/stock (o_row). -->
+                <label for="free_battery_qty" invisible="not free_battery_product_id"/>
+                <div class="o_row" invisible="not free_battery_product_id">
+                    <field name="free_battery_qty"/>
+                    <field name="free_battery_uom_name" readonly="1" class="oe_inline"/>
+                </div>
+            </group>
+        </field>
+    </record>
+</odoo>
+<!-- vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4-->

@@ -4,7 +4,7 @@ Vender un **envío con instalación incluida** desde el eCommerce y que esa vent
 Cita** (app Citas), con las **fotos del lugar** y los datos que cargó el cliente, y con la **tarea de
 Field Service** del instalador.
 
-- **Versión**: 1.2.0
+- **Versión**: 1.8.0
 - **Licencia**: LGPL-3
 - **Depende de**: `website_sale`, `delivery`, `website_appointment_sale`, `sale_project`
 
@@ -151,6 +151,10 @@ Para bloques libres (banners, promos) están las zonas de snippets que ya trae c
 |---|---|---|
 | `delivery.carrier` | `installation_appointment_type_id` | Tipo de cita a agendar. Si está vacío, el método de envío es normal. |
 | `delivery.carrier` | `installation_min_photos` | Fotos mínimas del lugar (0 = opcionales). Default 1. |
+| `delivery.carrier` | `includes_free_batteries` | Si está tildado, agrega **sin cargo** las pilas configuradas en los productos del carrito (ver *Pilas incluidas sin costo*). |
+| `product.template` | `free_battery_product_id` | Producto de pila que este producto necesita (se agrega gratis solo si el método de envío tiene `includes_free_batteries`). |
+| `product.template` | `free_battery_qty` | Cantidad de pilas, **en la UoM del producto de pila elegido** (ver *Pilas incluidas sin costo*). |
+| `sale.order.line` | `is_free_battery_line` | Flag técnico (no va en vistas) que marca la línea de pilas gratis. |
 | `sale.order` | `installation_appointment_type_id` | Related del carrier elegido. |
 | `sale.order` | `installation_required` | Si el pedido exige agendar instalación. |
 | `sale.order` | `installation_booking_id` | Reserva pendiente (antes de confirmar). |
@@ -221,6 +225,33 @@ Servidores de correo saliente), el mail de invitación no sale (queda en la cola
 según la configuración de Odoo); la invitación en sí se sigue disparando (el usuario portal queda
 creado), pero el cliente no recibe el link de *sign up*.
 
+## Pilas incluidas sin costo
+
+Cuando un método de envío incluye las pilas (instalación con cuadrilla propia, por ejemplo), el
+pedido agrega automáticamente una línea con las pilas que necesita cada producto, **a $0**: el costo
+ya está integrado en el servicio de instalación.
+
+- **Configuración por producto** — en la ficha del producto (pestaña *Ventas*, grupo *Venta cruzada*):
+  `free_battery_product_id` (qué pila necesita) y `free_battery_qty` (cuántas). La UoM se muestra al
+  lado del número: la pila real se vende en "Paquete de 4", así que `1` significa **un paquete (4
+  pilas)**, no una pila suelta.
+- **Opt-in por método de envío** — independiente de que el envío lleve o no instalación: `includes
+  Free Batteries` en la ficha del método de envío. Así el día de mañana otro envío puede incluir
+  pilas sin necesidad de agendar cita.
+- **Agregación por producto de pila** — dos productos distintos que usan la misma pila generan
+  **una sola línea**, con la suma de ambos.
+- **Sincronización idempotente** — la línea se crea/ajusta/borra automáticamente al armar el carrito
+  en el sitio, al cambiar el método de envío, al armar el pedido en el backend (con o sin el botón
+  *Add shipping*) y al confirmar (red de seguridad final). Correr la sincronización dos veces seguidas
+  no cambia nada.
+- **Visible pero no editable** — la línea se ve en el carrito (constancia de qué pilas se entregan)
+  pero no tiene selector de cantidad ni botón *Eliminar*; si el cliente la manipula por el endpoint
+  público del carrito, se re-sincroniza en el mismo request.
+- **Aparece en la factura, a $0**: es la constancia de que las pilas fueron entregadas.
+- **Checklist del checkout** — si el método de envío incluye las pilas, el punto "vas a necesitar 4 u
+  8 pilas..." del checklist por defecto no se muestra, y aparece un aviso aclarando que van incluidas
+  sin cargo.
+
 ## Configuración (registros a crear)
 
 1. **Producto de la cita** — tipo *Servicio*, `service_tracking = Crear tarea en proyecto existente`
@@ -272,6 +303,15 @@ creado), pero el cliente no recibe el link de *sign up*.
    descripción con el nombre del tipo + el horario). Conviene que se lea como el turno y no como un
    segundo cargo, ej. *Turno de instalación a domicilio*; el módulo además le agrega
    "Incluido en el método de envío … — sin cargo adicional".
+8. **Pilas incluidas sin costo** (opcional) — en cada producto que las necesite: `free_battery_product_id`
+   + `free_battery_qty` (en la UoM del producto de pila); y en el método de envío que las incluye:
+   `Includes Free Batteries`. Dos requisitos de configuración:
+   - **`invoice_policy = 'order'`** en el producto de pila: con `'delivery'` y stock 0 la línea no
+     llegaría a facturarse, perdiendo la constancia de entrega.
+   - **Aprovisionar stock** si la pila es storable: con stock 0 el picking la muestra como no
+     disponible, y mientras esté agotada se **apaga el mail de carrito abandonado** de ese carrito.
+   - Si el `message_intro` del tipo de cita menciona "vas a necesitar pilas", **sacar ese punto**
+     cuando el método de envío las incluye (si no, el cliente lee dos mensajes contradictorios).
 
 ### Agenda compartida sin cobrar online (el cliente paga por fuera)
 
@@ -339,6 +379,19 @@ backoffice.
   en este módulo: si se editan los textos/opciones en el tipo de cita, hay que actualizar esa tabla
   a mano (drift entre la config real y esta doc).
 
+- **`free_battery_qty` va en la UoM del producto de pila**: si la pila real se vende en "Paquete de
+  4", `1` significa un paquete (4 pilas). Leerlo como "cantidad de pilas" duplica o cuadriplica lo
+  que se despacha — el `help` del campo y la UoM visible al lado del número lo aclaran.
+- **Publicar el producto de pila no lo vuelve editable en el carrito**: la línea gratis sigue sin
+  selector de cantidad ni botón Eliminar, esté o no publicado el producto (no hace falta publicarlo:
+  la línea se crea del lado del servidor).
+- **La línea gratis nunca bloquea el pago por stock**, aunque la pila sea storable, tenga stock 0 y
+  no permita venta sin stock: es un producto que el cliente no eligió y no puede quitar, así que
+  bloquear el checkout por eso dejaría un carrito sin salida.
+- **No repetir el pedido de pilas en `message_intro`**: si el checklist del tipo de cita menciona
+  "vas a necesitar pilas" y el método de envío las incluye, el cliente lee dos cosas contradictorias
+  (el checklist pidiéndolas y el aviso diciendo que van incluidas).
+
 ## Validación manual
 
 1. Carrito con un producto etiquetado como instalable → el método *Envío con instalación* aparece.
@@ -354,3 +407,17 @@ backoffice.
    Usuarios y Compañías → Usuarios) y que llegue el mail de invitación (requiere servidor de correo
    saliente configurado). Repetir con un cliente que ya tiene usuario portal/interno → no debe
    mandar mail ni crear un usuario nuevo.
+
+### Pilas incluidas sin costo
+
+10. Configurar `free_battery_product_id` + `free_battery_qty` en la cerradura, y `Includes Free
+    Batteries` en el método de envío → agregar la cerradura al carrito y elegir ese método → aparece
+    la línea de pilas a **$0**, con la cantidad correcta (`free_battery_qty × cantidad de cerraduras`).
+11. Cambiar la cantidad de cerraduras → la línea de pilas se ajusta (no se duplica).
+12. Cambiar a un método de envío **sin** el flag → la línea desaparece; volver al que lo tiene → reaparece.
+13. En el carrito: la línea gratis se ve pero sin selector de cantidad ni botón Eliminar.
+14. En el paso de instalación: con el flag activo se ve el aviso de "pilas incluidas" y **no** el
+    punto del checklist que pide pilas; sin el flag, es al revés.
+15. Agregar la misma pila como producto suelto → se agrega una segunda línea, **pagada**.
+16. Pagar y revisar la **factura**: la línea de pilas aparece a $0.
+17. Duplicar el pedido (Acciones → Duplicar) → el duplicado trae **una** línea de pilas a $0.
