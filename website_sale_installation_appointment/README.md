@@ -4,7 +4,7 @@ Vender un **envío con instalación incluida** desde el eCommerce y que esa vent
 Cita** (app Citas), con las **fotos del lugar** y los datos que cargó el cliente, y con la **tarea de
 Field Service** del instalador.
 
-- **Versión**: 1.8.0
+- **Versión**: 1.9.0
 - **Licencia**: LGPL-3
 - **Depende de**: `website_sale`, `delivery`, `website_appointment_sale`, `sale_project`
 
@@ -192,6 +192,9 @@ Para bloques libres (banners, promos) están las zonas de snippets que ya trae c
   que el tipo de cita, `sale_project` descarta esa línea y la tarea queda titulada con la fecha.
 - `WebsiteAppointmentSale._redirect_to_payment()` — al volver de agendar, vuelve al paso Instalación
   (el nativo vuelve al paso de dirección) y descarta la reserva anterior si el cliente reagenda.
+- `calendar.event._notify_by_email_prepare_rendering_context()` — compañía correcta (logo/colores)
+  en el correo de **recordatorio** de la cita, en una base con más de una compañía (ver *Marca del
+  correo de la cita* más abajo).
 
 ### Validaciones
 
@@ -224,6 +227,25 @@ forma de desactivarla para un pedido puntual (aplica a todo pedido con instalaci
 Servidores de correo saliente), el mail de invitación no sale (queda en la cola o falla en silencio
 según la configuración de Odoo); la invitación en sí se sigue disparando (el usuario portal queda
 creado), pero el cliente no recibe el link de *sign up*.
+
+## Marca del correo de la cita (recordatorio)
+
+En una base con **más de una compañía** (ej. Miluan SRL / Nokey y YG S.A. / Sunra), la confirmación
+Y el recordatorio de la cita se mandan por el **mismo camino** (`_notify_attendees()` sobre la
+Cita). La diferencia es **cuándo** corre cada uno: la confirmación corre dentro del **request web**
+del checkout (la compañía activa ya es la del sitio/cliente) y sale bien; el recordatorio lo dispara
+el **cron** nativo de alarmas, cuya compañía activa es la del usuario técnico que lo corre. El hook
+que pinta el logo/colores del correo arma la compañía leyendo un campo `company_id` del registro —y
+`calendar.event` no tiene ese campo—, así que sin este fix el recordatorio salía con el logo/colores
+de la compañía del **usuario del cron**, no la del cliente.
+
+Dos overrides en `calendar.event` resuelven esto, ambos en el mismo orden — (1) la compañía del
+**pedido de venta** que originó la cita (el más antiguo entre los no cancelados: duplicar un pedido
+copia el vínculo con la cita); (2) si no hay pedido (agendada por el link compartido), la del
+**organizador**; (3) si tampoco, la de quien **creó** la cita; (4) si tampoco, el comportamiento
+nativo—: `_mail_get_companies()` (afecta a quién responde el reply-to del correo, útil porque cada
+compañía tiene su propio dominio de alias) y `_notify_by_email_prepare_rendering_context()` (el que
+realmente pinta el logo/colores del layout).
 
 ## Pilas incluidas sin costo
 
@@ -421,3 +443,12 @@ backoffice.
 15. Agregar la misma pila como producto suelto → se agrega una segunda línea, **pagada**.
 16. Pagar y revisar la **factura**: la línea de pilas aparece a $0.
 17. Duplicar el pedido (Acciones → Duplicar) → el duplicado trae **una** línea de pilas a $0.
+
+### Marca del correo de la cita
+
+18. En una base con más de una compañía, confirmar un pedido con instalación de una compañía desde
+    un usuario cuya compañía por defecto sea la **otra** → correr el cron de alarmas (Ajustes →
+    Técnico → Automatización → Acciones Planificadas → *ir_cron_scheduler_alarm* → *Ejecutar
+    Manualmente*) o esperar la ventana del recordatorio → el correo de recordatorio sale con el
+    logo/colores de la compañía **del pedido**, no la del usuario del cron. El de confirmación no
+    cambia (ya salía bien).

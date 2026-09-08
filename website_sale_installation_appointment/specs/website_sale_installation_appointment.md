@@ -3,18 +3,21 @@
 | Campo | Valor |
 |-------|-------|
 | **Modulo** | `website_sale_installation_appointment` |
-| **Version** | `1.8.0` (== `version` del `__manifest__.py`, formato `x.x.x`) |
+| **Version** | `1.9.0` (== `version` del `__manifest__.py`, formato `x.x.x`) |
 | **Serie Odoo** | `19` (informativa) |
 | **Estado** | `verified` |
-| **Actualizado** | `2026-09-04` |
+| **Actualizado** | `2026-09-07` |
 
 > Cliente: **Miluan SRL / Nokey** (eCommerce de cerraduras inteligentes, `nokey.odoo.com`).
 > Repo: `extra-addons/sunrasa/odoo_customization_sunra`. Licencia LGPL-3, autor Sunra.
 > `depends`: `website_sale`, `delivery`, `website_appointment_sale`, `sale_project`.
 >
-> **Nota de version**: el modulo esta en `1.8.0` — la feature de pilas incluidas se suma sobre
-> el `1.7.0` del otro dev (textos del cliente configurables desde el tipo de cita, commit
-> `e5526ae`). El `version` del manifest y la `Version` de esta spec estan sincronizados.
+> **Nota de version**: el modulo esta en `1.9.0` — sobre el `1.8.0` (pilas incluidas) se suma el
+> fix de marca del correo de **recordatorio** de la cita (D43, Plane #38): el layout salia con el
+> logo/colores de la otra compañia de la base porque el hook que lo pinta cae siempre en
+> `env.company` (calendar.event no tiene `company_id`), y el cron de alarmas corre con otra
+> compañia que el request del checkout. Ver D43 para el detalle (causa raiz corregida tras review).
+> El `version` del manifest y la `Version` de esta spec estan sincronizados.
 
 ## Objetivo
 
@@ -73,6 +76,7 @@ integrado en el servicio de instalacion).
 | D41 | ¿Donde se pinta el aviso de "pilas incluidas"? | **Fuera** del par `t-if`/`t-else` del checklist, como bloque propio inmediatamente despues, condicionado **solo** a `order.carrier_id.includes_free_batteries`. Rationale: la logica **condicional a datos** tiene que vivir en la plantilla —un campo de texto configurable no puede expresar una condicion—, mientras los textos **estaticos** del cliente van en campos (criterio de D42). **Los dos criterios conviven**: prosa estatica → campo; texto que depende del estado del pedido → plantilla. |
 | D42 | ¿Por que los textos del cliente van en campos y no en las plantillas? *(current-state, decision del commit `e5526ae`)* | Porque **editar una plantilla desde el editor web crea una copia COW por sitio que deja de recibir las actualizaciones del modulo**: asi se vacio la guia de fotos en produccion, en los dos flujos, sin que ningun deploy la arreglara. El checklist sale del campo **nativo** `message_intro` y la consigna de fotos del campo nuevo `installation_photos_message`; vacios → el texto por defecto del modulo. Van **por tipo de cita** a proposito: el del eCommerce cobra online y el del link cobra el dia del turno, asi que las condiciones difieren. |
 | D40 | ¿La cantidad convierte UoM de la **cerradura**? | `[ASUNCION]` **No**: `free_battery_qty * line.product_uom_qty` se toma tal cual, porque hoy las cerraduras se venden en **Units**. Si mañana una se vende en "Caja de 6", 1 caja pediria 1 paquete en vez de 6. Fix conocido de una linea: `line.product_uom_id._compute_quantity(line.product_uom_qty, line.product_id.uom_id)` (molde: `odoo/addons/delivery/models/sale_order_line.py:L24`). Las cerraduras **dentro de un combo** si aportan pilas (deseable), pero configurar pilas en la plantilla del combo **y** en el item las contaria dos veces. |
+| D43 | ¿Que compañia sella el correo de una cita de instalacion (logo/colores del layout de notificacion)? | *(Plane #38, 2026-09-07; corregido tras review — ver nota abajo)* **Causa raiz real**: la confirmacion Y el recordatorio de la cita se mandan por el **mismo camino** — `_notify_attendees()` (`odoo/addons/calendar/models/calendar_attendee.py:L124-196`) → `message_notify()` sobre el `calendar.event` — asi que no es que "la confirmacion viaja sobre el pedido": tambien viaja sobre la cita. La diferencia es **cuando** corre cada uno: la confirmacion la dispara el `create()` del attendee dentro del **request web** del checkout (`enterprise/appointment/models/calendar_attendee.py:L16-44`), donde `env.company` ya es la del sitio/cliente; el recordatorio lo dispara el **cron** de alarmas (`odoo/addons/calendar/models/calendar_alarm_manager.py:L182-202`, `_send_reminder`), cuyo `env.company` es la del usuario tecnico del cron. El logo/colores del layout los pinta `_notify_by_email_prepare_rendering_context()` (`odoo/addons/mail/models/mail_thread.py:L3606-3719`, el calculo en `:L3657-3666`), que arma `company` leyendo `record.company_id` **directo** — no via `_mail_get_companies()` — y cae a `env.company` porque `calendar.event` no tiene ese campo. Fix con **dos** overrides en `calendar.event`, ambos reusando el mismo resolvedor: `_mail_get_companies()` (compania del `record_company_id`/alias domain/reply-to — molde `odoo/addons/mail/models/models.py:L128-140`, uso real en `message_notify` `odoo/addons/mail/models/mail_thread.py:L2831`) y `_notify_by_email_prepare_rendering_context()` (el que **si** pinta el layout, molde de override `odoo/addons/sale/models/sale_order.py:L1758`). Orden de resolucion en ambos: (1) compania del **pedido de venta** que origino la cita — el mas viejo (por `id`) entre los no cancelados, `sale.order.line.calendar_event_id`, porque duplicar un pedido copia ese vinculo sin `copy=False` (`enterprise/website_appointment_sale/models/sale_order_line.py:L11`); (2) compania del **organizador** (`user_id.company_id`); (3) compania de **quien creo la cita** (`create_uid.company_id`, mismo heuristico que usa el propio core para citas sin usuario, `odoo/addons/calendar/controllers/main.py:L66`); (4) lo que resuelva el `super()` con el `default` recibido. **Efecto colateral deseado** de `_mail_get_companies()`: el reply-to/alias domain del recordatorio tambien queda con el dominio de la compañia del pedido (verificado en produccion: cada compañia tiene su propio dominio de alias — `nokey.odoo.com`, `sunra.odoo.com`, `sunraprueba.odoo.com`, `miluanprueba.odoo.com` — todos manejados por la misma instancia), asi que un recordatorio de un pedido de Nokey con reply-to de Nokey es lo correcto, no un accidente a corregir. **Nota de la correccion**: la primera version de este fix (T13, primer intento) solo tenia el override de `_mail_get_companies()` y documentaba mal la causa (creia que la confirmacion no pasaba por `calendar.event`, y citaba `mail_thread.py:2330`, que es de `message_post`, no del recordatorio). El logo seguia mal porque ese metodo **no** interviene en el layout. |
 
 ## Alcance
 
@@ -88,6 +92,9 @@ integrado en el servicio de instalacion).
 - **Textos del cliente configurables por tipo de cita** (D42): checklist "antes de agendar" desde el campo nativo `message_intro` y consigna de las fotos desde `installation_photos_message`, con el texto por defecto del modulo como respaldo, en los dos caminos; y en el tipo de cita del link, el checklist se sube arriba del calendario.
 - Camino sin eCommerce: cita por link compartido → tarea de FSM creada/sincronizada por el modulo.
 - Paso de checkout como dato por website (`post_init_hook` / `uninstall_hook`).
+- **Marca correcta del correo de recordatorio de la cita** (D43): el layout de notificacion
+  (logo/colores) usa la compañia del pedido que origino la cita y, en su defecto, la del
+  organizador o de quien la creo — no la del usuario que corre el cron de alarmas.
 
 **Pilas incluidas sin costo (feature del *Plan del cambio en curso*)**
 - Configuracion por producto (`free_battery_product_id`, `free_battery_qty` en la UoM del producto de pila) y opt-in por metodo de envio (`includes_free_batteries`).
@@ -128,7 +135,7 @@ No aplica: el modulo no define modelos propios, solo extiende modelos de `odoo/`
 | `appointment.type` | `appointment.type` | Proyecto de FSM para citas fuera del eCommerce, pedido de fotos y minimo, y **consigna de las fotos configurable** (`installation_photos_message`) |
 | `appointment.question` | `appointment.question` | Formato de respuesta validado y marca de la guia de medidas |
 | `calendar.booking` | `calendar.booking` | Aclaracion en la descripcion de la linea ("incluido en el metodo de envio") |
-| `calendar.event` | `calendar.event` | Tarea de FSM de la cita agendada fuera del eCommerce + sincronizacion y fotos |
+| `calendar.event` | `calendar.event` | Tarea de FSM de la cita agendada fuera del eCommerce + sincronizacion y fotos; **compañia del correo de la cita** (recordatorio) resuelta por el pedido/organizador (D43) |
 | `website` | `website` | Paso de checkout condicional |
 
 **Controllers** (`controllers/website_sale_installation_appointment.py`): `WebsiteSaleInstallation(WebsiteSale)`
@@ -204,6 +211,21 @@ ambiguedad de la UoM es el riesgo #1 de esta feature):
 #### `calendar.event`
 - `create()` / `write()` — **overrides**: generan la tarea de FSM de las citas con `installation_fsm_project_id` (aislado en savepoint) y la mantienen en linea al reprogramar/cancelar/desarchivar.
 - `_installation_generate_fsm_task()`, `_installation_cancel_task()`, `_installation_restore_task()`, `_installation_post_photos(attachments)`.
+- `_mail_get_companies(default=False)` — **override** (D43): resolvedor de "que compania es esta
+  cita" — pedido que la origino (el mas viejo, no cancelado) > organizador (`user_id.company_id`) >
+  quien la creo (`create_uid.company_id`) > `super()` con el `default`. Influye en `record_company_id`
+  del `mail.message`, el alias domain del reply-to y el Return-Path — **no** en el logo/colores.
+- `_notify_by_email_prepare_rendering_context(...)` — **override** (D43): el que **si** pinta el
+  logo/colores del layout de notificacion (`render_context['company']` y `['website_url']`), llamando
+  a `super()` y reusando `_mail_get_companies()` como resolvedor. Corrige el correo de
+  **recordatorio** de la cita (Plane #38); el de confirmacion usa el mismo camino y no regresiona.
+  La compañia resuelta se escribe con **`.sudo()`**, igual que el core (`odoo/addons/mail/models/mail_thread.py:L3660`):
+  QWeb lee `company.name`/`uses_default_logo`/colores y `res.company` tiene reglas por grupo que
+  acotan la lectura a las compañias del usuario (`odoo/odoo/addons/base/security/base_security.xml:L105-125`),
+  asi que sin el `sudo()` un empleado que postea en el chatter de una cita de **otra** compañia
+  (caso real: cita por link compartido, sin pedido, organizador de la otra compañia) se comeria un
+  `AccessError` al renderizar. El recordatorio no estaba afectado (el cron corre como root), pero el
+  chatter manual si.
 
 #### `calendar.booking`
 - `_get_description()` — **override**: agrega "Included in the … shipping method — no extra charge." a la descripcion de la linea de la reserva.
@@ -526,7 +548,12 @@ ambiguedad de la UoM es el riesgo #1 de esta feature):
 - **Cerradura vendida en una UoM que no sea Units** (ej. "Caja de 6"): la cantidad **no se convierte** hoy (D40, asuncion declarada) — pediria 1 paquete por caja.
 - **`message_intro` que contradice el aviso** (config, no codigo): si el funcional deja en `message_intro` el punto "tenes que tener 4 u 8 pilas" y el carrier **incluye** las pilas, el cliente lee las dos cosas: el checklist configurado pidiendoselas y el aviso diciendo que van incluidas. El aviso **no puede** saber que dice el texto libre del campo; se resuelve como **requisito de configuracion** (T12 lo documenta): con carrier que incluye pilas, ese punto sale de `message_intro`.
 - **`invoice_policy` del producto de pila**: con `'order'` (lo que ya tienen 411/412) la linea llega a la factura, que es la razon de ser de D28. Si alguien lo pasa a `'delivery'` con stock 0, la linea no se facturaria.
-- **Multi-compañia / multi-sitio**: la configuracion es por producto y por metodo de envio, que ya son registros por compañia/sitio; el modulo no agrega logica de compañia propia.
+- **Multi-compañia / multi-sitio**: la configuracion de pilas es por producto y por metodo de envio,
+  que ya son registros por compañia/sitio. El modulo **si** agrega logica de compañia propia para el
+  correo de la cita (D43): `calendar.event._notify_by_email_prepare_rendering_context()` (el hook
+  que pinta el logo/colores del layout) resuelve la compañia del pedido que origino la cita (o, en su
+  defecto, la del organizador o de quien la creo), en vez de la del usuario que dispara la
+  notificacion — cron de alarmas para el recordatorio, request del checkout para la confirmacion.
 
 ## Criterios de aceptacion
 
@@ -534,6 +561,7 @@ ambiguedad de la UoM es el riesgo #1 de esta feature):
 > en curso no los vuelve a cubrir — `CA35`/`CA36` vienen del commit `e5526ae` de otro dev).
 > `CA14`–`CA34` y `CA37`: feature de **pilas incluidas** (los cubre el plan del cambio, salvo `CA30`).
 > `CA37` queda fuera de orden numerico porque `CA35`/`CA36` entraron con el rebase sobre `e5526ae`.
+> `CA38`: fix de marca del correo de recordatorio (D43, Plane #38, T13).
 
 **Envio con instalacion (existente)**
 - [ ] **CA01**: Carrito con un producto etiquetado como instalable → el metodo *Envio con instalacion* aparece en el checkout.
@@ -578,6 +606,17 @@ ambiguedad de la UoM es el riesgo #1 de esta feature):
 - [ ] **CA32**: Producto de pila con *Sell when Out-of-Stock* **apagado** y **stock 0** (configuracion real de tmpl 411) → el carrito **se puede pagar**: `_check_cart_is_ready_to_be_paid` no tira `ValidationError` por la linea gratis.
 - [ ] **CA33**: Pedido con la cerradura en cantidad **`-1`** o con `+1` y `-1` que se cancelan → **no** se crea linea de pilas negativa ni en 0 (y si habia una, se borra).
 - [ ] **CA34**: Cerradura de una compañia con una pila configurada en **otra** compañia → el carrito **no rompe** (sin `UserError`/500): la pila se saltea y no se crea la linea.
+
+**Marca del correo de la cita (fix Plane #38)**
+- [ ] **CA38**: Una cita de instalacion cuyo pedido de venta es de una compañia (ej. Miluan SRL /
+  Nokey) → el **layout renderizado** (logo, nombre y colores) del correo de **recordatorio** de esa
+  cita usa **esa** compañia, aunque el usuario que corre el cron de alarmas
+  (`ir_cron_scheduler_alarm`) tenga otra compañia (ej. YG S.A. / Sunra) como compañia por defecto.
+  El correo de **confirmacion** sigue saliendo bien (mismo camino, no regresiona). Sin pedido
+  asociado (cita agendada por link compartido, sin venta) → se usa la compañia del organizador de
+  la cita, y si tampoco hay organizador, la de quien la creo. **Se valida renderizando la
+  notificacion de verdad** (no solo el resolvedor `_mail_get_companies()`, que no pinta el layout —
+  ver Notas de implementacion).
 
 ## Referencias al core
 
@@ -657,6 +696,15 @@ ambiguedad de la UoM es el riesgo #1 de esta feature):
 | Checklist arriba del calendario | `extra-addons/sunrasa/odoo_customization_sunra/website_sale_installation_appointment/views/appointment_templates.xml:L72` | Override `appointment_info`: apaga el bloque nativo (`:L78`) y agrega el de arriba (`:L82`) |
 | Campo en la pestaña Comunicacion | `extra-addons/sunrasa/odoo_customization_sunra/website_sale_installation_appointment/views/appointment_type_views.xml:L33` | Donde se configura `installation_photos_message` |
 | Donde cuelga el opt-in del carrier | `extra-addons/sunrasa/odoo_customization_sunra/website_sale_installation_appointment/views/delivery_carrier_views.xml:L9` | `group name="delivery_details"` — mismo grupo para `includes_free_batteries` |
+| Base de `_mail_get_companies()` | `odoo/addons/mail/models/models.py:L128-140` | `_mail_get_companies(default=False)` — cae al `default` cuando el modelo no tiene `company_id` (caso de `calendar.event`); **no** pinta el layout (solo `record_company_id`/alias domain/reply-to) |
+| Caller real de `_mail_get_companies()` en la notificacion | `odoo/addons/mail/models/mail_thread.py:L2831` | Dentro de `message_notify()`: `msg_values['record_company_id'] = self._mail_get_companies(default=self.env.company)[self.id].id`. (`:L2330` es de `message_post()`, **no** del camino de la cita) |
+| **El hook que si pinta el logo/colores del layout** | `odoo/addons/mail/models/mail_thread.py:L3606-3719` | `_notify_by_email_prepare_rendering_context()`; el calculo de `company`/`website_url` esta en `:L3657-3666` y lee `record.company_id` **directo** (no via `_mail_get_companies()`) — punto de extension real del fix D43 |
+| Camino comun de confirmacion Y recordatorio | `odoo/addons/calendar/models/calendar_attendee.py:L124-L196` | `_notify_attendees()` → `message_notify()` sobre el `calendar.event`, una llamada **por asistente** (no en lote) |
+| Disparador de la confirmacion (request web) | `enterprise/appointment/models/calendar_attendee.py:L16-L44` | `_send_invitation_emails()` override — corre en el `create()` del attendee, dentro del request del checkout: `env.company` ya es la del sitio |
+| Disparador del recordatorio (cron) | `odoo/addons/calendar/models/calendar_alarm_manager.py:L182-L202` | `_send_reminder()`, `@api.model`, comentario propio del core "Executed via cron": `env.company` es la del usuario tecnico del cron |
+| Molde del fallback organizador/creador | `odoo/addons/calendar/controllers/main.py:L66` | `company = event.user_id and event.user_id.company_id or event.create_uid.company_id` — heuristico nativo para citas sin compañia propia |
+| Vinculo cita ↔ pedido usado por el fix | `enterprise/website_appointment_sale/models/sale_order_line.py:L10-11` | `sale.order.line.calendar_event_id` (M2o directo, seteado por `calendar.booking`) **sin `copy=False`**: un pedido duplicado copia el vinculo, de ahi el criterio "el mas viejo, no cancelado, gana" |
+| Molde de override de `_notify_by_email_prepare_rendering_context` | `odoo/addons/sale/models/sale_order.py:L1758`, `odoo/addons/project/models/project_task.py:L1506`, `odoo/addons/crm/models/crm_lead.py:L2103` | Los tres llaman a `super()` y pisan claves del dict devuelto (`subtitles` en su caso); mismo patron para pisar `company`/`website_url` |
 
 ## Documentacion afectada
 
@@ -666,13 +714,18 @@ ambiguedad de la UoM es el riesgo #1 de esta feature):
 | `website_sale_installation_appointment/static/description/index.html` | actualizar | Funcionalidad visible nueva: "las pilas van incluidas sin cargo cuando el envio las incluye" + como se configura |
 | `odoo_customization_sunra/README.md` (raiz del repo) | actualizar | Sumar "pilas incluidas sin cargo" al resumen de la fila del modulo en el indice |
 | `website_sale_installation_appointment/specs/website_sale_installation_appointment.md` | actualizar | Esta spec: `Estado` → `implemented` y `Version` sincronizada con el manifest (`1.8.0`) al cerrar T12 |
+| `website_sale_installation_appointment/README.md` | actualizar (T13) | Mencion breve del fix de marca del correo de recordatorio (D43, Plane #38) en *Qué agrega* / *Gotchas* |
+| `website_sale_installation_appointment/static/description/index.html` | actualizar (T13) | Mencion breve del fix en *Detalle tecnico* |
+| `website_sale_installation_appointment/specs/website_sale_installation_appointment.md` | actualizar (T13) | `Version` sincronizada con el manifest (`1.9.0`) al cerrar T13 |
 
 ## Plan del cambio (completado)
 
-> **Solo la feature de pilas incluidas** (el resto del modulo ya estaba implementado y solo se
-> describe como current-state). Las 12 tareas (T01..T12) se ejecutaron en orden y estan
-> **cerradas**: T01..T10 codigo, T11 tests (20/20 en verde), T12 documentacion + version. Se deja
-> la tabla como registro de lo hecho (archivos, dependencias y CA cubiertos).
+> **T01..T12: feature de pilas incluidas** (el resto del modulo ya estaba implementado y solo se
+> describe como current-state). Las 12 tareas se ejecutaron en orden y estan **cerradas**:
+> T01..T10 codigo, T11 tests (20/20 en verde), T12 documentacion + version.
+> **T13: fix de marca del correo de recordatorio** (D43, Plane #38), sin relacion con las pilas —
+> se agrega despues, tambien **cerrada**. Se deja la tabla como registro de lo hecho (archivos,
+> dependencias y CA cubiertos).
 
 | Tarea | Descripcion | Depende de | Archivos | Cubre |
 |-------|-------------|------------|----------|-------|
@@ -688,6 +741,7 @@ ambiguedad de la UoM es el riesgo #1 de esta feature):
 | **T10** | Paso del checkout, **dos partes**: (a) `t-if="not order.carrier_id.includes_free_batteries"` **como atributo** del `<li>` historico de las pilas (su **texto no se toca** → `msgid` intacto); (b) **bloque nuevo** con el aviso de pilas incluidas, con clase **`o_not_editable`**, ubicado **despues del cierre del `<div t-else="">`** (nunca entre el `t-if` y el `t-else`: QWeb rompe al cargar) y condicionado solo a `includes_free_batteries` (D31 + D41). Aviso en **un solo nodo de texto** → el `.po` **suma una** entrada nueva con su `msgstr` es_419, sin modificar ninguna existente | T02 | `views/website_sale_installation_templates.xml`, `i18n/es_419.po` | CA29, CA37 |
 | **T11** | Suite de tests de los **flujos troncales de pilas** (sin matriz exhaustiva): agregacion y agrupacion, idempotencia del sync, cambio de cantidad y de carrier, precio 0 en el camino forzado y en el normal (**combinados**: `_recompute_prices()` con una tarifa de descuento real, no cada uno por separado), `discount == 0` / `pricelist_item_id == False`, alta manual separada, `_is_reorder_allowed`, `_is_sellable` con el producto **publicado**, los tres engaches de backend (onchange, `set_delivery_line`, `action_confirm`), auto-curacion via `_cart_update_line_quantity`, constrains de configuracion, duplicado de pedido, cantidades no positivas (`-1`, y `+1`/`-1` que se cancelan en el tiempo), multi-compañia, y que el `name` de la linea sale traducido para un cliente es_AR (no solo que `_get_lang()` corre, sino que el `.po` tiene el `msgstr` cargado). **El camino onchange quedo con DOS tests, no uno** (correccion post-review, ver *Notas de implementacion*): `test_onchange_adds_free_battery_line` ejercita la rama `Command.create` llamando `_onchange_free_battery_lines()` directo sobre un `.new()` (no via `Form`: `carrier_id` no esta en ninguna vista backend de `sale.order`, asi que `Form` no lo agrega a su `fields_spec` y el trigger real nunca se prueba con ese atajo); `test_onchange_removes_free_battery_line_via_form` cubre la rama **`Command.delete`** (la mas riesgosa) **a traves del trigger real** `@api.onchange`, abriendo un `Form` sobre un pedido que YA tiene `carrier_id` persistido (en `models.onchange()` el registro se arma con `origin=self`, asi que un campo fuera del `fields_spec` de la vista se sigue leyendo del registro real) y sacando la cerradura del o2m. ⚠️ **Dos cuidados de configuracion en los datos del test**: el de CA21 (alta manual) necesita el producto de pila **con stock** o con *Sell when Out-of-Stock* activado, si no lo rechaza `website_sale_stock` antes de llegar a nuestro codigo; y **CA32 es el tripwire del MRO de D34** (si algun dia el override queda sombreado, este test es el que avisa) | T04..T07 | `tests/__init__.py` (nuevo), `tests/test_free_batteries.py` (nuevo) | CA14, CA15, CA16, CA17, CA18, CA19, CA20, CA21, CA22, CA23, CA24, CA25, CA26, CA28, CA31, CA32, CA33, CA34 |
 | **T12** | **Cierre**: doc (README del modulo con el **drift `1.2.0` → `1.8.0`** corregido —la linea 7 sigue sin actualizarse, el commit `e5526ae` no la toco—, `index.html`, fila del README del repo; incluye los **requisitos de configuracion**: `invoice_policy = 'order'` en el producto de pila, aprovisionar stock —tambien porque una linea de un producto sin stock **apaga el mail de carrito abandonado**—, la lectura de la UoM y **sacar el punto de las pilas de `message_intro`** cuando el carrier las incluye) + bump `version` del manifest `1.7.0` → **`1.8.0`** + `Estado` de esta spec a `implemented` con la `Version` sincronizada | T01..T11 | `README.md`, `static/description/index.html`, `../README.md`, `__manifest__.py`, `specs/website_sale_installation_appointment.md` | — (anti-drift + version sync) |
+| **T13** | **Fix Plane #38**: dos overrides en `calendar.event` (D43). `_mail_get_companies()` — resolvedor: compañia del pedido que origino la cita (el mas viejo, no cancelado, `sale.order.line.calendar_event_id`) > organizador (`user_id.company_id`) > quien creo la cita (`create_uid.company_id`) > `super()`. `_notify_by_email_prepare_rendering_context()` — **el override que corrige el bug real**: pisa `render_context['company']` (y `['website_url']`) reusando el resolvedor anterior; es el hook que pinta el logo/colores del layout, no `_mail_get_companies()`. Corrige el correo de **recordatorio**; el de confirmacion usa el mismo camino y no regresiona. Doc (README, `index.html`) + bump `version` del manifest `1.8.0` → **`1.9.0`** + `Version` de esta spec sincronizada. **Tests**: el repo no tiene `.swarm.conf` (no aplica la politica), pero se sumo un archivo chico (4 tests: resolvedor — pedido gana / fallback organizador / fallback create_uid — y **1 test de integracion** que renderiza la notificacion de verdad y verifica el layout, el que de verdad valida CA38) por salir en pocas lineas — no es una suite, no toca `test_free_batteries.py`. **Correccion post-review**: el primer intento de T13 solo tenia `_mail_get_companies()` y el bug seguia sin arreglarse (ese metodo no interviene en el layout); el reviewer lo detecto contra el core y este cierre corrige tanto el codigo como la documentacion de la causa raiz | — | `models/calendar_event.py`, `__manifest__.py`, `specs/website_sale_installation_appointment.md`, `README.md`, `static/description/index.html`, `tests/test_calendar_event_mail_company.py` (nuevo), `tests/__init__.py` | CA38 |
 
 ## Notas de implementacion
 
@@ -753,3 +807,20 @@ ambiguedad de la UoM es el riesgo #1 de esta feature):
 - **Naming deliberado**: el onchange se llama `_onchange_free_battery_lines`, no `_onchange_order_line`, porque ese nombre pisaria el onchange de combos del core (`odoo/addons/sale/models/sale_order.py:L936`). Desviacion consciente de la convencion `_onchange_<campo>` de `AGENTS.md`.
 - **El guard `wsia_skip_battery_sync` es defensivo**: hoy **no hay** ningun camino de recursion real; se deja por simetria con el modulo hermano y para que un engache futuro no se muerda la cola.
 - **`state` de la spec**: al cerrar T12 pasa a `implemented`; @reviewer/@testing la dejan `verified`.
+- **Validacion manual de T13 (D43)**: crear/agendar una cita de instalacion sobre un pedido de una
+  compañia (ej. Miluan SRL / Nokey) desde un usuario cuya compañia por defecto sea la otra (ej. YG
+  S.A. / Sunra) y disparar el cron de alarmas (`ir_cron_scheduler_alarm`, Ajustes → Tecnico →
+  Automatizacion → Acciones Planificadas — *Run Manually*) o esperar la ventana del recordatorio de
+  la cita: el correo debe salir con el logo/colores/nombre de la compañia del **pedido**, no la del
+  usuario del cron. Repetir con una cita **sin** pedido (agendada por el link compartido, D8): debe
+  salir con la compañia del **organizador** (o de quien la creo, si tampoco hay organizador). El
+  correo de **confirmacion** no deberia cambiar (ya salia bien: corre en el request del checkout,
+  donde `env.company` ya es la del sitio).
+- **Por que el primer intento de T13 no alcanzaba**: tenia solo el override de `_mail_get_companies()`,
+  que resuelve "que compania es esta cita" pero **no** interviene en el layout del correo — eso lo
+  pinta `_notify_by_email_prepare_rendering_context()` (armado de `render_context['company']`), que
+  no llamaba a ese resolvedor. Los tests unitarios del resolvedor pasaban igual (verificaban la
+  funcion correcta, aislada), lo que ocultaba que el sintoma (el logo mal) seguia sin arreglarse. El
+  test que lo destapa es el de integracion (`test_notification_layout_uses_order_company_branding`),
+  que renderiza la notificacion real con `MailCommon`/`mock_mail_gateway()` y lee el `body_html`
+  generado, en vez de invocar el resolvedor directo.
