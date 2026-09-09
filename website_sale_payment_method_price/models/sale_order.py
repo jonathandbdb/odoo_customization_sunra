@@ -143,6 +143,43 @@ class SaleOrder(models.Model):
         new_lines.is_payment_method_discount = True
         self.payment_price_rule_id = rule
 
+    def _get_residual_discount_lines(self):
+        """
+        Lineas de descuento que quedaron **sin impuestos**: el residual del reparto por grupo.
+
+        El descuento global del core parte el importe por combinacion de impuestos (D6). Si el
+        pedido tiene una porcion sin impuestos, sale un renglon por grupo; y cuando esa porcion es
+        el residual de **otro** descuento, el reparto se realimenta y los dos descuentos quedan
+        partidos en dos para siempre (D16).
+
+        :return: lineas de descuento del pedido que no llevan impuestos
+        :rtype: recordset de `sale.order.line`
+        """
+        self.ensure_one()
+
+        def is_discount_line(line):
+            if line.is_payment_method_discount:
+                return True
+            # Las recompensas de `sale_loyalty` (cupones y promociones) son el otro mecanismo que
+            # parte el importe por grupo de impuesto. El campo se consulta en blando: el modulo no
+            # depende de `sale_loyalty`, y sin ese modulo este hook no lo llama nadie.
+            return bool(line._fields.get("reward_id") and line.reward_id)
+
+        return self.order_line.filtered(lambda line: not line.tax_ids and is_discount_line(line))
+
+    def _get_no_effect_on_threshold_lines(self):
+        """
+        Override del hook de `sale_loyalty`, con el mismo patron que `sale_loyalty_delivery`: el
+        residual sin impuestos de un descuento no forma base descontable ni cuenta para los
+        minimos de compra de los programas.
+
+        :return: lineas que no cuentan para el minimo ni para la base de las recompensas
+        :rtype: recordset de `sale.order.line`
+        """
+        parent = getattr(super(), "_get_no_effect_on_threshold_lines", None)
+        lines = parent() if parent else self.env["sale.order.line"]
+        return lines | self._get_residual_discount_lines()
+
     def _recompute_cart(self):
         """Override de `website_sale` para reajustar el descuento cuando cambia el carrito."""
         res = super()._recompute_cart()

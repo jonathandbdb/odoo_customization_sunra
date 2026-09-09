@@ -88,6 +88,16 @@ Método central: `_apply_to_price(price)` (porcentaje y después redondeo, mismo
 
 - `POST /shop/payment/method_price` — aplica o quita el ajuste sobre el carrito de la sesión.
 
+## Convivencia con cupones y promociones
+
+El ajuste **se suma** a los descuentos de cupones/promociones (decisión comercial de la cliente): un pedido con cupón y pago
+por transferencia muestra **dos** renglones de descuento, uno por mecanismo.
+
+Desde 1.1.0, los renglones de descuento que quedan **sin impuestos** (el residual que deja el reparto por grupo de impuesto)
+no cuentan como base descontable. Sin eso, el residual de un descuento hacía que el otro se partiera en dos, y viceversa: los
+dos descuentos quedaban en cuatro renglones que no se consolidaban solos. Si el pedido tiene una porción sin IVA **real** (un
+producto sin impuestos), el descuento sí se parte por grupo: es lo correcto, no se puede revertir un IVA que no existe.
+
 ## Gotchas
 
 - **La regla se busca por el medio primario, no por el de la transacción.** En el checkout el radio

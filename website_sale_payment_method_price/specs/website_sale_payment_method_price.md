@@ -3,10 +3,10 @@
 | Campo | Valor |
 |-------|-------|
 | **Modulo** | `website_sale_payment_method_price` |
-| **Version** | `1.0.2` (== `version` del `__manifest__.py`, formato `x.x.x`) |
+| **Version** | `1.1.0` (== `version` del `__manifest__.py`, formato `x.x.x`) |
 | **Serie Odoo** | `19` (informativa) |
-| **Estado** | `verified` (validado end-to-end a mano + pasada de @reviewer sobre 1.0.1/1.0.2: 0 criticos) |
-| **Actualizado** | `2026-09-04` |
+| **Estado** | `approved` (1.0.2 quedo `verified`; el guard de 1.1.0 esta probado a mano en la copia de PROD, pendiente pasada de @reviewer) |
+| **Actualizado** | `2026-09-09` |
 
 ## Objetivo
 
@@ -42,6 +42,7 @@ el precio del carrito se calcula antes de que el cliente elija como pagar.
 | D12 | ¿Reserva de stock al pagar por transferencia? | **Como lo hace Odoo** (pedido en presupuesto, sin reserva). Decision explicita de la cliente → sin desarrollo. |
 | D13 | Convivencia con otras promociones | El ajuste **se suma** a lo que haya (decision comercial de la cliente). El objetivo se calcula sobre el precio final de cada linea, ya con sus descuentos. |
 | D14 | ¿Se publican precios de medios no disponibles? | No. Se descartan reglas de medios archivados y de proveedores deshabilitados, sin publicar, de otra compania o restringidos a otro sitio. |
+| D16 | ¿Que pasa con el residual sin impuestos de un descuento? | **No forma base descontable.** El reparto por grupo (D6) deja un renglon sin impuestos cuando el pedido tiene una porcion sin IVA; si esa porcion es el **residual de otro descuento**, el reparto se realimenta y los descuentos quedan partidos en dos para siempre (reproducido con el cupon 5000OFF + el 15 % de transferencia: 4 renglones que no se consolidan ni sacando el disparador). Se excluyen esas lineas via `_get_no_effect_on_threshold_lines`, el mismo hook que usa `sale_loyalty_delivery` para las lineas de envio. Una porcion sin IVA **real** (un producto sin impuestos) sigue partiendo el descuento, que es lo correcto: no se puede revertir un IVA que no existe. El campo `reward_id` se consulta en blando para no depender de `sale_loyalty`. |
 
 ## Alcance
 
@@ -136,6 +137,14 @@ relacion bruto/neto del propio pedido.
 Idempotente: limpia lo aplicado y vuelve a crear via `sale.order.discount`. Marca las lineas nuevas
 con `is_payment_method_discount` y les agrega el nombre del medio.
 
+### `SaleOrder._get_residual_discount_lines(self)`
+Lineas de descuento (propias o recompensas de `sale_loyalty`) que quedaron **sin impuestos**: el residual del reparto por
+grupo. Criterio: sin `tax_ids` y con `is_payment_method_discount` o `reward_id` (D16).
+
+### `SaleOrder._get_no_effect_on_threshold_lines(self)` (override)
+Suma esas lineas a las que `sale_loyalty` ya excluye, para que no cuenten ni como base descontable ni para los minimos de
+compra de los programas. `super()` se resuelve con `getattr`: sin `sale_loyalty` instalado el hook no existe y nadie lo llama.
+
 ### `SaleOrder._recompute_cart(self)` (override)
 Reajusta el descuento cuando cambia el carrito, con guarda de contexto `wspmp_skip_recompute`.
 
@@ -192,6 +201,7 @@ hay dato de terceros). No hacen falta record rules: el filtro real es `website_i
 | Producto con precio 0 / `prevent_zero_price_sale` | No se publican precios por medio de pago |
 | Carrito con solo linea de envio y `applies_to='product'` | Ajuste 0, no se crea linea |
 | Impuestos mixtos (21 % y 10,5 %) | El total cierra exacto; puede haber centavos de diferencia en el reparto entre grupos |
+| El pedido ya arrastra un residual de descuento sin impuestos | Se ignora como base: el descuento vuelve a un solo renglon en el siguiente recalculo (D16) |
 | Medio archivado o proveedor deshabilitado | La regla no se publica ni se aplica |
 
 ## Criterios de aceptacion
@@ -249,6 +259,9 @@ hay dato de terceros). No hacen falta record rules: el filtro real es `website_i
 | Template de totales | `/home/leandro/projects/nexit/19.0/odoo/addons/website_sale/views/templates.xml:L4085` | `website_sale.total`, fila por medio debajo del Total. |
 | Descuento global (wizard) | `/home/leandro/projects/nexit/19.0/odoo/addons/sale/wizard/sale_order_discount.py:L147` | `_prepare_global_discount_lines`: reparto por combinacion de impuestos (D6). |
 | Reparto del importe fijo | `/home/leandro/projects/nexit/19.0/odoo/addons/account/models/account_tax.py:L3659` | El importe fijo se compara contra `total_excluded + tax_amount`: es total CON impuestos (D7). |
+| Base descontable de las recompensas | `/home/leandro/projects/nexit/19.0/odoo/addons/sale_loyalty/models/sale_order.py:L339` | Resta `_get_no_effect_on_threshold_lines()`: el hook que usa D16. |
+| Un renglon por grupo de impuesto | `/home/leandro/projects/nexit/19.0/odoo/addons/sale_loyalty/models/sale_order.py:L637` | El cupon arma una linea por clave de `discountable_per_tax` (D16). |
+| Precedente del mismo hook | `/home/leandro/projects/nexit/19.0/odoo/addons/sale_loyalty_delivery/models/sale_order.py:L22` | El core excluye asi las lineas de envio. |
 | Redondeo de listas de precios | `/home/leandro/projects/nexit/19.0/odoo/addons/product/models/product_pricelist_item.py:L126` | Semantica de `price_round` que se espeja (D4). |
 | Orden del calculo | `/home/leandro/projects/nexit/19.0/odoo/addons/product/models/product_pricelist_item.py:L606` | descuento -> redondeo -> recargo. |
 | Linea de envio | `/home/leandro/projects/nexit/19.0/odoo/addons/delivery/models/sale_order_line.py:L9` | `is_delivery`, usado por `applies_to`. |
