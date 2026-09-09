@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es">
+<body>
+    <section style="max-width: 980px; margin: 0 auto; padding: 32px 24px; font-family: Arial, Helvetica, sans-serif; color-scheme: var(--o-webclient-color-scheme, normal); color: CanvasText; line-height: 1.55; background: transparent;">
+        <div style="padding: 28px 30px; border: 1px solid ButtonBorder; border-radius: 8px; background: Canvas;">
+            <p style="margin: 0 0 8px; color: LinkText; font-size: 13px; font-weight: 700; text-transform: uppercase;">Backend - Parche de una regresion de core (Odoo 19)</p>
+            <h1 style="margin: 0 0 12px; color: CanvasText; font-size: 32px; line-height: 1.2;">web_notebook_wrap_fix</h1>
+            <p style="margin: 0; max-width: 760px; color: GrayText; font-size: 16px;">Restaura el corte de linea dentro del contenido de las pestanas (notebook) del backend, roto por una regresion de CSS del core de Odoo 19.</p>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 10px; color: LinkText; font-size: 23px;">Objetivo</h2>
+            <p style="margin: 0;">El commit de core <code>7d26b3444f61</code> ("[FIX] web: adjust SCSS for vertical notebook", <code>odoo/odoo#279098</code>, task-5933892), mergeado a la serie 19.0 el 04/09/2026, movio la regla <code>white-space: nowrap</code> de <code>.o_notebook .nav-item</code> (solo las solapas) a <code>.o_notebook.horizontal</code> (el notebook completo). Al heredarse esa propiedad, el contenido de cualquier pestana dejo de poder cortar linea. Este modulo restaura el corte de linea del contenido con una sola regla CSS de mayor especificidad, sin tocar la regla de las solapas ni ningun modulo funcional.</p>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 12px; color: LinkText; font-size: 23px;">Funcionalidades principales</h2>
+            <table style="width: 100%; border-collapse: collapse; border: 1px solid ButtonBorder; background: Canvas;">
+                <tbody>
+                    <tr>
+                        <td style="width: 28%; padding: 14px 16px; border-bottom: 1px solid ButtonBorder; font-weight: 700; background: ButtonFace; color: ButtonText;">Regresion parcheada</td>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">Commit de core <code>7d26b3444f61</code> (<code>odoo/odoo#279098</code>, task-5933892), mergeado a la serie 19.0 el 04/09/2026. Extendio el <code>white-space: nowrap</code> de las solapas del notebook a todo su contenido.</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; font-weight: 700; background: ButtonFace; color: ButtonText;">Sintoma visible</td>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">En cualquier pestana que mezcle botones (inline) con un widget one2many/many2many (inline-block), el widget queda pegado al lado de los botones y se desborda a la derecha: scroll horizontal y columnas fuera de pantalla. Caso reportado: pestana "Deudas" del formulario de pagos (<code>account_payment_pro</code>).</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; font-weight: 700; background: ButtonFace; color: ButtonText;">Como lo arregla</td>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">Un unico bloque SCSS apunta a <code>.o_notebook.horizontal &gt; .o_notebook_content</code> (3 clases, mas especifico que el selector del core) y le devuelve <code>white-space: normal</code>. Las solapas no se tocan: siguen heredando el <code>nowrap</code> del core.</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 14px 16px; font-weight: 700; background: ButtonFace; color: ButtonText;">Auto-instalacion y vida util</td>
+                        <td style="padding: 14px 16px; color: CanvasText;"><code>auto_install: True</code> (depende solo de <code>web</code>): se instala solo apenas esta presente en el deploy, sin paso manual. Es un parche temporal: se desinstala y se borra cuando Odoo corrija la regresion en el core.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 12px; color: LinkText; font-size: 23px;">Configuracion</h2>
+            <ol style="margin: 0; padding-left: 22px;">
+                <li style="margin-bottom: 8px;">No requiere configuracion: al ser <code>auto_install</code>, el modulo queda instalado solo apenas esta presente junto con <code>web</code> en la base.</li>
+                <li style="margin-bottom: 8px;">Para confirmar que esta activo: <strong>Ajustes -&gt; Aplicaciones</strong>, buscar "web_notebook_wrap_fix" y verificar que figura Instalado.</li>
+                <li>Cuando Odoo publique el fix de la regresion en el core (seguimiento de <code>7d26b3444f61</code> / <code>odoo/odoo#279098</code>), o al actualizar a una version de core donde ya este corregida: desinstalar este modulo y borrar su carpeta del repositorio.</li>
+            </ol>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 10px; color: LinkText; font-size: 23px;">Detalle tecnico</h2>
+            <p style="margin: 0 0 14px;">El modulo no define modelos, vistas, seguridad, wizards ni datos: es un unico archivo <code>static/src/scss/notebook_wrap.scss</code> cargado en el bundle <code>web.assets_backend</code>. La regla usa <code>.o_notebook.horizontal &gt; .o_notebook_content</code> (3 clases, contra las 2 del selector <code>.o_notebook.horizontal</code> del core) para ganar por especificidad y fijar <code>white-space: normal</code> en el contenido, sin usar <code>!important</code> ni depender del orden de concatenacion del bundle de assets.</p>
+            <p style="margin: 0; padding: 14px 16px; border-left: 4px solid Highlight; background: color-mix(in srgb, Highlight 14%, Canvas); color: CanvasText;">La regresion es generica del framework <code>web</code>, no especifica de un modulo: afecta a cualquier pestana del backend que combine contenido inline y un widget inline-block. El caso de <code>account_payment_pro</code> es el sintoma reportado, no la causa; este modulo no modifica ese ni ningun otro modulo funcional.</p>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 10px; color: LinkText; font-size: 23px;">Dependencias</h2>
+            <ul style="margin: 0; padding-left: 22px;">
+                <li><code>web</code> (core) - unica dependencia; el fix actua sobre el componente notebook del framework de backend.</li>
+                <li>Sin dependencias de terceros ni de Enterprise.</li>
+            </ul>
+        </div>
+
+        <p style="margin: 34px 0 0; padding-top: 18px; border-top: 1px solid ButtonBorder; color: GrayText; font-size: 14px;">Desarrollado por Sunra - https://github.com/sunraargsh</p>
+    </section>
+</body>
+</html>

@@ -1,0 +1,11 @@
+// PARCHE de regresion del core (Odoo 19, commit 7d26b3444f61 "[FIX] web: adjust SCSS for vertical
+// notebook"): el `white-space: nowrap` paso de `.o_notebook .nav-item` (solo las solapas) a
+// `.o_notebook.horizontal` (el notebook entero) y, al heredarse, dejo sin corte de linea al
+// contenido de las pestanas. Devolvemos el corte de linea al contenido, sin tocar las solapas
+// (que siguen heredando el nowrap del core, que es lo que esa regla buscaba).
+//
+// Se apunta al contenido con `> .o_notebook_content` a proposito: 3 clases contra las 2 del core,
+// asi el parche gana por especificidad y no depende del orden en que se concatene el bundle.
+.o_notebook.horizontal > .o_notebook_content {
+    white-space: normal;
+}
