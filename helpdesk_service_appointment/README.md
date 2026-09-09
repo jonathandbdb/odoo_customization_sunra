@@ -6,7 +6,7 @@ falla y agenda la visita sobre la disponibilidad real del técnico. El pedido qu
 Helpdesk** y la cita agendada genera la **tarea de Field Service** con fecha, dirección, fotos y el
 estado de garantía (informativo).
 
-- **Versión**: 1.0.1
+- **Versión**: 1.2.0
 - **Licencia**: LGPL-3
 - **Depende de**: `helpdesk_fsm`, `helpdesk_stock`, `website_appointment`, `sk_customer_product_warranty`
 
@@ -128,7 +128,9 @@ modelos nuevos, todo se agrega por `_inherit` sobre modelos que ya traen sus ACL
 - No se crean grupos nuevos. Los usuarios internos que atienden Service son usuarios de Helpdesk
   normales, pero necesitan el grupo **`stock.group_stock_user`** (Inventario) para ver el campo
   **Producto** del ticket, que `helpdesk_stock` restringe con ese grupo — ver *Configuración* abajo.
-- Mono-compañía: no se agregan campos ni reglas por compañía.
+- Multi-compañía: **no se agregan campos ni reglas por compañía propios** — la compañía sale de la
+  request (la del sitio, o la del usuario si no tiene permitida la del sitio) y con ella se elige el
+  team de Service, que es lo que fija la compañía del ticket. Ver *Configuración*, paso 3.
 
 **Sudos usados** (todos de lectura/escritura acotada, ver la spec para el detalle completo): lectura
 agregada de entregas para armar la lista de cerraduras del cliente, creación del ticket desde el
@@ -143,7 +145,9 @@ tarea (el cliente portal no tiene permisos sobre `project.task`).
 garantía con badge y decoración por estado); columna opcional de garantía en la lista de tickets;
 garantía readonly en el form de la tarea FSM.
 
-**Portal**: formulario `/my/service/new` (datos de contacto, dirección + aclaraciones, cerraduras
+**Portal**: tarjeta **Service** en el home del portal (`/my`), **siempre visible** — también para el
+cliente que todavía no tiene ningún ticket, que es el caso de todos la primera vez (ver *Gotchas*);
+formulario `/my/service/new` (datos de contacto, dirección + aclaraciones, cerraduras
 con badge de garantía y fallback de texto libre, tipo de problema, descripción, fotos); botón
 "New Service Request" en `/my/tickets`; bloque **Service** en el detalle del ticket
 (`/my/ticket/<id>`) con producto, garantía y la cita (link a gestionar/cancelar, o botón
@@ -192,13 +196,29 @@ con el técnico equivocado"). Pasos:
    9-12 y 14-17** en cuanto el tipo de cita se crea sin franjas propias (no se pueden "no
    semillar"). Revisar/editar esas franjas en la pestaña **Disponibilidad** del tipo de cita según
    el horario real del equipo técnico.
-3. **Verificar la COMPAÑÍA del team Service** (crítico en bases multi-compañía) — el team semilla se
-   crea en la compañía **activa del usuario que instala** el módulo. Si esa no es la compañía que
-   vende al cliente final, la regla multi-compañía **oculta los tickets al cliente en el portal**
-   (`/my/tickets` aparece vacío aunque el ticket exista). Helpdesk → Configuración → Equipos →
-   *Service* → **Empresa** = la compañía del negocio (ej. Miluan SRL).
-   - Al cambiar la empresa, Odoo **limpia** el campo *Proyecto* de Field Service: hay que volver a
-     elegir un proyecto FSM **de esa misma compañía** (ver punto 4).
+3. **Un team de Service por cada compañía que ofrezca service** (multi-compañía) — el módulo **no**
+   usa el team semilla a ciegas: elige el team de la compañía de la request (la del sitio web, o la
+   del usuario si no tiene permitida la del sitio). Para que una compañía pueda recibir pedidos,
+   necesita un `helpdesk.team` propio con las **dos** marcas que el flujo usa para reconocerlo:
+   - pestaña **Field Service** → *Field Service* activado (`use_fsm`), y
+   - **Visibilidad** = *Clientes del portal invitados y todos los usuarios internos*
+     (`privacy_visibility='portal'`), sin la cual la regla del portal **ni le muestra el ticket al
+     cliente** (`/my/tickets` aparece vacío aunque el ticket exista).
+
+   El team semilla se crea en la compañía **activa del usuario que instala** el módulo, así que en
+   una base multi-compañía puede haber nacido en la compañía equivocada: no hay que moverlo, basta
+   con que exista el team de la compañía que vende. Si la compañía **no tiene** ninguno, el pedido
+   cae al semilla y queda un `warning` en el log del servidor (el cliente no verá el ticket hasta
+   que se cree el team). Si tiene **más de uno**, gana el de `id` más bajo.
+   - Si de todas formas se cambia la empresa de un team, Odoo **limpia** su campo *Proyecto* de
+     Field Service: hay que volver a elegir un proyecto FSM **de esa misma compañía** (punto 4).
+   - ⚠️ **La compañía del cliente se decide cuando se le da el acceso al portal.** El wizard nativo
+     crea el usuario en `partner.company_id` o, si el contacto no tiene compañía, en la **compañía
+     activa de quien otorga el acceso**. Si un agente lo hace con la compañía equivocada activa, el
+     cliente recibe un mail que dice *"Tu cuenta en <compañía equivocada>"*, su usuario queda en esa
+     compañía y **sus pedidos de service van al equipo de esa compañía** (los ve, pero los atiende
+     quien no corresponde). Verificado en la práctica. Se arregla en el usuario/contacto, no en el
+     código: revisar la compañía activa antes de *Otorgar acceso al portal*.
 4. **Configurar el proyecto de Field Service del team** — Helpdesk → Configuración → Equipos →
    *Service* → pestaña **Field Service** → **Proyecto**: sin este `fsm_project_id`, la cita se
    agenda igual pero **no se genera** la tarea del técnico (queda una nota en el chatter del
@@ -229,7 +249,8 @@ con el técnico equivocado"). Pasos:
 
 ## Flujo del cliente
 
-1. Entra a `/my/service/new` (logueado, o recibe el link por teléfono e inicia sesión).
+1. Entra al portal y hace clic en la tarjeta **Service** de `/my` (o va directo a
+   `/my/service/new`, o recibe el link por teléfono e inicia sesión).
 2. Ve un resumen de sus datos de contacto (con link a `/my/account` para corregirlos), elige la
    **dirección de la visita** entre las suyas + aclaraciones libres (piso/depto/indicaciones).
 3. Elige su cerradura entre las **entregadas** (con badge "En garantía" / "Fuera de garantía" / "Sin
@@ -247,6 +268,15 @@ con el técnico equivocado"). Pasos:
    visit" para reagendar (se crea una tarea nueva, conservando el vínculo con el mismo ticket).
 
 ## Gotchas
+
+**La tarjeta del portal no es decorativa.** Odoo **esconde** las tarjetas del home del portal cuyo
+contador da 0: `portal.portal_docs_entry` las renderiza con `d-none` y el JS
+`portal_home_counters.js` solo las revela si el contador es mayor a 0. Como el botón "New Service
+Request" vive **dentro** de `/my/tickets`, un cliente sin tickets no veía la tarjeta de Tickets y por
+lo tanto no tenía **ninguna** puerta de entrada al service (reportado en producción el 08/09/2026).
+La tarjeta propia del módulo se marca `config_card=True`, que es el flag del core para "mostrar
+siempre, sin contador". Si alguna vez se la quiere ocultar, se apaga desde el editor web
+(`customize_show`), no borrando la vista.
 
 - **Garantía informativa, sin números de serie**: es una aproximación desde las entregas del
   cliente. Nunca bloquea el agendado ni genera un paso de pago — el service siempre es gratis en
@@ -317,9 +347,11 @@ helpdesk_service_appointment/
     views/
         helpdesk_ticket_views.xml           # bloque Service en el form/list del ticket
         project_task_views.xml              # garantía readonly en la tarea FSM
-        helpdesk_service_appointment_templates.xml   # formulario de portal + inherits de helpdesk
+        helpdesk_service_appointment_templates.xml   # formulario de portal + tarjeta en /my + inherits de helpdesk
     data/
         helpdesk_service_appointment_data.xml   # team, tipo de cita, invite, 7 tags (noupdate)
+    static/
+        src/img/service.svg                 # icono de la tarjeta Service del portal
     i18n/
         es_419.po
     specs/

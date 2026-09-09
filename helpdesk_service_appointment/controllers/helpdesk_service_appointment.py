@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import base64
+import logging
 
 from markupsafe import Markup, escape
 
@@ -8,6 +9,8 @@ from odoo.http import request, route
 from odoo.tools.mimetypes import guess_mimetype
 
 from odoo.addons.portal.controllers.portal import CustomerPortal
+
+_logger = logging.getLogger(__name__)
 
 # Limites del upload de fotos del formulario de service (el endpoint es auth='user').
 MAX_PHOTOS = 10
@@ -43,12 +46,14 @@ class HelpdeskServiceAppointmentPortal(CustomerPortal):
         return request.render("helpdesk_service_appointment.portal_service_new", values)
 
     def _ticket_get_page_view_values(self, ticket, access_token, **kwargs):
-        # Bloque Service en /my/ticket/<id>: solo aplica a tickets del team Service (para el
-        # resto queda en False, y el template no muestra nada de esto).
+        # Bloque Service en /my/ticket/<id>: solo aplica a tickets de un team de Service (para
+        # el resto queda en False, y el template no muestra nada de esto). Se compara contra el
+        # team que recibiria un pedido nuevo **y** contra el semilla: con varias companias, un
+        # ticket viejo pudo nacer en otro team y su bloque tiene que seguir apareciendo (D38).
         values = super()._ticket_get_page_view_values(ticket, access_token, **kwargs)
-        service_team = self._get_service_team()
+        service_teams = self._get_service_team() | self._get_service_team_seed()
         values["service_appointment_url"] = (
-            ticket._get_service_appointment_url() if ticket.team_id == service_team else False
+            ticket._get_service_appointment_url() if ticket.team_id in service_teams else False
         )
         return values
 
@@ -125,6 +130,22 @@ class HelpdeskServiceAppointmentPortal(CustomerPortal):
             "service_visit_address_id": address.id,
         })
 
+        # W5 del review: si el team no es el de la compania de la request (no habia ninguno), el
+        # cliente NO va a ver este ticket en su portal. El log del servidor no lo mira nadie: queda
+        # como **nota interna** en el chatter, que es donde el agente si lo ve (mismo patron que los
+        # avisos de `calendar.event`). Nota interna = no la ve el cliente en el portal.
+        if ticket.company_id != request.env.company:
+            ticket.message_post(
+                body=_(
+                    "This request was created in the Service team of %(team_company)s because "
+                    "%(request_company)s has no Service team. The customer will NOT see this ticket "
+                    "in their portal until a Service team is configured for their company.",
+                    team_company=ticket.company_id.display_name,
+                    request_company=request.env.company.display_name,
+                ),
+                subtype_xmlid="mail.mt_note",
+            )
+
         photo_warnings = self._save_service_photos(ticket, request.httprequest.files.getlist("service_photos"))
         if photo_warnings:
             # Aviso al cliente sin abortar el pedido (RB06): el ticket ya lo tiene como
@@ -176,11 +197,74 @@ class HelpdeskServiceAppointmentPortal(CustomerPortal):
         })
         return values
 
-    def _get_service_team(self):
+    def _get_service_team_seed(self):
+        """Team "Service" semilla del modulo.
+
+        Nace en la compania **del usuario que instala el modulo** (`helpdesk.team.company_id` es
+        `required` con `default=env.company`), que en una base multi-compania no tiene por que
+        ser la del negocio: por eso no se usa directo, ver `_get_service_team` (D38).
+
+        :return: recordset (sudo) de `helpdesk.team`
+        """
         # sudo: el portal no lee helpdesk.team directamente por su cuenta.
         return request.env.ref(
             "helpdesk_service_appointment.helpdesk_team_service", raise_if_not_found=True,
         ).sudo()
+
+    def _get_service_team(self):
+        """Team de Service que recibe el pedido: el de la compania de la request (D38).
+
+        El ancla es `request.env.company`, que en una request de website **no** es "la compania
+        del usuario": el core la resuelve a la compania del **sitio** si el usuario la tiene
+        permitida y, si no, a la propia del usuario (`website/models/ir_http.py`,
+        `_frontend_pre_dispatch`).
+        Es justo lo que hace falta acá, porque el ticket tiene que nacer en una compania que el
+        cliente pueda **ver**: la record rule **global** de helpdesk (`helpdesk_ticket_company_rule`,
+        sin `groups`, se ANDea con la del portal) filtra por `company_ids`, asi que un ticket de otra
+        compania le queda invisible en `/my/tickets` (y el cliente cree que su pedido se perdio).
+
+        Se prefiere el semilla cuando ya es el de esa compania (instalacion mono-compania: mismo
+        comportamiento que antes). Si no, se busca el team de service de la compania. Si esa
+        compania no tiene ninguno, se cae al semilla y se loguea: es preferible que el pedido
+        entre a un team equivocado —y quede el aviso en el log— que perder el pedido del cliente.
+
+        :return: recordset (sudo) de `helpdesk.team`, siempre con un registro
+        """
+        seed = self._get_service_team_seed()
+        company = request.env.company
+        if seed.company_id == company:
+            return seed
+        # sudo: el portal no lee helpdesk.team. Criterio del "team de service" de una compania:
+        # los dos flags que el flujo necesita de verdad — `use_fsm` (la visita es una tarea de
+        # Field Service, D1) y `privacy_visibility='portal'` (sin eso la record rule del portal
+        # ni le muestra el ticket al cliente, D27). Desempate estable por `id`.
+        teams = request.env["helpdesk.team"].sudo().search([
+            ("company_id", "=", company.id),
+            ("use_fsm", "=", True),
+            ("privacy_visibility", "=", "portal"),
+        ], order="id")
+        if teams:
+            # Se prefiere uno con proyecto de Field Service: un team sin `fsm_project_id` agenda la
+            # cita pero **no** genera la tarea del tecnico (queda solo una nota en el chatter), asi
+            # que entre varios candidatos es el peor. Desempate final estable por `id`.
+            team = teams.filtered("fsm_project_id")[:1] or teams[:1]
+            if len(teams) > 1:
+                # Un misrouteo por ambiguedad es indiagnosticable a posteriori si no queda traza.
+                _logger.warning(
+                    "helpdesk_service_appointment: la compania %s tiene %s teams de service "
+                    "(use_fsm + visibilidad portal): %s. Se usa %s (id %s). Si no es el correcto, "
+                    "ajustar las marcas del team en Helpdesk > Configuracion > Equipos.",
+                    company.display_name, len(teams), teams.mapped("display_name"),
+                    team.display_name, team.id,
+                )
+            return team
+        _logger.warning(
+            "helpdesk_service_appointment: la compania %s (%s) no tiene un team de service "
+            "(use_fsm + visibilidad portal); el pedido entra al team semilla %s de %s y el "
+            "cliente NO va a verlo en su portal. Ver README, Configuracion.",
+            company.display_name, company.id, seed.display_name, seed.company_id.display_name,
+        )
+        return seed
 
     def _get_service_problem_tags(self):
         """Los 7 helpdesk.tag semilla (tipo de problema, D10/D28)."""

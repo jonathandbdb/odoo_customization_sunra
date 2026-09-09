@@ -3,10 +3,10 @@
 | Campo | Valor |
 |-------|-------|
 | **Modulo** | `helpdesk_service_appointment` |
-| **Version** | `1.0.3` (== `version` del `__manifest__.py`, formato `x.x.x`) |
+| **Version** | `1.2.0` (== `version` del `__manifest__.py`, formato `x.x.x`) |
 | **Serie Odoo** | `19` (informativa — serie de `ODOO_VERSION`, no es la version de la spec) |
 | **Estado** | `verified` |
-| **Actualizado** | `2026-08-03` |
+| **Actualizado** | `2026-09-09` |
 
 ## Objetivo
 
@@ -60,13 +60,15 @@ invite y tags de problema).
 | D27 | Modelos y ACLs | **Sin modelos nuevos** → sin `security/`: no hay `ir.model.access.csv` ni `ir.rule` propios. El portal lee su ticket por la **record rule nativa de helpdesk** (`helpdesk_portal_ticket_rule`), que exige dos cosas: `team_privacy_visibility = 'portal'` (de ahi que la semilla del team lo fije **explicitamente**) y que el partner sea **follower** del ticket (lo hace el `create` nativo de `helpdesk.ticket` al recibir `partner_id`). |
 | D28 | Datos semilla | `noupdate="1"`: team "Service" (`use_fsm=True`, `privacy_visibility='portal'` explicito, etapas nativas), tipo de cita "Service Visit" (2 h, `schedule_based_on='users'`, **`is_published=False`**, **`is_auto_assign=True`** (D36), `staff_user_ids` **vaciado explicitamente** con `eval="[(6, 0, [])]"` para que no quede el usuario que instala), `appointment.invite` con `short_code='service'` (su `access_token` + `redirect_url` habilitan el tipo sin publicarlo) y los 7 `helpdesk.tag`. El codigo los referencia por `env.ref()` con error claro si faltan. |
 | D29 | Horarios, staff y `fsm_project_id` | **Configuracion funcional** (documentada en el README), no semilla. Comportamiento real a documentar: el `_compute_category` del core **auto-crea slots por defecto** (L-V 9-12 y 14-17) si el tipo nace sin `slot_ids` — no se pueden "no semillar", solo ajustar despues. Con `staff_user_ids` vacio (D28) el tipo **no ofrece horarios**: queda inerte (no agendable) hasta que el funcional asigne tecnicos, que es el estado seguro deseado. El `fsm_project_id` del team tambien lo confirma/ajusta el funcional. |
-| D30 | Multi-compania | `[ASUNCION]` **Mono-compania**: no se agregan campos ni reglas de compania; se usa la compania del ticket/team. |
+| D30 | Multi-compania | **Soportada** en la resolucion del team (decision del cliente, 09/09/2026 — **reemplaza** la asuncion previa de mono-compania). El grupo Sunra tiene dos companias reales (YG S.A. y Miluan SRL) y la tienda es de una sola de ellas, asi que la asuncion vieja rompia el portal del cliente en produccion. Mecanismo en **D38**. Sigue sin agregarse ningun campo ni regla de compania propios: se usa la compania de la request y los campos nativos. |
 | D31 | Idioma | UI en **ingles** con `_()`, traduccion en `i18n/es_419.po` (mismo criterio que `website_sale_installation_appointment`). |
 | D32 | Limite de tickets abiertos | `[ASUNCION]` **Sin limite**: un partner puede tener varios tickets de service abiertos. El anti-doble-agendado es por **ticket** (D16), no por partner. |
 | D33 | Alcance del override del wizard FSM | El `partner_id` = `service_visit_address_id` se aplica **solo** cuando el wizard corre desde nuestro flujo, marcado con la clave de contexto `hsa_from_appointment=True` que pasa `calendar.event.create`. El camino **manual** del backoffice (agente que abre "Create a Field Service task" y elige un cliente) queda **intacto**: pisarle la eleccion seria un efecto lateral inesperado. El **bloque de garantia** en la descripcion, en cambio, se agrega **siempre** (es informacion, no una decision del agente). |
 | D34 | Reagendado del cliente tras cancelar | El controller nativo de cancelacion redirige a `invite.redirect_url + '&state=cancel'`, **sin** `service_ticket_id` → si el cliente reserva de nuevo desde ahi, la cita nace **huerfana** (sin ticket ni tarea). Se agrega un override chico de `appointment_cancel`: si el evento cancelado tenia `service_ticket_id`, se **reinyecta** ese param en la URL de redireccion, de forma que el rebooking conserve el vinculo. |
 | D35 | Asignado de la tarea FSM (varios tecnicos) | La tarea se asigna al **tecnico de la cita** = organizador del evento (`calendar.event.user_id`), **solo** si el tipo de cita agenda `schedule_based_on='users'`; en las citas por **recursos** el nativo pone ahi el `create_uid` del tipo de cita (`appointment.type._prepare_calendar_event_values`), que no es quien va a la visita, asi que la tarea queda **sin asignar** y el despacho lo resuelve el backoffice. Se escribe **explicitamente** (no se confia en el default) porque el `create` de `project.task` deja como asignado al **uid actual**, que en este flujo es el **cliente portal** que agendo (`sudo()` no cambia el uid) — un `share=True` como asignado ademas viola el `domain` del campo. Limitacion aceptada: cambiar el organizador del evento **despues** no re-asigna la tarea (mismo criterio que "mover la tarea no sincroniza la cita", D18). |
 | D36 | Quien elige el tecnico | **Odoo, no el cliente**: el tipo de cita nace con `is_auto_assign=True`, asi que el portal **no muestra** la pantalla "Seleccione con quien se reunira" y el cliente ve directamente los horarios; al reservar, el nativo toma un tecnico **disponible** para esa franja (`_slots_fill_users_availability`: baraja los staff con `random.shuffle` y toma el primero disponible — es reparto **al azar entre los libres**, no por carga de trabajo). La disponibilidad sigue siendo real (franjas del tipo + horario laboral del empleado via `appointment_hr` + eventos existentes), y el tecnico elegido queda como organizador del evento, que es de donde sale el asignado de la tarea FSM (D35). Requisito funcional del cliente (ago-2026). |
+| D37 | Entrada al service en el portal | **Tarjeta propia en el home del portal** (`/my`), siempre visible. El boton del formulario vive dentro de `/my/tickets`, y el core **esconde** la tarjeta de Tickets mientras el contador de tickets sea 0 (`portal.portal_docs_entry` la renderiza con `d-none` y `portal_home_counters.js` solo la revela si el contador da > 0), asi que el cliente que nunca pidio un service **no tenia por donde entrar** — es el caso del 100% de los clientes la primera vez. Se descarto sobreescribir `getCountersAlwaysDisplayed()` (lo que hacen `sale`/`account` para sus tarjetas): eso exige un **contador**, y esta tarjeta es una **accion** ("pedir un service"), no el listado de un modelo. Se usa `config_card=True` = siempre visible y sin contador, mismo uso que le da el core en `website_crm_partner_assign`. La tarjeta de Tickets nativa **no se toca**: sigue apareciendo cuando el cliente ya tiene tickets. Reporte del cliente (08/09/2026): "No encontre nada relacionado al service dentro del portal". |
+| D38 | Como se elige el team de Service | Por la **compania de la request** (`request.env.company`), no por `env.ref` del semilla. En una request de website eso **no** es "la compania del usuario": el core resuelve `allowed_company_ids` a la compania del **sitio** si el usuario la tiene permitida y, si no, a la propia del usuario (`website/models/ir_http.py`, `_frontend_pre_dispatch`) — justo lo que hace falta, porque el ticket tiene que nacer en una compania que el cliente pueda **ver** (la record rule global `helpdesk_ticket_company_rule` filtra por `company_ids`, asi que un ticket de otra compania le queda **invisible** en `/my/tickets` y el cliente cree que su pedido se perdio). Orden de resolucion: (1) el team **semilla** si ya es el de esa compania — instalacion mono-compania, comportamiento identico al anterior; (2) el team de service de la compania, buscado por los dos flags que el flujo necesita de verdad (`use_fsm=True` por D1 y `privacy_visibility='portal'` por D27) — entre varios candidatos gana el que tiene `fsm_project_id` (uno sin proyecto FSM agenda la cita pero **no** genera la tarea del tecnico), y si hay empate el de `id` mas bajo **con un warning** que nombra a los candidatos, porque un misrouteo por ambiguedad es indiagnosticable a posteriori; (3) si la compania no tiene ninguno, se cae al semilla **con un warning en el log y una nota interna en el chatter del ticket** (donde el agente si la ve; el cliente no ve las notas internas): es preferible un pedido en el team equivocado y trazable que perder el pedido del cliente. Se descarto un campo de configuracion nuevo (en `res.company` o `website`): el modelo real es "un team de service por compania" y los dos flags ya lo identifican sin pedirle nada al funcional. El **bloque Service del portal** se muestra comparando contra el team resuelto **union el semilla**, para que un ticket viejo nacido en otra compania siga mostrando su cita. |
 
 ## Alcance
 
@@ -92,6 +94,8 @@ invite y tags de problema).
   snapshot stored en el ticket (`warranty_status` / `warranty_expiry_date` / `warranty_delivery_date`).
 - Portal del ticket: bloque Service (producto, garantia, cita con link `/calendar/view/<token>` o boton
   "Schedule visit") y boton "New Service Request" en `/my/tickets`.
+- **Tarjeta "Service" en el home del portal** (`/my`), siempre visible, que lleva al formulario (D37):
+  es la unica entrada que ve un cliente que todavia no tiene tickets.
 - Vistas de backoffice: bloque Service en el form del ticket (con decoraciones por garantia) y garantia
   readonly en el form de la tarea FSM.
 - Datos semilla `noupdate` (team, tipo de cita despublicado, invite, 7 tags de problema).
@@ -113,7 +117,10 @@ invite y tags de problema).
 - **Alta de usuarios portal desde este modulo** (se usa el wizard nativo, D5).
 - **Horarios/staff del tipo de cita, `fsm_project_id` y `warranty_tracking` de los productos**:
   configuracion funcional documentada, no semilla (D29).
-- **Multi-compania** y reglas por compania (D30).
+- **Campos y reglas de compania propios**: la multi-compania se resuelve con la compania de la
+  request y los campos nativos (D30/D38); no se agrega `company_id` a ningun modelo, ni un campo de
+  configuracion para elegir el team, ni datos semilla por compania (el team semilla es uno solo, y
+  `appointment.type` / `helpdesk.tag` **no tienen** `company_id` en v19: son compartidos).
 - **Encuestas de satisfaccion, SLA, portal de seguimiento propio**: se usa lo nativo de helpdesk.
 - Modificar core/enterprise: todo por `_inherit` / herencia de controller / `t-inherit`.
 
@@ -463,7 +470,7 @@ No aplica. El modulo no define modelos nuevos (no crea tablas ni `_name`), por d
        validacion ya estaba en el codigo desde la implementacion inicial pero no se habia declarado
        aca; se documenta ahora, no es un cambio de comportamiento.
   3. Crear el ticket en **sudo**:
-     `{'name': <resumen con el problema>, 'team_id': env.ref('...helpdesk_team_service').id, 'partner_id': partner.id, 'tag_ids': [Command.link(tag.id)], 'description': <descripcion + aclaraciones de direccion + (fallback: modelo y antiguedad)>, 'product_id': product.id or False, 'service_visit_address_id': address.id}`.
+     `{'name': <resumen con el problema>, 'team_id': self._get_service_team().id` (el team de la **compania de la request**, D38 — ya no el semilla a ciegas)`, 'partner_id': partner.id, 'tag_ids': [Command.link(tag.id)], 'description': <descripcion + aclaraciones de direccion + (fallback: modelo y antiguedad)>, 'product_id': product.id or False, 'service_visit_address_id': address.id}`.
   4. `_save_service_photos(ticket, request.httprequest.files.getlist('service_photos'))` — patron
      endurecido (D11): tamaño, cantidad y `guess_mimetype` del contenido real; los archivos rechazados
      generan warning pero **no** abortan el ticket; los aceptados se crean como `ir.attachment`
@@ -473,6 +480,20 @@ No aplica. El modulo no define modelos nuevos (no crea tablas ni `_name`), por d
 - **Retorna**: redirect 303 a la pagina de Citas.
 - **Errores**: `ValidationError`/`UserError` no se muestran crudos: las validaciones de negocio vuelven
   al formulario con warnings.
+
+### `CustomerPortal._get_service_team_seed(self)` / `CustomerPortal._get_service_team(self)`
+
+- `_get_service_team_seed()`: `env.ref('helpdesk_service_appointment.helpdesk_team_service').sudo()`.
+  Es el team semilla, que nace en la compania **del usuario que instala el modulo**
+  (`helpdesk.team.company_id` es `required` con `default=env.company`) — por eso no se usa directo.
+- `_get_service_team()`: el team que **recibe el pedido**, resuelto por `request.env.company` segun el
+  orden de D38 (semilla si ya es de esa compania → team de service de la compania por
+  `use_fsm=True` + `privacy_visibility='portal'`, `order='id' limit=1` → semilla + `_logger.warning`).
+  Devuelve **siempre** un registro: el formulario nunca falla por configuracion.
+- El **create** del ticket usa `_get_service_team()`; el **bloque Service** de
+  `_ticket_get_page_view_values` compara `ticket.team_id in (resuelto | semilla)`.
+- sudo en los dos: el portal no lee `helpdesk.team` (la record rule `helpdesk_team_company_rule`
+  ademas la filtra por compania).
 
 ### `CustomerPortal._save_service_photos(self, ticket, uploads)`
 
@@ -596,6 +617,19 @@ No aplica. El modulo no define modelos nuevos (no crea tablas ni `_name`), por d
   (hasta 10 fotos, 10 MB cada una).
 - Zona de warnings (los del POST rebotado) y boton "Continue to schedule".
 
+#### `portal_my_home_service` (inherit de `portal.portal_my_home`, `priority="55"`)
+- Tarjeta **Service** en el home del portal (contenedor nativo `#portal_service_category`, el mismo
+  que usa la tarjeta de Tickets de helpdesk con `priority="50"` → la nuestra queda **a continuacion**),
+  con icono propio (`static/src/img/service.svg`), texto "Request a technician visit for your lock" y
+  `url = /my/service/new`. El `name` de la vista es **`Service Requests`** y no un tecnicismo, porque
+  con `customize_show="True"` es la etiqueta que el funcional ve en el panel **Personalizar** del
+  editor web, al lado de "Helpdesk Tickets" / "Payment Methods".
+- `config_card=True`: la tarjeta se renderiza **sin** `d-none` y **sin** contador, o sea visible
+  siempre, tambien para el cliente con 0 tickets (D37). `customize_show="True"` como todas las
+  tarjetas de portal del core, para que el funcional pueda apagarla desde el editor.
+- Setea `portal_service_category_enable` (idempotente: helpdesk ya lo setea) para no depender del
+  orden de aplicacion de las vistas.
+
 #### `portal_helpdesk_ticket` (inherit de `helpdesk.portal_helpdesk_ticket`)
 - Boton **"New Service Request"** → `/my/service/new` en la cabecera de `/my/tickets`.
 
@@ -640,6 +674,7 @@ No aplica. El modulo no define modelos nuevos (no crea tablas ni `_name`), por d
 | Create del ticket en el POST | Mismo criterio que el form nativo de `website_helpdesk`: el portal no crea `helpdesk.ticket`. Se re-validan producto y direccion contra los datos del partner **antes** de crear (anti-IDOR). |
 | `_save_service_photos` / `_post_service_photos` (`ir.attachment`) | El cliente no crea adjuntos; ya se validaron tipo real, tamaño y cantidad. Se crean **pendientes** y los reasigna `message_post` (D11), no se elude el filtro de adjuntos de portal. |
 | `_get_service_appointment_url` (`appointment.invite`) | El portal no lee `appointment.invite`; se lee **un solo** registro semilla para tomar su `redirect_url`. |
+| `_get_service_team_seed` / `_get_service_team` (`helpdesk.team`) | El portal no lee `helpdesk.team` (y `helpdesk_team_company_rule` la filtra por compania): se lee el semilla por `env.ref` y se busca el de la compania de la request (D38). Solo lectura. |
 | Wizard FSM y escrituras a `project.task` en `calendar.event` | El evento nace sudo en el controller nativo de Citas; el cliente no tiene permisos sobre `project.task`. |
 | `_compute_service_warranty` (`ticket.sudo()`) | `product_id`/`suitable_product_ids` tienen `groups="stock.group_stock_user"`: sin sudo, recomputar el ticket con un usuario sin ese grupo lanzaria `AccessError`. |
 
@@ -740,9 +775,38 @@ las entregas del partner), `visit_address_id` (debe pertenecer al commercial par
   error claro en vez de comportamiento silencioso.
 - **`calendar.booking` / GC de reservas**: no aplica — sin pago no hay booking, el evento nace directo
   del submit.
-- **Multi-compania**: fuera de alcance (D30) — se asume una sola compania.
+- **Multi-compania**: el team se resuelve por la compania de la request (D30/D38). Si esa compania
+  **no tiene** team de service, el pedido cae al semilla, queda un `warning` en el log y una **nota
+  interna** en el chatter del ticket — el cliente no vera el ticket en su portal hasta que el
+  funcional cree el team (paso 3 de configuracion del README). Si tiene **mas de uno**, gana el que
+  tenga `fsm_project_id` y despues el de `id` mas bajo, con warning que nombra a los candidatos.
+- **Cliente cuyo usuario portal quedo en la compania "vieja"** (residual aceptado): el ancla es la
+  compania de la **request**, y el core solo usa la del sitio si el usuario la tiene **permitida**
+  (`res.users.company_ids`); si no, usa la del propio usuario. Un cliente con `company_id` = la
+  compania equivocada entra por esa rama: **ve** su ticket (el invariante se mantiene), pero lo
+  atiende el equipo de otra compania y **no** hay warning (para el codigo es el camino normal). El
+  origen es concreto y verificado: `portal.wizard.user._create_user` crea el usuario en
+  `partner.company_id or env.company`, o sea que **la compania del cliente la fija quien le da el
+  acceso al portal** (con la compania que tenga activa en ese momento); el mail de invitacion sale
+  con esa marca ("Tu cuenta en <compania>"). Se corrige en el usuario/contacto, no en el codigo — es
+  un paso del README (Configuracion, punto 3).
+- **Un segundo team FSM de portal en la misma compania** (residual aceptado): el bloque Service del
+  detalle del ticket se decide por el team (resuelto | semilla), asi que si esa compania tiene otro
+  team con `use_fsm` + visibilidad portal que resulte el elegido, **sus** tickets tambien muestran el
+  bloque Service (con "Sin datos de garantia" y el boton de agendar). No se discrimina por la huella
+  de service del ticket a proposito: un ticket cargado **a mano** por un agente en el team de Service
+  (pedido telefonico, D5) no tiene esa huella y tiene que poder agendar igual.
+- **Entregas de otra compania**: `_get_partner_service_products` **no** filtra por compania (decision
+  explicita): la cerradura entregada es la misma sin importar cual de las companias del grupo la
+  vendio, y la garantia se calcula del producto, no del vendedor.
 - **Borrado del ticket**: `service_ticket_id` queda en `False` (`ondelete='set null'`); la cita y la
   tarea sobreviven sin vinculo.
+- **Cliente portal sin tickets**: la tarjeta de Tickets del core no se muestra (contador 0) — de ahi la
+  tarjeta propia de D37; el formulario en si nunca dependio de tener tickets.
+- **Cliente portal sin entregas validadas**: la tarjeta y el formulario funcionan igual, pero "Tus
+  cerraduras" sale **vacia** y el cliente tiene que usar el fallback "No esta en la lista / No lo se"
+  (CA20). La lista exige una entrega en estado `done` porque de ahi sale la fecha de garantia (D25):
+  un pedido confirmado y **sin validar el remito** no aporta cerraduras.
 
 ## Criterios de aceptacion
 
@@ -807,6 +871,12 @@ las entregas del partner), `visit_address_id` (debe pertenecer al commercial par
 - [ ] **CA22**: Un agente que abre **a mano** "Create a Field Service task" desde el ticket y elige otro
   cliente → la tarea se crea con **el cliente que eligio el agente** (no se pisa con la direccion de
   visita), pero **si** incluye el bloque de garantia en la descripcion.
+- [ ] **CA23**: Un usuario portal **sin ningun ticket** entra a `/my` y ve la tarjeta **Service**, que
+  lo lleva a `/my/service/new`. Si ademas tiene tickets, ve **las dos** tarjetas (Tickets y Service).
+- [ ] **CA24**: En una base con dos companias, un cliente portal de la compania **B** que pide un
+  service desde el sitio de **B** obtiene el ticket en el team de service de **B** (no en el semilla
+  de **A**) y **lo ve** en `/my/tickets`. Con el semilla en la compania correcta (instalacion
+  mono-compania), el comportamiento es identico al de antes.
 
 ## Referencias al core
 
@@ -827,6 +897,14 @@ las entregas del partner), `visit_address_id` (debe pertenecer al commercial par
 | Controller de cancelacion (a heredar) | `/home/leandro/projects/nexit/19.0/enterprise/appointment/controllers/calendar.py:L19` | `class AppointmentCalendarController(CalendarController)` — clase del override de `appointment_cancel` (def en L133). |
 | Redirect de cancelacion sin nuestro param | `/home/leandro/projects/nexit/19.0/enterprise/appointment/controllers/calendar.py:L146` | `redirect_url = appointment_invite.redirect_url + '&state=cancel'` — no lleva `service_ticket_id`: de aca sale la cita huerfana que arregla D34. |
 | Ventana de cancelacion | `/home/leandro/projects/nexit/19.0/enterprise/appointment/controllers/calendar.py:L157` | `_get_prevent_cancel_status` → `'no_time_left'` (L163-164) si falta menos que `min_cancellation_hours` (default **1.0**, `/home/leandro/projects/nexit/19.0/enterprise/appointment/models/appointment_type.py:L159`). |
+| **Compania de la request en el frontend** | `/home/leandro/projects/nexit/19.0/odoo/addons/website/models/ir_http.py:L250` | `_frontend_pre_dispatch` (L235): `allowed_company_ids` = compania del **sitio** si el usuario la tiene permitida (L251-255), si no la del usuario (L257) → de aca sale el ancla de D38. |
+| Regla que esconde el ticket de otra compania | `/home/leandro/projects/nexit/19.0/enterprise/helpdesk/security/helpdesk_security.xml:L79` | `helpdesk_ticket_company_rule` es **global** (sin `groups`) → se ANDea con la regla portal: `company_id in company_ids`. Es el motivo real de D38. |
+| Compania del team es obligatoria | `/home/leandro/projects/nexit/19.0/enterprise/helpdesk/models/helpdesk_team.py:L44` | `company_id` `required=True, default=lambda self: self.env.company` → el team semilla **no puede** nacer sin compania y hereda la del instalador. |
+| **Por que la tarjeta de Tickets no aparece con 0 tickets** | `/home/leandro/projects/nexit/19.0/odoo/addons/portal/views/portal_templates.xml:L239` | `portal.portal_docs_entry` pinta la tarjeta con `d-none` salvo `force_show` (contador ya cacheado en sesion) o **`config_card`** → es el flag que usa nuestra tarjeta para estar siempre visible (D37). |
+| Quien revela las tarjetas | `/home/leandro/projects/nexit/19.0/odoo/addons/portal/static/src/interactions/portal_home_counters.js:L40` | Saca el `d-none` solo si el contador del `/my/counters` **no es 0** (o si esta en `getCountersAlwaysDisplayed()`, L17 — el camino de `sale`/`account`, que exige contador). |
+| Contenedor de la tarjeta | `/home/leandro/projects/nexit/19.0/odoo/addons/portal/views/portal_templates.xml:L212` | `#portal_service_category`, habilitado por `portal_service_category_enable`; es donde helpdesk cuelga Tickets (`/home/leandro/projects/nexit/19.0/enterprise/helpdesk/views/helpdesk_portal_templates.xml:L20`, `priority="50"`). |
+| **Precedente de `config_card` sin contador** | `/home/leandro/projects/nexit/19.0/odoo/addons/portal/views/portal_templates.xml:L216` | Las tarjetas Addresses (L216-221) y Connection & Security (L222-228) del propio `portal`: `config_card=True` y **sin** `placeholder_count`, exactamente la forma que usa esta tarjeta. Igual "Payment methods" de `payment` (`/home/leandro/projects/nexit/19.0/odoo/addons/payment/views/portal_templates.xml:L383`). |
+| Precedente de `config_card` como expresion | `/home/leandro/projects/nexit/19.0/odoo/addons/website_crm_partner_assign/views/website_crm_partner_assign_templates.xml:L390` | Variante mas floja (convive con `placeholder_count`): el core usa `config_card` como "mostrar siempre" tambien en una tarjeta que no es de configuracion. |
 | Auto-creacion de slots default | `/home/leandro/projects/nexit/19.0/enterprise/appointment/models/appointment_type.py:L296` | `_compute_category` crea `_get_default_slots()` si el tipo no tiene slots (L296-300); el rango L-V 9-12 / 14-17 esta en `_get_default_range_slots` (L647-660). Por eso la semilla **no puede** nacer sin slots (D29). |
 | Default de staff del tipo de cita | `/home/leandro/projects/nexit/19.0/enterprise/appointment/models/appointment_type.py:L180` | `staff_user_ids` con `default=lambda self: self.env.user` (L180-185) → la semilla lo vacia con `eval="[(6, 0, [])]"` (D28). |
 | Precedente exacto del override del hook | `/home/leandro/projects/nexit/19.0/enterprise/appointment_hr_recruitment/controllers/appointment.py:L7` | `class ...(AppointmentController)` + `super()` + `sudo().search` de un param custom: el patron a copiar (L7-17). |
@@ -879,25 +957,23 @@ las entregas del partner), `visit_address_id` (debe pertenecer al commercial par
 
 ## Plan del cambio en curso
 
-> Build inicial del modulo (spec-first: hoy solo existe esta spec). **Precondicion**: @scaffold crea la
-> estructura y el `__manifest__.py` (`author="Sunra"`, `license="LGPL-3"`, `version="1.0.0"`,
-> `category="Website/Website"`, `depends=["helpdesk_fsm","helpdesk_stock","website_appointment","sk_customer_product_warranty"]`)
-> **antes** de T01; por eso ninguna tarea lo referencia como dependencia. Cada tarea que agrega un
-> archivo lo declara tambien en `models/__init__.py` / `data` del manifest segun corresponda. El repo
-> **no** tiene `.swarm.conf` → sin tarea de tests por politica.
+> **v1.1.0 + v1.2.0 — Plane #48.** Dos cambios del mismo issue: la **entrada** al service en el home
+> del portal (D37, v1.1.0) y la **resolucion del team por compania** (D30/D38, v1.2.0). Se dejan las
+> dos tandas de tareas porque todavia no hay deploy de ninguna.
+>
+> **v1.1.0 — entrada al service en el home del portal (D37).** Cambio de una sola pieza: una vista
+> heredada y su icono. No toca controllers, modelos ni datos semilla, asi que el formulario, el
+> agendado y la tarea FSM quedan intactos. El repo **no** tiene `.swarm.conf` → sin tarea de tests
+> por politica.
 
 | Tarea | Descripcion | Depende de | Archivos | Cubre |
 |-------|-------------|------------|----------|-------|
-| **T01** | `product.product`: `_get_partner_service_products(partner)` (`_read_group` sudo de entregas `done`/`outgoing`, `is_replacement=False`, por commercial partner, con `date:min`/`date:max` normalizados a Date con tz del usuario, productos devueltos en sudo) + `_get_service_warranty(first_delivery, last_delivery, lot=None)` (cadena `_get_warranty_info` + `relativedelta`, prioridad al lote, `manufacture` sin lote → `unknown`). | — | `models/product_product.py`, `models/__init__.py` | CA02, CA03, CA04 |
-| **T02** | `helpdesk.ticket`: campos `service_visit_address_id`, `service_event_ids`, `service_event_id` + snapshot de garantia (`warranty_status`, `warranty_expiry_date`, `warranty_delivery_date`, compute stored con `sudo()` interno y **batcheo por commercial partner**), `_compute_service_event_id`, `_get_service_appointment_url()` (via `invite.redirect_url`), helpers de fotos (`_get_service_photo_attachments`, `_post_service_photos`). | T01 | `models/helpdesk_ticket.py`, `models/__init__.py` | CA02, CA03, CA04, CA12 |
-| **T03** | `calendar.event`: campo `service_ticket_id`; override `create` (savepoint + `_service_generate_fsm_task`: wizard FSM sudo con **contexto limpio** + `hsa_from_appointment=True`, fechas `planned_date_begin`/`date_deadline` en **un solo write**, fotos, mensajes) y `write` (cancelacion `active=False` → `1_canceled`, unarchive → reponer, cambio de `start`/`stop` → sync). | T02 | `models/calendar_event.py`, `models/__init__.py` | CA10, CA13, CA14, CA15, CA16 |
-| **T04** | Wizard `helpdesk.create.fsm.task`: override `_generate_task_values()` con `partner_id` = direccion de visita **solo bajo `hsa_from_appointment`** (el camino manual queda intacto) y bloque de garantia (`Markup` + `escape`) al inicio de la descripcion, siempre. | T02 | `wizard/helpdesk_create_fsm_task.py`, `wizard/__init__.py`, `__init__.py` | CA10, CA11, CA22 |
-| **T05** | Controller de portal `/my/service/new` (GET/POST): `_prepare_service_form_values` (contacto, direcciones, cerraduras con badge, tags, antiguedad, limites), validaciones anti-IDOR (producto en entregas, direccion del commercial partner, tag semilla), create sudo del ticket, `_save_service_photos` endurecido con adjuntos **pendientes** + `message_post`, redirect 303 al agendado. | T02 | `controllers/helpdesk_service_appointment.py`, `controllers/__init__.py`, `__init__.py` | CA01, CA05, CA06, CA07, CA08, CA09, CA20 |
-| **T06** | Controller de Citas: override de `_get_extra_calendar_event_params` (guard de entero, `exists()`, chequeo de commercial partner o usuario interno, anti-doble-agendado) **+ override de `appointment_cancel`** que reinyecta `service_ticket_id` en la URL de vuelta (D34). | T03 | `controllers/appointment.py`, `controllers/__init__.py` | CA10, CA13, CA21 |
-| **T07** | Templates de portal: `portal_service_new` (form completo con badges y fallback), inherit de `helpdesk.portal_helpdesk_ticket` (boton "New Service Request") e inherit de `helpdesk.tickets_followup` (bloque Service con cita / "Schedule visit") + valores en `_ticket_get_page_view_values`. | T05 | `views/helpdesk_service_appointment_templates.xml`, `controllers/helpdesk_service_appointment.py`, `__manifest__.py` | CA01, CA02, CA03, CA04, CA06, CA12, CA18, CA20 |
-| **T08** | Vistas de backoffice: inherit del form (y list opcional) del ticket con el grupo Service + decoraciones de garantia; related readonly `service_warranty_status` / `service_warranty_expiry_date` en `project.task` + inherit de `project.view_task_form2`. | T02 | `models/project_task.py`, `models/__init__.py`, `views/helpdesk_ticket_views.xml`, `views/project_task_views.xml`, `__manifest__.py` | CA17 |
-| **T09** | Datos semilla `noupdate="1"`: team "Service" (`use_fsm=True`, `privacy_visibility='portal'`), tipo de cita "Service Visit" (2 h, `users`, `is_published=False`, `staff_user_ids` vaciado con `eval="[(6, 0, [])]"`), `appointment.invite` `short_code='service'` y los 7 `helpdesk.tag` con nombres calificados ("Lock ...", por el `UNIQUE(name)`). | — | `data/helpdesk_service_appointment_data.xml`, `__manifest__.py` | CA19 |
-| **T10** | Documentacion y cierre: `README.md` del modulo (incluida la config funcional obligatoria) + `static/description/index.html` + fila en el README raiz del repo + `i18n/es_419.po`, y `version="1.0.0"` en el manifest == `Version` de esta spec (estado spec → `implemented`). | T01, T02, T03, T04, T05, T06, T07, T08, T09 | `README.md`, `static/description/index.html`, `../README.md`, `i18n/es_419.po`, `__manifest__.py`, `specs/helpdesk_service_appointment.md` | — (doc + version sync) |
+| **T01** | Icono de la tarjeta: `service.svg` 64x64 en la paleta de los iconos de portal del core (`#FBDBD0` de fondo, trazo `#374874`, relleno `#C1DBF6`), vendorizado en el modulo (no se linkea un asset de otro addon). | — | `static/src/img/service.svg` | CA23 |
+| **T02** | Vista `portal_my_home_service`: inherit de `portal.portal_my_home` con `priority="55"` y `customize_show="True"`; setea `portal_service_category_enable` y agrega la tarjeta en `#portal_service_category` via `portal.portal_docs_entry` con `config_card=True` (siempre visible, sin contador). | T01 | `views/helpdesk_service_appointment_templates.xml` | CA23 |
+| **T03** | Cierre de v1.1.0: `i18n/es_419.po` (cadena nueva de la tarjeta + referencia de la vista en el msgid "Service" ya existente), `README.md` e `index.html` con la entrada del portal. | T02 | `i18n/es_419.po`, `README.md`, `static/description/index.html` | — (doc) |
+| **T04** | `_get_service_team_seed()` (el `env.ref` de antes, renombrado) + `_get_service_team()` con la resolucion por `request.env.company` de D38 (semilla de la compania → busqueda por `use_fsm` + `privacy_visibility='portal'` → semilla + `_logger.warning`), y `_logger` del modulo. | — | `controllers/helpdesk_service_appointment.py` | CA24 |
+| **T05** | El bloque Service del portal deja de compararse contra **el** team y pasa a `ticket.team_id in (resuelto | semilla)`, para que un ticket de otra compania siga mostrando su cita. | T04 | `controllers/helpdesk_service_appointment.py` | CA12, CA24 |
+| **T06** | Cierre: paso de configuracion por compania en el `README.md` (que necesita un team para ser "de service") y `version="1.2.0"` en el manifest == `Version` de esta spec. | T04, T05 | `README.md`, `__manifest__.py`, `specs/helpdesk_service_appointment.md` | — (doc + version sync) |
 
 ## Notas de implementacion
 

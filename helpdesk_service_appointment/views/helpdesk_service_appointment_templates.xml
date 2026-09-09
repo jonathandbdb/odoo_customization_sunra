@@ -141,6 +141,30 @@
         </t>
     </template>
 
+    <!-- Tarjeta "Service" en el home del portal (/my). El boton del formulario vive dentro de
+         /my/tickets, y el core esconde la tarjeta de Tickets mientras el cliente tenga 0 tickets:
+         portal.portal_docs_entry la renderiza con `d-none` y portal_home_counters.js solo la revela
+         si su contador da > 0. Resultado: el cliente que nunca pidio un service no tenia por donde
+         entrar al formulario (D37).
+         `config_card=True` = tarjeta siempre visible y sin contador, que es lo que corresponde: es
+         una accion ("pedir un service"), no el listado de un modelo. Mismo uso que le da el core en
+         website_crm_partner_assign (portal.portal_docs_entry, odoo/addons/portal). -->
+    <template id="portal_my_home_service" name="Service Requests" customize_show="True"
+              inherit_id="portal.portal_my_home" priority="55">
+        <xpath expr="//div[hasclass('o_portal_docs')]" position="before">
+            <t t-set="portal_service_category_enable" t-value="True"/>
+        </xpath>
+        <div id="portal_service_category" position="inside">
+            <t t-call="portal.portal_docs_entry">
+                <t t-set="icon" t-value="'/helpdesk_service_appointment/static/src/img/service.svg'"/>
+                <t t-set="title">Service</t>
+                <t t-set="text">Request a technician visit for your lock</t>
+                <t t-set="url" t-value="'/my/service/new'"/>
+                <t t-set="config_card" t-value="True"/>
+            </t>
+        </div>
+    </template>
+
     <!-- Boton "New Service Request" en /my/tickets. -->
     <template id="portal_helpdesk_ticket_inherit_service" name="Portal Helpdesk Tickets - Service"
               inherit_id="helpdesk.portal_helpdesk_ticket">

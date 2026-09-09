@@ -18,7 +18,11 @@
             <table style="width: 100%; border-collapse: collapse; border: 1px solid ButtonBorder; background: Canvas;">
                 <tbody>
                     <tr>
-                        <td style="width: 28%; padding: 14px 16px; border-bottom: 1px solid ButtonBorder; font-weight: 700; background: ButtonFace; color: ButtonText;">Formulario de portal</td>
+                        <td style="width: 28%; padding: 14px 16px; border-bottom: 1px solid ButtonBorder; font-weight: 700; background: ButtonFace; color: ButtonText;">Entrada en el portal</td>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">Tarjeta <strong>Service</strong> en el home del portal (<code>/my</code>), <strong>siempre visible</strong>: tambien la ve el cliente que todavia no tiene ningun ticket (el core esconde las tarjetas con contador en cero, asi que sin esta el cliente nuevo no tenia por donde entrar). Se puede apagar desde el editor web.</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; font-weight: 700; background: ButtonFace; color: ButtonText;">Formulario de portal</td>
                         <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;"><code>/my/service/new</code>: resumen de datos de contacto, seleccion de direccion de visita + aclaraciones, lista de cerraduras <strong>entregadas al cliente</strong> con badge de garantia, fallback de texto libre + antiguedad si no la encuentra, tipo de problema (7 opciones), descripcion y fotos opcionales.</td>
                     </tr>
                     <tr>
@@ -50,6 +54,7 @@
             <ol style="margin: 0; padding-left: 22px;">
                 <li style="margin-bottom: 8px;"><strong>Asignar tecnicos (staff)</strong> al tipo de cita "Service Visit" (Citas &rarr; Configuracion &rarr; Tipos de cita). El modulo se instala <strong>sin staff a proposito</strong>: sin tecnicos asignados, la pagina de agendado no ofrece ningun horario.</li>
                 <li style="margin-bottom: 8px;"><strong>Revisar los horarios</strong>: el tipo de cita nace con las franjas por defecto que crea Odoo (Lunes a Viernes, 9-12 y 14-17); ajustarlas al horario real del equipo tecnico.</li>
+                <li style="margin-bottom: 8px;"><strong>Un team de Service por compania</strong> (bases multi-compania): el modulo elige el team de la compania del sitio web, reconociendolo por dos marcas &mdash; <em>Field Service</em> activado y <em>Visibilidad</em> = clientes del portal. Sin el team de esa compania, la regla multi-compania de Odoo le esconde el ticket al cliente en su portal.</li>
                 <li style="margin-bottom: 8px;"><strong>Proyecto de Field Service</strong> del team Service (Helpdesk &rarr; Configuracion &rarr; Equipos &rarr; pestaña Field Service): sin este proyecto la cita se agenda igual pero no se genera la tarea del tecnico.</li>
                 <li style="margin-bottom: 8px;"><strong>Garantias de las cerraduras</strong>: activar el seguimiento de garantia y su duracion en los productos o sus categorias (<code>sk_customer_product_warranty</code>). Atencion con las <strong>variantes ya existentes</strong>: la propagacion desde la plantilla solo aplica a variantes nuevas, hay que revisarlas una por una.</li>
                 <li style="margin-bottom: 8px;"><strong>Grupo de Inventario</strong> (<code>stock.group_stock_user</code>) para los agentes de Helpdesk que atienden Service: sin ese grupo no ven el campo Producto del ticket.</li>

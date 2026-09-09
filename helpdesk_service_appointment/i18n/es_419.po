@@ -323,6 +323,11 @@ msgid "Product Variant"
 msgstr "Variante del producto"
 
 #. module: helpdesk_service_appointment
+#: model_terms:ir.ui.view,arch_db:helpdesk_service_appointment.portal_my_home_service
+msgid "Request a technician visit for your lock"
+msgstr "Pedí la visita de un técnico para tu cerradura"
+
+#. module: helpdesk_service_appointment
 #: model_terms:ir.ui.view,arch_db:helpdesk_service_appointment.portal_service_new
 msgid "Schedule a Service Visit"
 msgstr "Agendar una Visita de Service"
@@ -335,6 +340,7 @@ msgstr "Agendar visita"
 #. module: helpdesk_service_appointment
 #: model:helpdesk.team,name:helpdesk_service_appointment.helpdesk_team_service
 #: model_terms:ir.ui.view,arch_db:helpdesk_service_appointment.helpdesk_ticket_view_form
+#: model_terms:ir.ui.view,arch_db:helpdesk_service_appointment.portal_my_home_service
 msgid "Service"
 msgstr "Service"
 
@@ -450,6 +456,19 @@ msgstr "La cerradura seleccionada no pertenece a tu cuenta."
 #: code:addons/helpdesk_service_appointment/controllers/helpdesk_service_appointment.py:0
 msgid "The selected visit address is not valid."
 msgstr "La dirección de visita seleccionada no es válida."
+
+#. module: helpdesk_service_appointment
+#. odoo-python
+#: code:addons/helpdesk_service_appointment/controllers/helpdesk_service_appointment.py:0
+msgid ""
+"This request was created in the Service team of %(team_company)s because "
+"%(request_company)s has no Service team. The customer will NOT see this "
+"ticket in their portal until a Service team is configured for their company."
+msgstr ""
+"Este pedido se creó en el equipo de Service de %(team_company)s porque "
+"%(request_company)s no tiene equipo de Service. El cliente NO va a ver este "
+"ticket en su portal hasta que se configure un equipo de Service para su "
+"compañía."
 
 #. module: helpdesk_service_appointment
 #: model_terms:ir.ui.view,arch_db:helpdesk_service_appointment.portal_service_new
