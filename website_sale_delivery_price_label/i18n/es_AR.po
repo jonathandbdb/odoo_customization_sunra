@@ -1,0 +1,31 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* website_sale_delivery_price_label
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-09-11 00:00+0000\n"
+"PO-Revision-Date: 2026-09-11 00:00+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: website_sale_delivery_price_label
+#: model:ir.model.fields,field_description:website_sale_delivery_price_label.field_delivery_carrier__website_price_label
+msgid "Website price label"
+msgstr "Etiqueta de precio en la web"
+
+#. module: website_sale_delivery_price_label
+#: model:ir.model.fields,help:website_sale_delivery_price_label.field_delivery_carrier__website_price_label
+msgid "Shown in the eCommerce delivery method selector instead of the price. Leave empty to show the price."
+msgstr "Se muestra en el selector de metodos de envio del eCommerce en lugar del precio. Dejar vacio para mostrar el precio."
+
+#. module: website_sale_delivery_price_label
+#: model_terms:ir.ui.view,arch_db:website_sale_delivery_price_label.delivery_carrier_view_form
+msgid "e.g. To be agreed"
+msgstr "Ej: A convenir"

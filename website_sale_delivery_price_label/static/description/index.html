@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+<body>
+    <section style="max-width: 980px; margin: 0 auto; padding: 32px 24px; font-family: Arial, Helvetica, sans-serif; color-scheme: var(--o-webclient-color-scheme, normal); color: CanvasText; line-height: 1.55; background: transparent;">
+        <div style="padding: 28px 30px; border: 1px solid ButtonBorder; border-radius: 8px; background: Canvas;">
+            <p style="margin: 0 0 8px; color: LinkText; font-size: 13px; font-weight: 700; text-transform: uppercase;">eCommerce - Envios</p>
+            <h1 style="margin: 0 0 12px; color: CanvasText; font-size: 32px; line-height: 1.2;">website_sale_delivery_price_label</h1>
+            <p style="margin: 0; max-width: 760px; color: GrayText; font-size: 16px;">Reemplaza el precio (o el "Gratis" del core) del badge de un metodo de envio en el checkout del eCommerce por un texto configurable, como "A convenir".</p>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 10px; color: LinkText; font-size: 23px;">Objetivo</h2>
+            <p style="margin: 0;">Un metodo de envio con tarifa $ 0 (ej. "Envio con Instalacion", donde la instalacion se cotiza aparte segun zona) muestra "Gratis" en el checkout: un mensaje que contradice al texto que explica que se cobra por fuera. El modulo permite reemplazar ese badge por un texto propio, sin tocar el importe real del envio.</p>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 12px; color: LinkText; font-size: 23px;">Funcionalidades principales</h2>
+            <table style="width: 100%; border-collapse: collapse; border: 1px solid ButtonBorder; background: Canvas;">
+                <tbody>
+                    <tr>
+                        <td style="width: 28%; padding: 14px 16px; border-bottom: 1px solid ButtonBorder; font-weight: 700; background: ButtonFace; color: ButtonText;">Campo por metodo de envio</td>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">Cada <code>delivery.carrier</code> gana "Website price label" (<code>Char</code>, traducible). Vacio = comportamiento identico al core.</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; font-weight: 700; background: ButtonFace; color: ButtonText;">Badge del checkout</td>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">Con el campo cargado, el selector de metodos de envio de <code>/shop/checkout</code> muestra ese texto en lugar del precio calculado o de "Gratis"/"Free".</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; font-weight: 700; background: ButtonFace; color: ButtonText;">Sin parpadeo</td>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">El texto se renderiza server-side desde el primer paint y se sostiene tras elegir el metodo, cambiar a otro y volver (el RPC de la tarifa no lo pisa).</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 14px 16px; font-weight: 700; background: ButtonFace; color: ButtonText;">Sin cambios de fondo</td>
+                        <td style="padding: 14px 16px; color: CanvasText;">No toca la tarifa real del metodo ni el resumen del pedido: solo el badge del selector.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 12px; color: LinkText; font-size: 23px;">Configuracion</h2>
+            <ol style="margin: 0; padding-left: 22px;">
+                <li style="margin-bottom: 8px;">Inventario &rarr; Configuracion &rarr; Metodos de envio &rarr; abrir el metodo.</li>
+                <li style="margin-bottom: 8px;">En la pestana con la descripcion para el sitio web, completar "Website price label" (ej. "A convenir").</li>
+                <li>El campo es traducible por idioma del sitio, igual que el resto de esa pestana. Vacio = precio normal.</li>
+            </ol>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 10px; color: LinkText; font-size: 23px;">Detalle tecnico</h2>
+            <p style="margin: 0 0 14px;"><code>views/delivery_carrier_views.xml</code> hereda <code>delivery.view_delivery_carrier_form</code> y agrega el campo despues de <code>website_description</code>. <code>views/website_sale_templates.xml</code> hereda <code>website_sale.delivery_method</code> y reemplaza el <code>&lt;span name="price"&gt;</code>: con etiqueta, un badge propio con las mismas clases y <code>name="price"</code> del core mas <code>data-price-label</code>; sin etiqueta, <code>$0</code> reconstruye el nodo original reemplazado (idioma de herencia de vistas de Odoo), sin reescribirlo a mano. <code>static/src/js/delivery_price_label.js</code> (bundle <code>web.assets_frontend</code>) parchea <code>_updateAmountBadge</code> de la interaccion <code>Checkout</code> (<code>website_sale/static/src/interactions/checkout.js:331</code>, que escribe "Free" en la linea 339): tras <code>super()</code>, si la tarifa se calculo bien y el badge tiene <code>data-price-label</code>, vuelve a escribir la etiqueta encima del precio/"Free" que acaba de pisar el core.</p>
+            <p style="margin: 0; padding: 14px 16px; border-left: 4px solid Highlight; background: color-mix(in srgb, Highlight 14%, Canvas); color: CanvasText;">El <code>xpath</code> ancla solo en el <code>&lt;span name="price"&gt;</code>, nunca en su <code>&lt;small&gt;</code> interno: el sitio puede tener una copia por sitio (COW) del template editada desde el editor web con el contenido ya cambiado (en Nokey quedo como texto fijo "Gratis" en espanol). Anclar en el <code>&lt;small&gt;</code> rompia el checkout con un 500 aunque el <code>-i</code> pasara sin error.</p>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 10px; color: LinkText; font-size: 23px;">Dependencias</h2>
+            <ul style="margin: 0; padding-left: 22px;">
+                <li><code>website_sale</code></li>
+            </ul>
+        </div>
+
+        <p style="margin: 34px 0 0; padding-top: 18px; border-top: 1px solid ButtonBorder; color: GrayText; font-size: 14px;">Desarrollado por Sunra - https://github.com/sunraargsh</p>
+    </section>
+</body>
+</html>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Hereda website_sale.delivery_method (odoo/addons/website_sale/views/delivery_form_templates.xml,
+         template delivery_method). `dm` es la variable de contexto con el delivery.carrier de la fila.
+
+         El locator depende SOLO del span del badge (name="price"), nunca de su contenido: en el sitio
+         puede existir una copia por sitio (COW) del template editada desde el editor web, cuyo arch
+         en el idioma del sitio ya no tiene el <small> del core (en Nokey el badge quedo congelado como
+         texto "Gratis"). Anclar en el hijo <small> rompe el checkout con un 500. -->
+    <template id="delivery_method" inherit_id="website_sale.delivery_method">
+        <xpath expr="//span[@name='price']" position="replace">
+            <!-- Con etiqueta configurada: badge propio, renderizado server-side desde el primer paint
+                 (sin parpadeo hasta que responde el RPC). El data-attribute lo lee
+                 delivery_price_label.js en _updateAmountBadge para que el precio/"Gratis" que devuelve
+                 /shop/get_delivery_rate no pise el texto. Conserva la clase y el name del core, que es
+                 lo que buscan _getDeliveryPriceBadge y el CSS. -->
+            <t t-if="dm.website_price_label">
+                <span
+                    class="o_wsale_delivery_price_badge text-muted fw-bold text-end"
+                    name="price"
+                    t-att-data-price-label="dm.website_price_label"
+                >
+                    <small class="fw-normal" t-out="dm.website_price_label"/>
+                </span>
+            </t>
+            <!-- Sin etiqueta: el badge original del core tal cual ($0), comportamiento identico. -->
+            <t t-else="">$0</t>
+        </xpath>
+    </template>
+</odoo>
+<!-- vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4-->
