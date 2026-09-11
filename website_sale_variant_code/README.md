@@ -3,7 +3,7 @@
 Mostrar en el eCommerce el **código interno de la variante que el cliente está mirando**, en lugar de
 una leyenda fija con los códigos de todas las variantes.
 
-- **Versión**: 1.1.0
+- **Versión**: 1.3.0
 - **Licencia**: LGPL-3
 - **Depende de**: `website_sale`
 
@@ -90,6 +90,27 @@ al `t-call` de `website_sale.cart_line_description_following_lines`, sin duplica
 > datafix de abajo, el código desaparece del listado. Mantenerla poblada es lo que hace que el
 > código se vea en la grilla sin código extra.
 
+## Ocultar el código de variante en la ficha del producto
+
+Desde 1.3.0, la cliente puede sacar la leyenda `Ref:` (`Cod:` en español) de la página de producto,
+por sitio web:
+
+**Ajustes → Sitio Web → Comercio electrónico → «Ocultar el código de variante en la ficha del
+producto»**
+
+El valor **no se borra**: el JS de `_onChangeCombination` sigue calculando `default_code` en cada
+cambio de variante (para el carrito y la búsqueda), solo que el bloque no se renderiza en la ficha
+— el `t-if` de `views/website_sale_variant_code_templates.xml` lo condiciona a
+`not website.hide_product_page_variant_code`. El JS (`static/src/js/website_sale_variant_code.js`)
+ya tenía un guard defensivo (`if (!valueEl) return;`): con el bloque oculto, `.o_wsale_variant_code_value`
+no existe en el DOM y el `_onChangeCombination` no falla, simplemente no tiene nada que actualizar.
+
+Por defecto el campo es `False` (Sunra no cambia su comportamiento); en Nokey se activa en
+producción (tarea de Plane #68, en el sitio real, no en este módulo).
+
+Es **por sitio web**, igual que el ajuste del carrito: se puede tener la ficha con el código en un
+sitio y sin él en otro.
+
 ## Limpieza de las leyendas manuales
 
 Instalar el módulo **no borra nada**. La limpieza es un paso aparte y explícito, porque toca datos
@@ -165,3 +186,8 @@ referencia interna de la variante, que es de donde sale el dato ahora.
 6. Apagar el ajuste: la descripción vuelve a mostrarse (confirma que el dato nunca se borró).
 7. Imprimir el PDF del pedido con el ajuste prendido: la descripción tiene que salir **completa**.
 8. Repetir en el otro sitio web con el ajuste apagado: el carrito debe quedar igual que antes.
+9. En **Ajustes → Sitio Web**, prender «Ocultar el código de variante en la ficha del producto» y
+   volver a la ficha: la leyenda `Cod:` no debe aparecer, ni al cambiar de variante.
+10. Apagar ese ajuste: la leyenda vuelve a mostrarse y sigue actualizándose al cambiar de variante.
+11. Con el ajuste prendido, verificar que el carrito **sigue** mostrando el código de la línea (el
+    ajuste solo afecta la ficha, no el carrito).

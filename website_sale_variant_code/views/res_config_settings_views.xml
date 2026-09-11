@@ -15,6 +15,13 @@
                 >
                     <field name="hide_cart_line_description"/>
                 </setting>
+                <setting
+                    id="hide_product_page_variant_code_setting"
+                    string="Hide Variant Code on Product Page"
+                    help="Do not display the internal reference of the selected variant on the product page."
+                >
+                    <field name="hide_product_page_variant_code"/>
+                </setting>
             </setting>
         </field>
     </record>

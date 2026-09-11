@@ -12,5 +12,9 @@ class ResConfigSettings(models.TransientModel):
         related="website_id.hide_cart_line_description",
         readonly=False,
     )
+    hide_product_page_variant_code = fields.Boolean(
+        related="website_id.hide_product_page_variant_code",
+        readonly=False,
+    )
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

@@ -42,3 +42,25 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:website_sale_variant_code.res_config_settings_view_form
 msgid "The internal reference is already shown on each cart line. Hide the sales description to avoid showing the code twice."
 msgstr "La referencia interna ya se muestra en cada línea del carrito. Ocultar la descripción de venta evita que el código aparezca dos veces."
+
+#. module: website_sale_variant_code
+#: model:ir.model.fields,field_description:website_sale_variant_code.field_res_config_settings__hide_product_page_variant_code
+#: model:ir.model.fields,field_description:website_sale_variant_code.field_website__hide_product_page_variant_code
+#: model_terms:ir.ui.view,arch_db:website_sale_variant_code.res_config_settings_view_form
+msgid "Hide Variant Code on Product Page"
+msgstr "Ocultar el código de variante en la ficha del producto"
+
+#. module: website_sale_variant_code
+#: model:ir.model.fields,help:website_sale_variant_code.field_res_config_settings__hide_product_page_variant_code
+#: model:ir.model.fields,help:website_sale_variant_code.field_website__hide_product_page_variant_code
+msgid ""
+"Do not display the internal reference of the selected variant on the product page.\n"
+"The value is not removed: it keeps updating on variant change and stays available for the cart line and for the search. It is only hidden from the product page."
+msgstr ""
+"No muestra la referencia interna de la variante elegida en la ficha del producto.\n"
+"El valor no se borra: se sigue actualizando al cambiar de variante y queda disponible para la línea del carrito y para la búsqueda. Solo se oculta de la ficha del producto."
+
+#. module: website_sale_variant_code
+#: model_terms:ir.ui.view,arch_db:website_sale_variant_code.res_config_settings_view_form
+msgid "Do not display the internal reference of the selected variant on the product page."
+msgstr "No muestra la referencia interna de la variante elegida en la ficha del producto."

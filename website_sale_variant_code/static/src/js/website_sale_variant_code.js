@@ -14,13 +14,15 @@ patch(WebsiteSale.prototype, {
     _onChangeCombination(ev, parent, combination) {
         super._onChangeCombination(...arguments);
         // Buscamos el valor y no el contenedor: el carrito usa la misma clase de contenedor pero
-        // se renderiza entero del lado del servidor, sin este span.
+        // se renderiza entero del lado del servidor, sin este span. Si el sitio oculta el bloque
+        // (website.hide_product_page_variant_code), el `t-if` del template ni lo renderiza: no hay
+        // nada que actualizar.
         const valueEl = parent.querySelector('.o_wsale_variant_code_value');
         if (!valueEl) {
             return;
         }
         const code = combination.default_code || '';
         valueEl.textContent = code;
-        valueEl.closest('.o_wsale_variant_code').classList.toggle('d-none', !code);
+        valueEl.closest('.o_wsale_variant_code')?.classList.toggle('d-none', !code);
     },
 });

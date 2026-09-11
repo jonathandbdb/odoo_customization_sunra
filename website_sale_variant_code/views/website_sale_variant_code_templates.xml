@@ -16,6 +16,7 @@
     >
         <xpath expr="//h1" position="after">
             <div
+                t-if="not website.hide_product_page_variant_code"
                 t-attf-class="o_wsale_variant_code mb-2 small text-muted #{'d-none' if not product_variant.default_code else ''}"
             >
                 <span class="o_wsale_variant_code_label">Ref:</span>
