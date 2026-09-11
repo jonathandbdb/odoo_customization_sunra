@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Mueve la leyenda de cuotas de ADHOC (website_sale_installment_plans) dentro del slot que
+         expone website_sale_payment_method_price (D21 de esa spec): div[@name='wspmp_installments'],
+         siempre por atributo `name`, nunca por clase, que es el contrato del slot. `priority="20"`
+         para aplicarse despues del recuadro de precio (priority="18"), que crea el slot vacio.
+
+         El div.installment-plans de ADHOC tiene clase estatica (locator valido con hasclass) y no
+         se duplica: position="move" lo extrae de donde estaba (hermano del bloque de precio) y lo
+         reinserta aca. En la grilla arrastra su propio `t-set` de installment_plans, que sigue
+         referenciando `product`/`template_price_vals` porque ambos siguen en scope una vez movido
+         (sigue siendo descendiente del mismo `t-call`, solo cambia su posicion en el arbol). -->
+    <template
+        id="product_price"
+        inherit_id="website_sale.product_price"
+        name="Product price - move installment plans into payment method box"
+        priority="20"
+    >
+        <xpath expr="//div[@name='wspmp_installments']" position="inside">
+            <xpath expr="//div[hasclass('installment-plans')]" position="move"/>
+        </xpath>
+    </template>
+
+    <template
+        id="products_item"
+        inherit_id="website_sale.products_item"
+        name="Product tile - move installment plans into payment method box"
+        priority="20"
+    >
+        <xpath expr="//div[@name='wspmp_installments']" position="inside">
+            <xpath expr="//div[hasclass('installment-plans')]" position="move"/>
+        </xpath>
+    </template>
+</odoo>
+<!-- vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4-->

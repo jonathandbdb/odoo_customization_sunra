@@ -5,7 +5,7 @@
         <div style="padding: 28px 30px; border: 1px solid ButtonBorder; border-radius: 8px; background: Canvas;">
             <p style="margin: 0 0 8px; color: LinkText; font-size: 13px; font-weight: 700; text-transform: uppercase;">eCommerce - Cuotas</p>
             <h1 style="margin: 0 0 12px; color: CanvasText; font-size: 32px; line-height: 1.2;">website_sale_installment_plans_ux</h1>
-            <p style="margin: 0; max-width: 760px; color: GrayText; font-size: 16px;">Ajusta el texto de cuotas que se publica debajo del precio en el eCommerce: saca el total entre parentesis y muestra el importe con el formato de moneda del sitio.</p>
+            <p style="margin: 0; max-width: 760px; color: GrayText; font-size: 16px;">Ajusta el texto de cuotas del eCommerce (saca el total entre parentesis y formatea el importe) y, desde 1.1.0, mueve esa leyenda dentro del recuadro de precio del modulo de precios por medio de pago.</p>
         </div>
 
         <div style="margin-top: 30px;">
@@ -42,8 +42,12 @@
                         <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">La cantidad de cuotas sale del campo Divisor, que es el que representa en cuantas cuotas se divide el total. Ya no hace falta duplicar ese numero en el campo Plan de Cuotas.</td>
                     </tr>
                     <tr>
-                        <td style="padding: 14px 16px; font-weight: 700; background: ButtonFace; color: ButtonText;">Los dos lugares a la vez</td>
-                        <td style="padding: 14px 16px; color: CanvasText;">Un unico override sobre el metodo por el que pasan tanto la ficha de producto como la grilla del shop.</td>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; font-weight: 700; background: ButtonFace; color: ButtonText;">Los dos lugares a la vez</td>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">Un unico override sobre el metodo por el que pasan tanto la ficha de producto como la grilla del shop.</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 14px 16px; font-weight: 700; background: ButtonFace; color: ButtonText;">Dentro del recuadro de precio (1.1.0)</td>
+                        <td style="padding: 14px 16px; color: CanvasText;">Desde 1.1.0, con <code>website_sale_payment_method_price</code> como dependencia dura, la leyenda de cuotas se mueve (no se duplica) dentro de su recuadro de precio, en un slot pensado para eso, tanto en la ficha como en la grilla.</td>
                     </tr>
                 </tbody>
             </table>
@@ -52,7 +56,7 @@
         <div style="margin-top: 30px;">
             <h2 style="margin: 0 0 10px; color: LinkText; font-size: 23px;">Que no hace</h2>
             <ul style="margin: 0; padding-left: 20px;">
-                <li style="margin-bottom: 6px;">No cambia las plantillas: la ubicacion de la leyenda, el icono y el campo Mensaje siguen siendo los del modulo de ADHOC.</li>
+                <li style="margin-bottom: 6px;">No cambia el texto de la leyenda ni el icono: el campo Mensaje sigue siendo el del modulo de ADHOC.</li>
                 <li style="margin-bottom: 6px;">No toca el calculo: el coeficiente de recargo se aplica igual que antes.</li>
                 <li style="margin-bottom: 6px;">No agrega campos, menus ni configuracion.</li>
                 <li>No modifica el flujo de pago: la leyenda es informativa y el total del carrito no cambia.</li>
@@ -61,7 +65,7 @@
 
         <div style="margin-top: 30px;">
             <h2 style="margin: 0 0 10px; color: LinkText; font-size: 23px;">Dependencias</h2>
-            <p style="margin: 0;">Depende de <b>website_sale_installment_plans</b> (repo odoo_l10n_ar), que arrastra card_installment y website_sale. Los dos repos de addons tienen que estar en el addons_path.</p>
+            <p style="margin: 0;">Depende de <b>website_sale_installment_plans</b> (repo odoo_l10n_ar), que arrastra card_installment y website_sale; y desde 1.1.0 de <b>website_sale_payment_method_price</b> (repo odoo_customization_sunra), dueno del recuadro de precio y de su slot de cuotas. Los repos de addons involucrados tienen que estar en el addons_path.</p>
         </div>
 
         <div style="margin-top: 30px; padding-top: 18px; border-top: 1px solid ButtonBorder;">
