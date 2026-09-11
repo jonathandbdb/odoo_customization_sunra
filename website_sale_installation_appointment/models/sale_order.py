@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
 
+from markupsafe import Markup
+
 from odoo import Command, _, api, fields, models
 from odoo.exceptions import ValidationError
 from odoo.tools import float_compare
@@ -46,6 +48,25 @@ class SaleOrder(models.Model):
     installation_photo_count = fields.Integer(
         string="Installation Photos Count",
         compute="_compute_installation_photo_count",
+    )
+    # Notas para el instalador (D47): de ESTA venta, no del domicilio (por eso copy=False, como
+    # installation_photo_ids), se cargan en el Paso 1 del checkout y se propagan a la
+    # descripcion de la tarea de FSM (ver _get_installation_task_notes()).
+    installation_notes = fields.Text(
+        string="Notes for the installer",
+        copy=False,
+        help="Additional information for the crew about this particular installation (e.g. gate "
+             "code, doorbell, or timing constraints). Optional.",
+    )
+    # Cierra el Paso 1 del acordeon del checkout (D44/D48): lo setea el boton "Confirm address" y
+    # se resetea ante cualquier cambio posterior de la direccion de envio (ver ResPartner.write()
+    # y el write() de este mismo modelo). copy=False: un pedido duplicado arranca sin confirmar.
+    installation_address_confirmed = fields.Boolean(
+        string="Installation Address Confirmed",
+        copy=False,
+        default=False,
+        help="Set by the customer when confirming the installation address in Step 1 of the "
+             "checkout. Reset automatically if the shipping address changes afterwards.",
     )
 
     @api.depends("carrier_id.installation_appointment_type_id")
@@ -106,6 +127,11 @@ class SaleOrder(models.Model):
         if not self.installation_required:
             return []
         errors = []
+        # [ASUNCION] D50: se reusa el gate que ya existe en vez de inventar otro, y evita el
+        # estado incoherente "Paso 1 pendiente + Paso 3 habilitado" para quien agendo por otro
+        # camino (link, backoffice). Criterio conservador: bloquea de mas, nunca de menos.
+        if not self.installation_address_confirmed:
+            errors.append(_("Please confirm the installation address."))
         if not self._is_installation_scheduled():
             errors.append(_("Please schedule the date and time of the installation."))
         min_photos = self.carrier_id.installation_min_photos
@@ -118,6 +144,78 @@ class SaleOrder(models.Model):
                 missing=missing_photos,
             ))
         return errors
+
+    def _get_installation_block_states(self):
+        """ State of each of the 3 blocks of the installation step's accordion (D44).
+
+        Single place that decides which block is done, which one is open and which one is
+        locked: the template only paints what this method returns.
+
+        :return: {"address": str, "schedule": str, "payment": str, "open": str}, values are
+            "done" / "todo" / "locked"
+        :rtype: dict
+        """
+        self.ensure_one()
+        address = "done" if self.installation_address_confirmed else "todo"
+        if address != "done":
+            schedule = "locked"
+        elif (
+            self._is_installation_scheduled()
+            and self.installation_photo_count >= self.carrier_id.installation_min_photos
+        ):
+            schedule = "done"
+        else:
+            schedule = "todo"
+        # payment nunca vale "done": es un link al paso siguiente del core, no un dato propio
+        # que se marque como completado.
+        payment = "locked" if self._get_installation_errors() else "todo"
+        states = {"address": address, "schedule": schedule, "payment": payment}
+        states["open"] = next(
+            (key for key in ("address", "schedule", "payment") if states[key] == "todo"),
+            "payment",
+        )
+        return states
+
+    def _get_installation_task_notes(self):
+        """ Build the block of text the installer reads on the Field Service task (D47).
+
+        Joins, when present, "Between streets: …" (from the shipping partner) and "Notes for the
+        installer: …" (from this order). The labels are in the COMPANY's language (the reader is
+        the in-house crew opening the task board, not the customer).
+
+        :return: Markup-safe HTML (escaped values), or "" if there's nothing to say
+        :rtype: Markup
+        """
+        self.ensure_one()
+        # Reasignar `self` (no una variable nueva): `_()` resuelve el idioma leyendo el `self`
+        # del frame del LLAMADOR (odoo/tools/translate.py), asi que guardar el context en otra
+        # variable (ej. `order = self.with_context(...)`) es inerte, las etiquetas seguirian
+        # saliendo en el idioma del comprador. Molde ya usado en `_prepare_free_battery_line_vals`.
+        self = self.with_context(lang=self.company_id.partner_id.lang or self.env.lang)
+        lines = []
+        between_streets = self.partner_shipping_id.between_streets
+        if between_streets:
+            lines.append(Markup("%s %s") % (_("Between streets:"), between_streets))
+        if self.installation_notes:
+            lines.append(Markup("%s %s") % (_("Notes for the installer:"), self.installation_notes))
+        return Markup("<br/>").join(lines) if lines else ""
+
+    def write(self, vals):
+        # Idem ResPartner.write(), para cuando cambia el CONTACTO de envio (el cliente elige
+        # otra direccion en /shop/address): antes del super(), para no depender de que deje el
+        # valor viejo (D48).
+        affected = self.env["sale.order"]
+        if "partner_shipping_id" in vals:
+            affected = self.filtered(
+                lambda order: order.installation_address_confirmed
+                and order.partner_shipping_id.id != int(vals["partner_shipping_id"])
+            )
+        res = super().write(vals)
+        if affected:
+            # Re-entrada segura: esta segunda escritura no trae partner_shipping_id, asi que
+            # este mismo write() la deja pasar sin recursion.
+            affected.write({"installation_address_confirmed": False})
+        return res
 
     def _check_cart_is_ready_to_be_paid(self):
         # Gate de pago: sin cita agendada (o sin las fotos minimas) el pedido no puede pagarse,

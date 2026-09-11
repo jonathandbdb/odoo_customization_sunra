@@ -42,49 +42,94 @@
         <div t-if="not is_html_empty(appointment_type.installation_photos_message)"
              class="mb-3" t-field="appointment_type.installation_photos_message"/>
         <p t-else="" class="text-muted">
-            Upload clear, well-lit photos showing your door from the outside, from the inside,
-            and the door edge (where the lock sits).
+            Upload 3 clear, well-lit photos: the front of your door (with the handle), the door
+            edge, and the frame.
         </p>
     </template>
 
-    <!-- Guia visual de las fotos que hay que subir. Antes solo habia un parrafo describiendo las
-         tomas y el cliente subia cualquier cosa: aca ve como tiene que salir cada una ANTES de
-         elegir los archivos. Es un template aparte porque lo llaman los dos caminos: el paso del
-         checkout y el formulario de la cita del link que comparte Nokey.
-         Las fotos salen de las mismas tomas reales de la guia de medidas, sin las marcas A/B
-         (esas marcan que medir, no que fotografiar, y confundian). -->
+    <!-- Guia visual de las fotos que hay que subir: 3 tomas "asi si" (con tilde) y 3 ejemplos de
+         "asi no" (con cruz y su motivo en el pie), D51/D55. Antes solo habia un parrafo
+         describiendo las tomas y el cliente subia cualquier cosa: aca ve como tiene que salir (y
+         como NO tiene que salir) cada una ANTES de elegir los archivos. Es un template aparte
+         porque lo llaman los dos caminos: el paso del checkout y el formulario de la cita del
+         link que comparte Nokey. Fotos reales del cliente (T05); verticales (~3:4), con
+         object-fit: cover para no recortar justo lo que hay que mirar. -->
     <template id="installation_photo_examples" name="Installation Photo Examples">
+        <!-- o_not_editable a nivel contenedor (D42/T07(b)): son fotos reales del cliente
+             congeladas ex-profeso (el template que ya sufrio la copia COW en produccion), asi
+             que se marca TODO el bloque de un saque en vez de elemento por elemento. -->
+        <div class="o_not_editable">
         <p class="small text-muted mb-2">This is how each photo should look:</p>
         <div class="row g-3 mb-3">
             <div class="col-6 col-md-4">
-                <img src="/website_sale_installation_appointment/static/src/img/installation_example_lock.jpg"
-                     alt="The door from the outside, with the handle and the key cylinder"
-                     class="w-100 rounded border mb-1" style="aspect-ratio: 12 / 5; object-fit: cover;"/>
-                <p class="small text-muted mb-0">
-                    From the outside, with the handle and the key cylinder in the frame.
-                </p>
-            </div>
-            <div class="col-6 col-md-4">
-                <!-- Todavia no hay foto real de la toma desde adentro: va el recuadro con el icono
-                     para que las tres tomas se lean como una serie. Color fijo y no una variable
-                     CSS de Bootstrap: no existe en el frontend e invalida el borde entero.
-                     Solo el icono adentro: el texto va en el pie, igual que en las otras dos. -->
-                <div class="rounded d-flex align-items-center justify-content-center text-muted mb-1"
-                     style="aspect-ratio: 12 / 5; border: 2px dashed #ced4da;">
-                    <i class="fa fa-camera fa-2x" role="img"/>
+                <div class="position-relative mb-1">
+                    <img src="/website_sale_installation_appointment/static/src/img/photo_ok_front.jpg"
+                         alt="Front of the door, with the handle"
+                         class="w-100 rounded border" style="aspect-ratio: 3 / 4; object-fit: cover;"/>
+                    <span class="badge bg-success position-absolute top-0 end-0 m-1">
+                        <i class="fa fa-check" role="img"/>
+                    </span>
                 </div>
-                <p class="small text-muted mb-0">
-                    From the inside, showing the whole lock and the handle.
-                </p>
+                <p class="small text-muted mb-0">Front of the door, with the handle.</p>
             </div>
             <div class="col-6 col-md-4">
-                <img src="/website_sale_installation_appointment/static/src/img/installation_example_door_edge.jpg"
-                     alt="The door edge, where the lock sits"
-                     class="w-100 rounded border mb-1" style="aspect-ratio: 12 / 5; object-fit: cover;"/>
-                <p class="small text-muted mb-0">
-                    The door edge, where the lock sits, with the door open.
-                </p>
+                <div class="position-relative mb-1">
+                    <img src="/website_sale_installation_appointment/static/src/img/photo_ok_edge.jpg"
+                         alt="Door edge (thickness)"
+                         class="w-100 rounded border" style="aspect-ratio: 3 / 4; object-fit: cover;"/>
+                    <span class="badge bg-success position-absolute top-0 end-0 m-1">
+                        <i class="fa fa-check" role="img"/>
+                    </span>
+                </div>
+                <p class="small text-muted mb-0">Door edge (thickness).</p>
             </div>
+            <div class="col-6 col-md-4">
+                <div class="position-relative mb-1">
+                    <img src="/website_sale_installation_appointment/static/src/img/photo_ok_frame.jpg"
+                         alt="Door frame"
+                         class="w-100 rounded border" style="aspect-ratio: 3 / 4; object-fit: cover;"/>
+                    <span class="badge bg-success position-absolute top-0 end-0 m-1">
+                        <i class="fa fa-check" role="img"/>
+                    </span>
+                </div>
+                <p class="small text-muted mb-0">Door frame.</p>
+            </div>
+        </div>
+        <div class="row g-3 mb-3">
+            <div class="col-6 col-md-4">
+                <div class="position-relative mb-1">
+                    <img src="/website_sale_installation_appointment/static/src/img/photo_bad_blurry.jpg"
+                         alt="Blurry or dark photo (not accepted)"
+                         class="w-100 rounded border" style="aspect-ratio: 3 / 4; object-fit: cover;"/>
+                    <span class="badge bg-danger position-absolute top-0 end-0 m-1">
+                        <i class="fa fa-times" role="img"/>
+                    </span>
+                </div>
+                <p class="small text-muted mb-0">Blurry or too dark.</p>
+            </div>
+            <div class="col-6 col-md-4">
+                <div class="position-relative mb-1">
+                    <img src="/website_sale_installation_appointment/static/src/img/photo_bad_cropped.jpg"
+                         alt="Cropped photo (not accepted)"
+                         class="w-100 rounded border" style="aspect-ratio: 3 / 4; object-fit: cover;"/>
+                    <span class="badge bg-danger position-absolute top-0 end-0 m-1">
+                        <i class="fa fa-times" role="img"/>
+                    </span>
+                </div>
+                <p class="small text-muted mb-0">Cropped, missing part of the door.</p>
+            </div>
+            <div class="col-6 col-md-4">
+                <div class="position-relative mb-1">
+                    <img src="/website_sale_installation_appointment/static/src/img/photo_bad_obstructed.jpg"
+                         alt="Obstructed photo (not accepted)"
+                         class="w-100 rounded border" style="aspect-ratio: 3 / 4; object-fit: cover;"/>
+                    <span class="badge bg-danger position-absolute top-0 end-0 m-1">
+                        <i class="fa fa-times" role="img"/>
+                    </span>
+                </div>
+                <p class="small text-muted mb-0">Obstructed by a hand.</p>
+            </div>
+        </div>
         </div>
     </template>
 
@@ -103,143 +148,305 @@
             </t>
 
             <div id="shop_installation">
-                <h4 class="mb-1">Let's get your installation ready</h4>
-                <p class="text-muted">We need these two things before confirming your appointment.</p>
+                <h4 class="mb-1 o_not_editable">Let's get your installation ready</h4>
+                <p class="text-muted o_not_editable">
+                    Three steps. Each one opens when you finish the previous one.
+                </p>
 
-                <!-- Que tiene que saber el cliente antes de agendar. Sale de `message_intro` del
-                     tipo de cita (campo NATIVO, traducible, que el funcional edita desde el backend
-                     o en linea sobre la propia pagina) y es el MISMO texto que el link muestra
-                     antes del calendario. Por tipo de cita a proposito: el del eCommerce cobra
-                     online y el del link cobra el dia del turno, asi que las condiciones difieren.
-                     Vacio -> el checklist por defecto del modulo, adaptado de la guia historica en
-                     JotForm que este paso reemplaza (sin las condiciones de pago en efectivo del
-                     JotForm original: aca el pago es online). -->
-                <div t-if="not is_html_empty(appointment_type.message_intro)"
-                     class="alert alert-light border mb-4" t-field="appointment_type.message_intro"/>
-                <div t-else="" class="alert alert-light border mb-4">
-                    <h6 class="alert-heading">Before you schedule</h6>
-                    <ul class="mb-0 ps-3">
-                        <li t-if="not order.carrier_id.includes_free_batteries">
-                            You'll need 4 or 8 AA/AAA batteries (depending on your model) on
-                            installation day — without them the device can't be set up.
-                        </li>
-                        <li>
-                            Your address must be complete (street, number, and floor/apartment if
-                            applicable).
-                        </li>
-                        <li>
-                            ⏳ Installation duration: set aside between 2 and 4 hours (it varies
-                            depending on the complexity of the door).
-                        </li>
-                        <li>The warranty covers 1 year against factory defects.</li>
-                    </ul>
-                </div>
-
-                <!-- Aviso de pilas incluidas (D31 + D41): FUERA del par t-if/t-else de arriba, no
-                     entre medio (QWeb rompe al cargar la vista si se anida ahi). Se ve tambien
-                     cuando el funcional cargo message_intro (el t-else de arriba no se pinta en
-                     ese caso, que es justo el escenario que el diseño anterior fallaba). Clase
-                     o_not_editable: es texto plano en una pagina editable — si el funcional lo
-                     toca desde el editor web, Odoo crea una copia COW por sitio que congela este
-                     aviso sin que ningun deploy lo reponga (D42). Un solo nodo de texto: el .po
-                     suma exactamente una entrada nueva. -->
-                <div t-if="order.carrier_id.includes_free_batteries"
-                     class="alert alert-success o_not_editable mb-4">
-                    The batteries your lock needs are included with your shipping method — no
-                    extra charge.
-                </div>
-
+                <!-- Solo quedan aca los errores de SUBMIT que no pertenecen a ningun bloque
+                     (archivo que no es imagen, > 10 MB, mas de 10 fotos): los que SI son de
+                     instalacion (direccion / turno / fotos) se leen en la razon del candado del
+                     bloque que los resuelve (D52, "un mensaje, un solo lugar": ya no hay un
+                     alert-info aparte repitiendolos arriba). -->
                 <div t-if="warnings" class="alert alert-warning" role="alert">
                     <div t-foreach="warnings" t-as="warning" t-key="warning_index" t-out="warning"/>
                 </div>
-                <div t-if="errors" class="alert alert-info" role="status">
-                    <div t-foreach="errors" t-as="error" t-key="error_index" t-out="error"/>
-                </div>
 
-                <!-- La guia de medidas ya NO tiene tarjeta propia aca: los diagramas viven en el
-                     formulario del turno, pegados a la pregunta (ver installation_measure_guide).
-                     Sin imagenes esta tarjeta era un recordatorio suelto, asi que se numeran dos
-                     pasos, no tres. -->
+                <!-- Acordeon de 3 bloques (D44): se ven los tres desde el inicio, el estado de
+                     cada uno lo calcula el SERVIDOR (order._get_installation_block_states()), la
+                     plantilla solo pinta. Bootstrap "collapse": ya viene en web.assets_frontend,
+                     sin JS propio. data-bs-parent: un solo bloque abierto a la vez. -->
+                <!-- o_not_editable a nivel contenedor (D42/T07(b)): cubre TODA la prosa estatica
+                     de los 3 bloques (encabezados, razones del candado, avisos, etc.) sin tener
+                     que marcar cada elemento suelto. Quedan afuera —y siguen editables— el
+                     `t-field` de `message_intro` (Paso 2) y el `t-call` de
+                     `installation_photos_message` (que trae su propio `t-field`), asi como el
+                     `oe_structure` de arriba: son campos/snippets, no plantilla. -->
+                <div class="accordion o_not_editable" id="installation_accordion">
 
-                <!-- 1. Dia y hora: se delega en la pagina nativa de la cita. -->
-                <div class="card mb-4">
-                    <div class="card-body">
-                        <h5 class="card-title">1. Pick the day and time</h5>
-                        <t t-if="installation_slot_label">
-                            <p class="mb-2">
-                                <i class="fa fa-calendar-check-o me-2" role="img"/>
-                                <span t-out="installation_slot_label"/>
-                            </p>
-                            <a t-attf-href="/appointment/{{appointment_type.id}}"
-                               class="btn btn-light btn-sm">Change</a>
-                        </t>
-                        <t t-else="">
-                            <p class="text-muted">
-                                Choose the day and time when our crew will do the installation.
-                            </p>
-                            <a t-attf-href="/appointment/{{appointment_type.id}}"
-                               class="btn btn-primary" name="schedule_installation">
-                                Schedule the installation<i class="fa fa-angle-right ms-2" role="img"/>
-                            </a>
-                        </t>
-                    </div>
-                </div>
-
-                <!-- 2. Fotos del lugar. El form se envia solo al elegir los archivos (ver
-                     static/src/js/installation_photos.js); el boton queda igual para quien no
-                     tenga JS. -->
-                <form action="/shop/installation/submit" method="post"
-                      enctype="multipart/form-data" data-installation-photos="1">
-                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
-                    <div class="card mb-4">
-                        <div class="card-body">
-                            <h5 class="card-title">2. Upload photos of the site</h5>
-                            <t t-call="website_sale_installation_appointment.installation_photos_message"/>
-                            <t t-call="website_sale_installation_appointment.installation_photo_examples"/>
-
-                            <!-- Fotos ya subidas: se pueden quitar antes de pagar. -->
-                            <div t-if="installation_photos" class="row g-2 mb-3">
-                                <div t-foreach="installation_photos" t-as="photo" t-key="photo['id']"
-                                     class="col-4 col-md-3">
-                                    <div class="border rounded p-1 h-100 d-flex flex-column">
-                                        <img t-att-src="photo['url']" t-att-alt="photo['name']"
-                                             class="img-fluid rounded mb-1"/>
-                                        <button type="submit" class="btn btn-link btn-sm text-danger p-0 mt-auto"
-                                                name="remove_photo_id" t-att-value="photo['id']">
-                                            Remove
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <label for="installation_photos" class="form-label">
-                                Photos of the installation site
-                            </label>
-                            <input type="file" id="installation_photos" name="installation_photos"
-                                   class="form-control" multiple="multiple" accept="image/*"/>
-                            <small class="form-text text-muted">
-                                <span>Images only. They help the crew know what to expect at the installation site.</span>
-                                <span class="d-block">Maximum: <span t-out="max_photos"/></span>
-                                <span class="d-block" t-if="min_photos">
-                                    Uploaded so far: <span t-out="photo_count"/> of <span t-out="min_photos"/>
+                    <!-- Paso 1 · Installation address (D45/D46/D47/D48). NUNCA queda "locked":
+                         _get_installation_block_states() solo le da "done" o "todo". -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button type="button"
+                                    t-attf-class="accordion-button o_not_editable#{'' if block_states['open'] == 'address' else ' collapsed'}"
+                                    data-bs-toggle="collapse" data-bs-target="#installation_step_address"
+                                    t-att-aria-expanded="'true' if block_states['open'] == 'address' else 'false'"
+                                    aria-controls="installation_step_address">
+                                <span class="me-2">
+                                    <i t-if="block_states['address'] == 'done'"
+                                       class="fa fa-check-circle text-success" role="img"/>
+                                    <span t-else="" class="badge rounded-pill bg-secondary">1</span>
                                 </span>
-                            </small>
-                            <div class="text-muted mt-2 d-none" data-installation-photos-feedback="1"/>
+                                <span>
+                                    <strong>Step 1 · Installation address</strong>
+                                    <t t-if="block_states['address'] == 'done' and not installation_address_missing">
+                                        <br/>
+                                        <small class="text-muted" style="white-space: pre-line;">
+                                            <t t-out="installation_address._display_address(without_company=True)"/>
+                                            <t t-if="order.partner_shipping_id.between_streets">
+                                                — <t t-out="order.partner_shipping_id.between_streets"/>
+                                            </t>
+                                        </small>
+                                    </t>
+                                </span>
+                            </button>
+                        </h2>
+                        <div id="installation_step_address"
+                             t-attf-class="accordion-collapse collapse#{' show' if block_states['open'] == 'address' else ''}"
+                             data-bs-parent="#installation_accordion">
+                            <div class="accordion-body">
+                                <!-- Carrito anonimo (o, defensivamente, sin partner_shipping_id
+                                     todavia): en LUGAR del resumen y del form, un aviso para
+                                     cargar la direccion primero. Nunca se muestra el partner
+                                     publico compartido ni un form que escribiria sobre el. -->
+                                <t t-if="installation_address_missing">
+                                    <div class="alert alert-warning mb-0">
+                                        Please load your delivery address first.
+                                        <a href="/shop/address" class="alert-link">Add your address</a>
+                                    </div>
+                                </t>
+                                <t t-else="">
+                                    <p class="mb-2" style="white-space: pre-line;">
+                                        <strong t-out="installation_address.name"/><br/>
+                                        <span t-out="installation_address._display_address(without_company=True)"/>
+                                    </p>
+                                    <a t-att-href="installation_address_edit_url" class="btn btn-link btn-sm ps-0 mb-3">
+                                        <i class="fa fa-pencil me-1" role="img"/>Edit address
+                                    </a>
+                                    <form action="/shop/installation/submit" method="post">
+                                        <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                        <div class="mb-3">
+                                            <label for="between_streets" class="form-label">Between streets</label>
+                                            <input type="text" id="between_streets" name="between_streets"
+                                                   class="form-control" placeholder="e.g. Peru and Chile"
+                                                   t-att-value="order.partner_shipping_id.between_streets"/>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="installation_notes" class="form-label">Notes for the installer</label>
+                                            <textarea id="installation_notes" name="installation_notes"
+                                                      class="form-control" rows="2"
+                                                      placeholder="e.g. black gate, ring the ground floor bell, call before going up"
+                                                      t-out="order.installation_notes"/>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary"
+                                                name="confirm_installation_address" value="1">
+                                            Confirm address
+                                        </button>
+                                    </form>
+                                </t>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="d-flex justify-content-between align-items-center">
-                        <a t-if="previous_website_checkout_step"
-                           t-att-href="previous_website_checkout_step.step_href"
-                           class="btn btn-light">
-                            <i class="fa fa-angle-left me-2" role="img"/>
-                            <span t-field="previous_website_checkout_step.back_button_label"/>
-                        </a>
-                        <button type="submit" class="btn btn-primary" name="installation_continue">
-                            Continue<i class="fa fa-angle-right ms-2" role="img"/>
-                        </button>
+                    <!-- Paso 2 · Appointment and photos. "locked" mientras la direccion no este
+                         confirmada (D44/D48/RB29): sin cuerpo, no hay boton de agendar ni input
+                         de fotos en el HTML. -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button type="button"
+                                    t-attf-class="accordion-button o_not_editable#{'' if block_states['open'] == 'schedule' else ' collapsed'}"
+                                    t-att-disabled="'disabled' if block_states['schedule'] == 'locked' else None"
+                                    t-att-data-bs-toggle="None if block_states['schedule'] == 'locked' else 'collapse'"
+                                    data-bs-target="#installation_step_schedule"
+                                    t-att-aria-expanded="'true' if block_states['open'] == 'schedule' else 'false'"
+                                    aria-controls="installation_step_schedule">
+                                <span class="me-2">
+                                    <i t-if="block_states['schedule'] == 'done'"
+                                       class="fa fa-check-circle text-success" role="img"/>
+                                    <i t-elif="block_states['schedule'] == 'locked'"
+                                       class="fa fa-lock text-muted" role="img"/>
+                                    <span t-else="" class="badge rounded-pill bg-secondary">2</span>
+                                </span>
+                                <span>
+                                    <strong>Step 2 · Appointment and photos</strong>
+                                    <t t-if="block_states['schedule'] == 'locked'">
+                                        <br/><small class="text-muted">Complete step 1 first.</small>
+                                    </t>
+                                    <t t-elif="block_states['schedule'] == 'done'">
+                                        <br/>
+                                        <small class="text-muted">
+                                            <span t-out="installation_slot_label"/> ·
+                                            <span t-out="photo_count"/>/<span t-out="min_photos"/> photos
+                                        </small>
+                                    </t>
+                                </span>
+                            </button>
+                        </h2>
+                        <div t-if="block_states['schedule'] != 'locked'" id="installation_step_schedule"
+                             t-attf-class="accordion-collapse collapse#{' show' if block_states['open'] == 'schedule' else ''}"
+                             data-bs-parent="#installation_accordion">
+                            <div class="accordion-body">
+                                <!-- Que tiene que saber el cliente antes de agendar. Sale de
+                                     `message_intro` del tipo de cita; vacio -> NO se pinta ningun
+                                     checklist por defecto (D52/CA35: los avisos genericos ahora
+                                     estan repartidos por bloque, mas abajo). -->
+                                <div t-if="not is_html_empty(appointment_type.message_intro)"
+                                     class="alert alert-light border mb-3" t-field="appointment_type.message_intro"/>
+                                <p class="text-muted o_not_editable">
+                                    ⏳ Installation duration: set aside between 2 and 4 hours (it
+                                    varies depending on the complexity of the door).
+                                </p>
+
+                                <h6 class="mb-2 o_not_editable">Pick the day and time</h6>
+                                <div class="mb-4">
+                                    <t t-if="installation_slot_label">
+                                        <p class="mb-2">
+                                            <i class="fa fa-calendar-check-o me-2" role="img"/>
+                                            <span t-out="installation_slot_label"/>
+                                        </p>
+                                        <a t-attf-href="/appointment/{{appointment_type.id}}"
+                                           class="btn btn-light btn-sm">Change</a>
+                                    </t>
+                                    <t t-else="">
+                                        <p class="text-muted">
+                                            Choose the day and time when our crew will do the installation.
+                                        </p>
+                                        <a t-attf-href="/appointment/{{appointment_type.id}}"
+                                           class="btn btn-primary mt-2" name="schedule_installation">
+                                            Schedule the installation<i class="fa fa-angle-right ms-2" role="img"/>
+                                        </a>
+                                    </t>
+                                </div>
+
+                                <h6 class="mb-2 o_not_editable">Photos of the installation site</h6>
+                                <!-- El form se envia solo al elegir los archivos (ver
+                                     static/src/js/installation_photos.js); el boton queda igual
+                                     para quien no tenga JS. stay_on_step viaja SIEMPRE (antes lo
+                                     inyectaba solo el JS): la unica salida hacia el pago vive en
+                                     el Paso 3. -->
+                                <form action="/shop/installation/submit" method="post"
+                                      enctype="multipart/form-data" data-installation-photos="1">
+                                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                    <input type="hidden" name="stay_on_step" value="1"/>
+
+                                    <t t-call="website_sale_installation_appointment.installation_photos_message"/>
+                                    <t t-call="website_sale_installation_appointment.installation_photo_examples"/>
+
+                                    <!-- Fotos ya subidas: se pueden quitar antes de pagar. -->
+                                    <div t-if="installation_photos" class="row g-2 mb-3">
+                                        <div t-foreach="installation_photos" t-as="photo" t-key="photo['id']"
+                                             class="col-4 col-md-3">
+                                            <div class="border rounded p-1 h-100 d-flex flex-column">
+                                                <img t-att-src="photo['url']" t-att-alt="photo['name']"
+                                                     class="img-fluid rounded mb-1"/>
+                                                <button type="submit" class="btn btn-link btn-sm text-danger p-0 mt-auto"
+                                                        name="remove_photo_id" t-att-value="photo['id']">
+                                                    Remove
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <label for="installation_photos" class="form-label">
+                                        Photos of the installation site
+                                    </label>
+                                    <input type="file" id="installation_photos" name="installation_photos"
+                                           class="form-control" multiple="multiple" accept="image/*"/>
+                                    <small class="form-text text-muted">
+                                        <span>Images only. They help the crew know what to expect at the installation site.</span>
+                                        <span class="d-block">Maximum: <span t-out="max_photos"/></span>
+                                        <span class="d-block" t-if="min_photos">
+                                            Uploaded so far: <span t-out="photo_count"/> of <span t-out="min_photos"/>
+                                        </span>
+                                    </small>
+                                    <div t-if="min_photos" class="progress mt-2" style="height: 6px;">
+                                        <div class="progress-bar" role="progressbar"
+                                             t-attf-style="width: #{min(100, int(photo_count * 100 / min_photos))}%"
+                                             t-att-aria-valuenow="photo_count" aria-valuemin="0"
+                                             t-att-aria-valuemax="min_photos"/>
+                                    </div>
+                                    <div class="text-muted mt-2 d-none" data-installation-photos-feedback="1"/>
+
+                                    <div class="mt-3">
+                                        <button type="submit" class="btn btn-primary" name="installation_continue">
+                                            Upload photos<i class="fa fa-angle-right ms-2" role="img"/>
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
                     </div>
-                </form>
+
+                    <!-- Paso 3 · <rotulo del paso siguiente del core> (D44: NO es una constante
+                         "Payment": puede colarse "Extra Info" entre el 400 y el 999). "locked"
+                         mientras _get_installation_errors() no este vacio ([ASUNCION] D50). -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button type="button"
+                                    t-attf-class="accordion-button o_not_editable#{'' if block_states['open'] == 'payment' else ' collapsed'}"
+                                    t-att-disabled="'disabled' if block_states['payment'] == 'locked' else None"
+                                    t-att-data-bs-toggle="None if block_states['payment'] == 'locked' else 'collapse'"
+                                    data-bs-target="#installation_step_payment"
+                                    t-att-aria-expanded="'true' if block_states['open'] == 'payment' else 'false'"
+                                    aria-controls="installation_step_payment">
+                                <span class="me-2">
+                                    <i t-if="block_states['payment'] == 'locked'"
+                                       class="fa fa-lock text-muted" role="img"/>
+                                    <span t-else="" class="badge rounded-pill bg-secondary">3</span>
+                                </span>
+                                <span>
+                                    <strong>
+                                        Step 3 ·
+                                        <t t-if="next_website_checkout_step" t-out="next_website_checkout_step.name"/>
+                                        <t t-else="">Payment</t>
+                                    </strong>
+                                    <t t-if="block_states['payment'] == 'locked'">
+                                        <t t-foreach="errors" t-as="error" t-key="error_index">
+                                            <br/><small class="text-muted" t-out="error"/>
+                                        </t>
+                                    </t>
+                                </span>
+                            </button>
+                        </h2>
+                        <div t-if="block_states['payment'] != 'locked'" id="installation_step_payment"
+                             t-attf-class="accordion-collapse collapse#{' show' if block_states['open'] == 'payment' else ''}"
+                             data-bs-parent="#installation_accordion">
+                            <div class="accordion-body">
+                                <p class="text-muted o_not_editable">
+                                    Payment is online, right now, to confirm your installation.
+                                </p>
+                                <a t-att-href="next_website_checkout_step_href" class="btn btn-primary"
+                                   name="website_sale_main_button">
+                                    Continue<i class="fa fa-angle-right ms-2" role="img"/>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Renglon corto al pie (D52): garantia + pilas, mutuamente excluyentes POR
+                     CONSTRUCCION (una sola linea con t-if/t-else: el defecto que vigilaba CA37
+                     (las dos versiones conviviendo) deja de ser alcanzable. o_not_editable:
+                     tocarlo desde el editor web congela una copia COW por sitio (D42). -->
+                <p class="text-muted small mt-3 o_not_editable">
+                    The warranty covers 1 year against factory defects.
+                    <t t-if="order.carrier_id.includes_free_batteries">
+                        The batteries your lock needs are included with your shipping method — no extra charge.
+                    </t>
+                    <t t-else="">
+                        You'll need 4 or 8 AA/AAA batteries (depending on your model) on installation day.
+                    </t>
+                </p>
+
+                <div class="mt-3">
+                    <a t-if="previous_website_checkout_step"
+                       t-att-href="previous_website_checkout_step.step_href"
+                       class="btn btn-light">
+                        <i class="fa fa-angle-left me-2" role="img"/>
+                        <span t-field="previous_website_checkout_step.back_button_label"/>
+                    </a>
+                </div>
             </div>
         </t>
     </template>

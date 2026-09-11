@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from markupsafe import Markup
+
 from odoo import fields, models
 
 
@@ -40,6 +42,19 @@ class SaleOrderLine(models.Model):
         if self._is_installation_booking_line():
             appointment_type = self.order_id.carrier_id.installation_appointment_type_id
             values["name"] = "%s - %s" % (self.order_id.name or "", appointment_type.name)
+            # Entre calles + notas para el instalador (D47): la direccion ya la pone el nativo
+            # (partner_shipping_id) cuando el proyecto es FSM, asi que solo se antepone el texto.
+            notes = self.order_id._get_installation_task_notes()
+            if notes:
+                description = values.get("description") or ""
+                # Markup(description): SIN esto, `Markup.__add__(str)` escapa el operando derecho
+                # y se ve el codigo fuente del bloque de preguntas y respuestas del turno en vez
+                # del HTML. Ese `description` NO es texto crudo del cliente: ya es HTML armado por
+                # el propio core (`sale_project`/`website_appointment_sale`), asi que envolverlo en
+                # Markup() no reintroduce riesgo de XSS, solo evita el doble escapado.
+                values["description"] = (
+                    notes + Markup("<br/>") + Markup(description) if description else notes
+                )
         return values
 
     # === FREE BATTERIES: PRICE / EDITION DEFENSES === #

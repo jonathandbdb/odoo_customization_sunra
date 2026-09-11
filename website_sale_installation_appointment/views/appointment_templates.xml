@@ -74,9 +74,12 @@
              pintan el mismo `t-field` y el xpath resuelve por el primero que encuentra, asi que al
              reves este `attributes` caeria sobre el bloque nuevo. La clase `o_appointment_intro`
              del nativo viaja en un `t-attf-class` (es dinamica), por eso `hasclass()` no la ve y se
-             ancla por el `t-field`. -->
+             ancla por el `t-field`.
+             D54: se apaga en DOS casos ademas del tipo del link: tambien cuando el visitante
+             viene del checkout (_is_installation_checkout_source()), porque ya lo leyo en el
+             Paso 2 del acordeon. -->
         <xpath expr="//div[@t-field='appointment_type.message_intro']/.." position="attributes">
-            <attribute name="t-if">not appointment_type.installation_fsm_project_id</attribute>
+            <attribute name="t-if">not appointment_type.installation_fsm_project_id and not appointment_type._is_installation_checkout_source()</attribute>
         </xpath>
         <xpath expr="//div[hasclass('o_appointment_info_main')]" position="before">
             <div t-if="appointment_type.installation_fsm_project_id and not is_html_empty(appointment_type.message_intro)"

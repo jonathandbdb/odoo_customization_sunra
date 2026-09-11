@@ -104,9 +104,14 @@ class WebsiteSaleInstallation(WebsiteSale):
         if not order_sudo._is_installation_required():
             return request.redirect("/shop/payment")
 
+        # isdigit(): un POST publico con un valor no numerico (o vacio) no debe tirar un
+        # ValueError sin capturar (500); se lo trata igual que si no vino el parametro.
         remove_photo_id = post.get("remove_photo_id")
-        if remove_photo_id:
+        if remove_photo_id and remove_photo_id.isdigit():
             return self.shop_installation_photo_remove(int(remove_photo_id))
+
+        if post.get("confirm_installation_address"):
+            return self._save_installation_address(order_sudo, post)
 
         warnings = self._save_installation_photos(
             order_sudo, request.httprequest.files.getlist("installation_photos")
@@ -136,6 +141,38 @@ class WebsiteSaleInstallation(WebsiteSale):
         photo = order_sudo.installation_photo_ids.filtered(lambda att: att.id == attachment_id)
         if photo:
             photo.sudo().unlink()
+        return request.redirect(INSTALLATION_STEP_HREF)
+
+    def _save_installation_address(self, order_sudo, post):
+        """ Store the Step 1 data (between streets + notes) and close the block (D48/D49).
+
+        :param order_sudo: the current cart (sudo)
+        :param post: raw POST values
+        :return: HTTP response (redirect back to the installation step)
+        """
+        # Guarda de carrito anonimo (obligatoria): /shop/installation es auth="public" y solo
+        # valida el carrito (_check_cart), asi que en un carrito anonimo partner_shipping_id es
+        # el PARTNER PUBLICO COMPARTIDO de la base. Se corta antes de escribir (y, defensivamente,
+        # si por algun motivo no hubiera direccion de entrega todavia: Direccion es sequence 250
+        # y este paso, 400, no deberia pasar, pero nunca se escribe sobre un partner vacio).
+        if order_sudo._is_anonymous_cart() or not order_sudo.partner_shipping_id:
+            return request.redirect(INSTALLATION_STEP_HREF)
+
+        partner_sudo = order_sudo.partner_shipping_id.sudo()
+        # sudo() acotado a un solo campo (nunca el post completo): el visitante publico no
+        # escribe res.partner, y between_streets se trunca server-side a 100 caracteres.
+        between_streets = (post.get("between_streets") or "").strip()[:100]
+        # Solo escribe si cambio (D48 conservador): re-confirmar sin haber tocado el campo no debe
+        # disparar el reset de installation_address_confirmed de ResPartner.write() en OTROS
+        # carritos draft del mismo partner (este pedido se re-confirma explicitamente abajo).
+        if between_streets != partner_sudo.between_streets:
+            partner_sudo.write({"between_streets": between_streets})
+        # Despues del partner: el write() de ResPartner apagaria la confirmacion si se hiciera
+        # al reves.
+        order_sudo.sudo().write({
+            "installation_notes": (post.get("installation_notes") or "").strip()[:1000],
+            "installation_address_confirmed": True,
+        })
         return request.redirect(INSTALLATION_STEP_HREF)
 
     # === OVERRIDES === #
@@ -174,6 +211,10 @@ class WebsiteSaleInstallation(WebsiteSale):
         :return: dict of values for the template
         :rtype: dict
         """
+        # Carrito anonimo (o, defensivamente, sin direccion de entrega todavia): el Paso 1 no
+        # puede mostrar el resumen ni el formulario de un partner_shipping_id vacio o publico
+        # compartido (ver _save_installation_address()).
+        address_missing = order_sudo._is_anonymous_cart() or not order_sudo.partner_shipping_id
         values = {
             "website_sale_order": order_sudo,
             "order": order_sudo,
@@ -186,6 +227,13 @@ class WebsiteSaleInstallation(WebsiteSale):
             "min_photos": order_sudo.carrier_id.installation_min_photos,
             "photo_count": order_sudo.installation_photo_count,
             "show_navigation_button": False,
+            "block_states": order_sudo._get_installation_block_states(),
+            "installation_address": order_sudo.partner_shipping_id,
+            "installation_address_missing": address_missing,
+            "installation_address_edit_url": (
+                "/shop/address?partner_id=%s&address_type=delivery&callback=%s"
+                % (order_sudo.partner_shipping_id.id, INSTALLATION_STEP_HREF)
+            ),
         }
         values.update(request.website._get_checkout_step_values())
         return values

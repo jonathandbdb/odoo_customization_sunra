@@ -16,6 +16,13 @@
                             <field name="installation_appointment_type_id"/>
                             <field name="installation_booking_id" invisible="not installation_booking_id"/>
                             <field name="installation_event_id" invisible="not installation_event_id"/>
+                            <!-- readonly: lo setea el cliente en el checkout (boton "Confirm
+                                 address" del Paso 1); el backoffice solo lo mira. -->
+                            <field name="installation_address_confirmed" readonly="1"/>
+                        </group>
+                        <group name="installation_notes">
+                            <field name="installation_notes" nolabel="1" colspan="2"
+                                   placeholder="Notes the customer left for the installer..."/>
                         </group>
                     </group>
                     <separator string="Photos of the installation site"/>

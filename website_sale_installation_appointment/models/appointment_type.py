@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from odoo import fields, models
+from odoo.http import request
 
 
 class AppointmentType(models.Model):
@@ -36,5 +37,22 @@ class AppointmentType(models.Model):
              "appointment form of the link shared by Nokey. Leave empty to show the default text of "
              "the module.",
     )
+
+    def _is_installation_checkout_source(self):
+        """ Whether the visitor reached the appointment page FROM the checkout (D54).
+
+        Used so the checkout path does not repeat the intro the customer already read in Step 2
+        of the installation step. Based on `request.cart` (not a URL parameter): between the
+        "Schedule" button and the appointment form the core navigates on its own
+        (`/appointment/<id>` -> `/appointment/<id>/info?...`), so a parameter of our own would be
+        lost along the way.
+
+        :rtype: bool
+        """
+        self.ensure_one()
+        # Mismo patron defensivo que website._get_allowed_steps_domain(): tambien puede correr
+        # fuera de un request web (ej. un cron o un test).
+        cart = getattr(request, "cart", None) if request else None
+        return bool(cart) and cart._is_installation_required() and cart.installation_appointment_type_id == self
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

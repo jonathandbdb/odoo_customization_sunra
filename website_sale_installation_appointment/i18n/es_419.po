@@ -42,29 +42,57 @@ msgstr "\"%(question)s\": el número de documento no es válido."
 #. odoo-python
 #: code:addons/website_sale_installation_appointment/models/product_template.py:0
 msgid "%(product)s cannot be configured as its own free battery product."
-msgstr "%(product)s no se puede configurar como su propio producto de pila incluida."
+msgstr ""
+"%(product)s no se puede configurar como su propio producto de pila incluida."
 
 #. module: website_sale_installation_appointment
 #: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation
-msgid "1. Pick the day and time"
-msgstr "1. Elegí el día y el horario"
+msgid "<br/><small class=\"text-muted\">Complete step 1 first.</small>"
+msgstr "<br/><small class=\"text-muted\">Completá el paso 1 primero.</small>"
 
 #. module: website_sale_installation_appointment
 #: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation
-msgid "2. Upload photos of the site"
-msgstr "2. Subí fotos del lugar"
+msgid "<i class=\"fa fa-pencil me-1\" role=\"img\"/>Edit address"
+msgstr "<i class=\"fa fa-pencil me-1\" role=\"img\"/>Editar dirección"
 
 #. module: website_sale_installation_appointment
 #: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation
 msgid ""
 "<span>Images only. They help the crew know what to expect at the "
 "installation site.</span>"
-msgstr "<span>Solo imágenes. Le sirven al equipo para saber con qué se va a encontrar en el lugar.</span>"
+msgstr ""
+"<span>Solo imágenes. Le sirven al equipo para saber con qué se va a "
+"encontrar en el lugar.</span>"
+
+#. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation
+msgid "<strong>Step 1 · Installation address</strong>"
+msgstr "<strong>Paso 1 · Dirección de instalación</strong>"
+
+#. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation
+msgid "<strong>Step 2 · Appointment and photos</strong>"
+msgstr "<strong>Paso 2 · Turno y fotos</strong>"
 
 #. module: website_sale_installation_appointment
 #: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation_measure_guide
 msgid "A) How thick is the door (width of the door edge)."
 msgstr "A) Qué tan gruesa es la puerta (el ancho del canto)."
+
+#. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation
+msgid "Add your address"
+msgstr "Agregá tu dirección"
+
+#. module: website_sale_installation_appointment
+#: model:ir.model.fields,help:website_sale_installation_appointment.field_sale_order__installation_notes
+msgid ""
+"Additional information for the crew about this particular installation (e.g."
+" gate code, doorbell, or timing constraints). Optional."
+msgstr ""
+"Información adicional para la cuadrilla sobre esta instalación en particular"
+" (por ejemplo, código del portón, timbre o restricciones de horario). "
+"Opcional."
 
 #. module: website_sale_installation_appointment
 #: model:ir.model.fields,help:website_sale_installation_appointment.field_delivery_carrier__includes_free_batteries
@@ -73,7 +101,10 @@ msgid ""
 "their cost is already covered by this shipping method. Do not repeat the "
 "request for batteries in the appointment type's checklist message if it "
 "applies."
-msgstr "Agrega a $0 las pilas configuradas en los productos del carrito, porque el costo ya está cubierto por este método de envío. Si el checklist del tipo de cita pide pilas, sacá ese punto para no repetirlo."
+msgstr ""
+"Agrega a $0 las pilas configuradas en los productos del carrito, porque el "
+"costo ya está cubierto por este método de envío. Si el checklist del tipo de"
+" cita pide pilas, sacá ese punto para no repetirlo."
 
 #. module: website_sale_installation_appointment
 #: model:ir.model.fields,field_description:website_sale_installation_appointment.field_appointment_question__answer_format
@@ -85,7 +116,9 @@ msgstr "Formato de la respuesta"
 msgid ""
 "Appointment created from the installation booking once the order is "
 "confirmed."
-msgstr "Cita creada a partir de la reserva de instalación cuando se confirma el pedido."
+msgstr ""
+"Cita creada a partir de la reserva de instalación cuando se confirma el "
+"pedido."
 
 #. module: website_sale_installation_appointment
 #: model:ir.model.fields,field_description:website_sale_installation_appointment.field_appointment_type__installation_request_photos
@@ -112,12 +145,32 @@ msgstr "Unidad de la pila"
 msgid ""
 "Battery product added to the order at no cost, but only when the chosen "
 "shipping method has 'Includes Free Batteries' enabled."
-msgstr "Producto de pila que se agrega al pedido sin cargo, pero solo si el método de envío elegido tiene tildado 'Incluye pilas sin cargo'."
+msgstr ""
+"Producto de pila que se agrega al pedido sin cargo, pero solo si el método "
+"de envío elegido tiene tildado 'Incluye pilas sin cargo'."
 
 #. module: website_sale_installation_appointment
+#: model:ir.model.fields,field_description:website_sale_installation_appointment.field_res_partner__between_streets
+#: model:ir.model.fields,field_description:website_sale_installation_appointment.field_res_users__between_streets
 #: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation
-msgid "Before you schedule"
-msgstr "Antes de agendar"
+msgid "Between streets"
+msgstr "Entre calles"
+
+#. module: website_sale_installation_appointment
+#. odoo-python
+#: code:addons/website_sale_installation_appointment/models/sale_order.py:0
+msgid "Between streets:"
+msgstr "Entre calles:"
+
+#. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation_photo_examples
+msgid "Blurry or dark photo (not accepted)"
+msgstr "Foto borrosa u oscura (no se acepta)"
+
+#. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation_photo_examples
+msgid "Blurry or too dark."
+msgstr "Borrosa u oscura."
 
 #. module: website_sale_installation_appointment
 #: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation
@@ -129,21 +182,33 @@ msgstr "Cambiar"
 msgid ""
 "Checks what the customer types before booking. Free text accepts anything; "
 "the other formats reject answers that are not a valid number, phone or ID."
-msgstr "Controla lo que escribe el cliente antes de reservar. Texto libre acepta cualquier cosa; los otros formatos rechazan respuestas que no sean un número, un teléfono o un documento válido."
+msgstr ""
+"Controla lo que escribe el cliente antes de reservar. Texto libre acepta "
+"cualquier cosa; los otros formatos rechazan respuestas que no sean un "
+"número, un teléfono o un documento válido."
 
 #. module: website_sale_installation_appointment
 #: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation
 msgid "Choose the day and time when our crew will do the installation."
-msgstr "Elegí el día y la hora en que nuestro equipo va a hacer la instalación."
+msgstr ""
+"Elegí el día y la hora en que nuestro equipo va a hacer la instalación."
 
 #. module: website_sale_installation_appointment
 #. odoo-python
 #: code:addons/website_sale_installation_appointment/models/product_template.py:0
 msgid ""
 "Configure both the free battery product and its quantity for %(product)s "
-"(the quantity is expressed in the battery product's own unit of measure), "
-"or leave both empty."
-msgstr "Configurá el producto de pila incluida y su cantidad para %(product)s (la cantidad se expresa en la unidad de medida del producto de pila), o dejá los dos vacíos."
+"(the quantity is expressed in the battery product's own unit of measure), or"
+" leave both empty."
+msgstr ""
+"Configurá el producto de pila incluida y su cantidad para %(product)s (la "
+"cantidad se expresa en la unidad de medida del producto de pila), o dejá los"
+" dos vacíos."
+
+#. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation
+msgid "Confirm address"
+msgstr "Confirmar dirección"
 
 #. module: website_sale_installation_appointment
 #: model:website.checkout.step,main_button_label:website_sale_installation_appointment.checkout_step_installation
@@ -156,9 +221,49 @@ msgid "Continue<i class=\"fa fa-angle-right ms-2\" role=\"img\"/>"
 msgstr "Continuar<i class=\"fa fa-angle-right ms-2\" role=\"img\"/>"
 
 #. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation_photo_examples
+msgid "Cropped photo (not accepted)"
+msgstr "Foto cortada (no se acepta)"
+
+#. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation_photo_examples
+msgid "Cropped, missing part of the door."
+msgstr "Cortada, falta parte de la puerta."
+
+#. module: website_sale_installation_appointment
+#: model:ir.model.fields,help:website_sale_installation_appointment.field_res_partner__between_streets
+#: model:ir.model.fields,help:website_sale_installation_appointment.field_res_users__between_streets
+msgid ""
+"Cross streets of the address, useful for the installer in areas without "
+"street numbering (e.g. \"Peru and Chile\"). Optional."
+msgstr ""
+"Entre calles de la dirección, útil para el instalador en zonas sin "
+"numeración de calle (por ejemplo, \"Perú y Chile\"). Opcional."
+
+#. module: website_sale_installation_appointment
 #: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.delivery_address_list
 msgid "Delivery address"
 msgstr "Dirección de entrega"
+
+#. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation_photo_examples
+msgid "Door edge (thickness)"
+msgstr "Canto de la puerta (espesor)"
+
+#. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation_photo_examples
+msgid "Door edge (thickness)."
+msgstr "Canto de la puerta (espesor)."
+
+#. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation_photo_examples
+msgid "Door frame"
+msgstr "Marco de la puerta"
+
+#. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation_photo_examples
+msgid "Door frame."
+msgstr "Marco de la puerta."
 
 #. module: website_sale_installation_appointment
 #. odoo-python
@@ -194,7 +299,9 @@ msgstr "Proyecto de Field Service"
 msgid ""
 "Field Service task generated for an installation booked outside the "
 "eCommerce."
-msgstr "Tarea de Field Service generada por una instalación agendada fuera del eCommerce."
+msgstr ""
+"Tarea de Field Service generada por una instalación agendada fuera del "
+"eCommerce."
 
 #. module: website_sale_installation_appointment
 #: model:ir.model.fields,help:website_sale_installation_appointment.field_appointment_type__installation_fsm_project_id
@@ -204,7 +311,12 @@ msgid ""
 "here creates a task in this Field Service project, so the crew has the job "
 "on their planning. Leave empty for appointment types that already create the"
 " task through a sales order."
-msgstr "Para los tipos de cita que se agendan SIN pasar por el eCommerce (el link que comparte Nokey cuando el cliente paga por fuera): la visita reservada acá crea una tarea en este proyecto de Field Service, así la cuadrilla la tiene en su planificación. Dejalo vacío en los tipos de cita cuya tarea ya la genera el pedido de venta."
+msgstr ""
+"Para los tipos de cita que se agendan SIN pasar por el eCommerce (el link "
+"que comparte Nokey cuando el cliente paga por fuera): la visita reservada "
+"acá crea una tarea en este proyecto de Field Service, así la cuadrilla la "
+"tiene en su planificación. Dejalo vacío en los tipos de cita cuya tarea ya "
+"la genera el pedido de venta."
 
 #. module: website_sale_installation_appointment
 #: model:ir.model.fields,field_description:website_sale_installation_appointment.field_product_template__free_battery_qty
@@ -223,13 +335,13 @@ msgstr "Texto libre"
 
 #. module: website_sale_installation_appointment
 #: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation_photo_examples
-msgid "From the inside, showing the whole lock and the handle."
-msgstr "Desde adentro, que se vea toda la cerradura y la manija."
+msgid "Front of the door, with the handle"
+msgstr "Frente de la puerta, con la manija"
 
 #. module: website_sale_installation_appointment
 #: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation_photo_examples
-msgid "From the outside, with the handle and the key cylinder in the frame."
-msgstr "Desde afuera, que se vean la manija y el cilindro de la llave."
+msgid "Front of the door, with the handle."
+msgstr "Frente de la puerta, con la manija."
 
 #. module: website_sale_installation_appointment
 #: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation_measure_guide
@@ -248,7 +360,10 @@ msgid ""
 "If set, this delivery method includes an installation: the customer must "
 "schedule a date and time (and upload photos of the installation site) before"
 " paying. Leave empty for regular delivery methods."
-msgstr "Si se define, este método de envío incluye instalación: el cliente tiene que agendar día y hora (y subir fotos del lugar) antes de pagar. Dejalo vacío en los métodos de envío normales."
+msgstr ""
+"Si se define, este método de envío incluye instalación: el cliente tiene que"
+" agendar día y hora (y subir fotos del lugar) antes de pagar. Dejalo vacío "
+"en los métodos de envío normales."
 
 #. module: website_sale_installation_appointment
 #. odoo-python
@@ -272,7 +387,8 @@ msgstr "Incluye pilas sin cargo"
 msgid ""
 "Indicates if the selected delivery method includes an installation to be "
 "scheduled."
-msgstr "Indica si el método de envío elegido incluye una instalación a agendar."
+msgstr ""
+"Indica si el método de envío elegido incluye una instalación a agendar."
 
 #. module: website_sale_installation_appointment
 #: model:website.checkout.step,name:website_sale_installation_appointment.checkout_step_installation
@@ -285,6 +401,11 @@ msgstr "Instalación"
 #: code:addons/website_sale_installation_appointment/models/calendar_event.py:0
 msgid "Installation - %(customer)s"
 msgstr "Instalación - %(customer)s"
+
+#. module: website_sale_installation_appointment
+#: model:ir.model.fields,field_description:website_sale_installation_appointment.field_sale_order__installation_address_confirmed
+msgid "Installation Address Confirmed"
+msgstr "Dirección de instalación confirmada"
 
 #. module: website_sale_installation_appointment
 #: model:ir.model.fields,field_description:website_sale_installation_appointment.field_sale_order__installation_event_id
@@ -318,6 +439,11 @@ msgid "Installation Required"
 msgstr "Requiere instalación"
 
 #. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.appointment_type_view_form
+msgid "Installation Site Photos"
+msgstr "Fotos del lugar de instalación"
+
+#. module: website_sale_installation_appointment
 #: model:ir.model.fields,field_description:website_sale_installation_appointment.field_calendar_event__installation_task_id
 msgid "Installation Task"
 msgstr "Tarea de instalación"
@@ -326,6 +452,17 @@ msgstr "Tarea de instalación"
 #: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.delivery_address_list
 msgid "Installation address"
 msgstr "Dirección de la instalación"
+
+#. module: website_sale_installation_appointment
+#: model:ir.model.fields,help:website_sale_installation_appointment.field_appointment_type__installation_photos_message
+msgid ""
+"Instructions shown above the photo upload, both in the eCommerce checkout "
+"and in the appointment form of the link shared by Nokey. Leave empty to show"
+" the default text of the module."
+msgstr ""
+"Consigna que se muestra arriba de la subida de fotos, tanto en el checkout "
+"del eCommerce como en el formulario de la cita del link que comparte Nokey. "
+"Vacío = se muestra el texto por defecto del módulo."
 
 #. module: website_sale_installation_appointment
 #: model:ir.model.fields,field_description:website_sale_installation_appointment.field_sale_order_line__is_free_battery_line
@@ -347,7 +484,9 @@ msgstr "Máximo:"
 msgid ""
 "Measure your door before answering: we ask for these two measurements\n"
 "                    below, and the photos should show the same spots."
-msgstr "Medí tu puerta antes de responder: te pedimos estas dos medidas más abajo, y las fotos tienen que mostrar los mismos puntos."
+msgstr ""
+"Medí tu puerta antes de responder: te pedimos estas dos medidas más abajo, y"
+" las fotos tienen que mostrar los mismos puntos."
 
 #. module: website_sale_installation_appointment
 #: model:ir.model.fields,field_description:website_sale_installation_appointment.field_delivery_carrier__installation_min_photos
@@ -364,7 +503,26 @@ msgstr "Mínimo de fotos del lugar"
 msgid ""
 "Minimum amount of photos of the installation site the customer must upload "
 "before paying. Set to 0 to make photos optional."
-msgstr "Cantidad mínima de fotos del lugar de instalación que el cliente tiene que subir antes de pagar. Poné 0 para que las fotos sean opcionales."
+msgstr ""
+"Cantidad mínima de fotos del lugar de instalación que el cliente tiene que "
+"subir antes de pagar. Poné 0 para que las fotos sean opcionales."
+
+#. module: website_sale_installation_appointment
+#: model:ir.model.fields,field_description:website_sale_installation_appointment.field_sale_order__installation_notes
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation
+msgid "Notes for the installer"
+msgstr "Indicaciones para el instalador"
+
+#. module: website_sale_installation_appointment
+#. odoo-python
+#: code:addons/website_sale_installation_appointment/models/sale_order.py:0
+msgid "Notes for the installer:"
+msgstr "Indicaciones para el instalador:"
+
+#. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.view_order_form
+msgid "Notes the customer left for the installer..."
+msgstr "Indicaciones que dejó el cliente para el instalador..."
 
 #. module: website_sale_installation_appointment
 #: model:ir.model.fields.selection,name:website_sale_installation_appointment.selection__appointment_question__answer_format__decimal
@@ -372,9 +530,30 @@ msgid "Number"
 msgstr "Número"
 
 #. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation_photo_examples
+msgid "Obstructed by a hand."
+msgstr "Tapada por una mano."
+
+#. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation_photo_examples
+msgid "Obstructed photo (not accepted)"
+msgstr "Foto tapada (no se acepta)"
+
+#. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation
+msgid "Payment"
+msgstr "Pago"
+
+#. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation
+msgid "Payment is online, right now, to confirm your installation."
+msgstr "El pago es online, ahora, para confirmar tu instalación."
+
+#. module: website_sale_installation_appointment
 #: model:ir.model.fields,help:website_sale_installation_appointment.field_sale_order__installation_booking_id
 msgid "Pending booking of the installation, before the order is confirmed."
-msgstr "Reserva pendiente de la instalación, antes de que se confirme el pedido."
+msgstr ""
+"Reserva pendiente de la instalación, antes de que se confirme el pedido."
 
 #. module: website_sale_installation_appointment
 #: model:ir.model.fields.selection,name:website_sale_installation_appointment.selection__appointment_question__answer_format__phone
@@ -398,14 +577,17 @@ msgstr "Fotos del lugar de instalación que envió el cliente."
 msgid ""
 "Photos of the installation site uploaded by the customer during the "
 "checkout."
-msgstr "Fotos del lugar de instalación que subió el cliente durante el checkout."
+msgstr ""
+"Fotos del lugar de instalación que subió el cliente durante el checkout."
 
 #. module: website_sale_installation_appointment
 #. odoo-python
 #: code:addons/website_sale_installation_appointment/models/sale_order.py:0
 msgid ""
 "Photos of the installation site uploaded by the customer on order %(order)s."
-msgstr "Fotos del lugar de instalación cargadas por el cliente en el pedido %(order)s."
+msgstr ""
+"Fotos del lugar de instalación cargadas por el cliente en el pedido "
+"%(order)s."
 
 #. module: website_sale_installation_appointment
 #: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.appointment_form
@@ -417,7 +599,24 @@ msgstr "Fotos del lugar"
 msgid ""
 "Photos required to book. 0 shows the upload box without blocking the "
 "booking."
-msgstr "Fotos necesarias para reservar. 0 muestra el campo sin bloquear la reserva."
+msgstr ""
+"Fotos necesarias para reservar. 0 muestra el campo sin bloquear la reserva."
+
+#. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation
+msgid "Pick the day and time"
+msgstr "Elegí el día y el horario"
+
+#. module: website_sale_installation_appointment
+#. odoo-python
+#: code:addons/website_sale_installation_appointment/models/sale_order.py:0
+msgid "Please confirm the installation address."
+msgstr "Confirmá la dirección de instalación."
+
+#. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation
+msgid "Please load your delivery address first."
+msgstr "Cargá primero tu dirección de entrega."
 
 #. module: website_sale_installation_appointment
 #. odoo-python
@@ -431,7 +630,9 @@ msgstr "Agendá el día y la hora de la instalación."
 msgid ""
 "Please upload at least %(min_photos)s photo(s) of the installation site "
 "(%(missing)s missing)."
-msgstr "Subí al menos %(min_photos)s foto(s) del lugar de instalación (faltan %(missing)s)."
+msgstr ""
+"Subí al menos %(min_photos)s foto(s) del lugar de instalación (faltan "
+"%(missing)s)."
 
 #. module: website_sale_installation_appointment
 #. odoo-python
@@ -452,21 +653,27 @@ msgstr "No se pudo otorgar el acceso al portal automáticamente al cliente."
 msgid ""
 "Portal access was not granted automatically: the customer has an archived "
 "user."
-msgstr "No se otorgó el acceso al portal automáticamente: el cliente tiene un usuario archivado."
+msgstr ""
+"No se otorgó el acceso al portal automáticamente: el cliente tiene un "
+"usuario archivado."
 
 #. module: website_sale_installation_appointment
 #. odoo-python
 #: code:addons/website_sale_installation_appointment/models/sale_order.py:0
 msgid ""
 "Portal access was not granted automatically: the customer has no email."
-msgstr "No se otorgó el acceso al portal automáticamente: el cliente no tiene email."
+msgstr ""
+"No se otorgó el acceso al portal automáticamente: el cliente no tiene email."
 
 #. module: website_sale_installation_appointment
 #: model:ir.model.fields,help:website_sale_installation_appointment.field_product_template__free_battery_qty
 msgid ""
 "Quantity to add for free, expressed in the battery product's own unit of "
 "measure: for batteries sold in packs of 4, 1 means one pack (4 batteries)."
-msgstr "Cantidad a incluir sin cargo, en la unidad de medida del producto de pila elegido (no en cantidad de pilas sueltas): si se vende en paquetes de 4, 1 significa un paquete (4 pilas)."
+msgstr ""
+"Cantidad a incluir sin cargo, en la unidad de medida del producto de pila "
+"elegido (no en cantidad de pilas sueltas): si se vende en paquetes de 4, 1 "
+"significa un paquete (4 pilas)."
 
 #. module: website_sale_installation_appointment
 #: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation
@@ -477,6 +684,17 @@ msgstr "Quitar"
 #: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation
 msgid "Schedule the installation<i class=\"fa fa-angle-right ms-2\" role=\"img\"/>"
 msgstr "Agendar la instalación<i class=\"fa fa-angle-right ms-2\" role=\"img\"/>"
+
+#. module: website_sale_installation_appointment
+#: model:ir.model.fields,help:website_sale_installation_appointment.field_sale_order__installation_address_confirmed
+msgid ""
+"Set by the customer when confirming the installation address in Step 1 of "
+"the checkout. Reset automatically if the shipping address changes "
+"afterwards."
+msgstr ""
+"Lo marca el cliente al confirmar la dirección de instalación en el Paso 1 "
+"del checkout. Se resetea automáticamente si la dirección de envío cambia "
+"después."
 
 #. module: website_sale_installation_appointment
 #: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation
@@ -495,21 +713,39 @@ msgid ""
 " appointment form. Tick it on the door thickness question: the customer sees"
 " what to measure exactly where the answer is asked, in every path that uses "
 "this question."
-msgstr "Muestra los diagramas de medida (A y B) justo antes de esta pregunta en el formulario del turno. Marcala en la pregunta del espesor de la puerta: el cliente ve qué medir exactamente donde tiene que responder, en todos los caminos que usan esta pregunta."
+msgstr ""
+"Muestra los diagramas de medida (A y B) justo antes de esta pregunta en el "
+"formulario del turno. Marcala en la pregunta del espesor de la puerta: el "
+"cliente ve qué medir exactamente donde tiene que responder, en todos los "
+"caminos que usan esta pregunta."
 
 #. module: website_sale_installation_appointment
 #: model:ir.model.fields,help:website_sale_installation_appointment.field_appointment_type__installation_request_photos
 msgid ""
 "Show the photo upload in the appointment form: the crew needs to know what "
 "they will find at the installation site."
-msgstr "Muestra la carga de fotos en el formulario de la cita: la cuadrilla necesita saber con qué se va a encontrar en el lugar."
+msgstr ""
+"Muestra la carga de fotos en el formulario de la cita: la cuadrilla necesita"
+" saber con qué se va a encontrar en el lugar."
+
+#. module: website_sale_installation_appointment
+#: model:ir.model.fields,field_description:website_sale_installation_appointment.field_appointment_type__installation_photos_message
+msgid "Site Photos Message"
+msgstr "Consigna de las fotos del lugar"
+
+#. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation
+msgid "Step 3 ·"
+msgstr "Paso 3 ·"
 
 #. module: website_sale_installation_appointment
 #: model:ir.model.fields,help:website_sale_installation_appointment.field_sale_order_line__is_free_battery_line
 msgid ""
 "Technical flag marking the lines generated by the free battery "
 "configuration, so they can be removed without guessing by product."
-msgstr "Marca técnica de las líneas generadas por la configuración de pilas incluidas, para poder identificarlas sin adivinar por producto."
+msgstr ""
+"Marca técnica de las líneas generadas por la configuración de pilas "
+"incluidas, para poder identificarlas sin adivinar por producto."
 
 #. module: website_sale_installation_appointment
 #. odoo-python
@@ -518,14 +754,19 @@ msgid ""
 "The appointment type %(appointment_type)s cannot be used for installations: "
 "it must have a payment step and a booking product, otherwise the appointment"
 " cannot be linked to the eCommerce order."
-msgstr "El tipo de cita %(appointment_type)s no se puede usar para instalaciones: necesita paso de pago y un producto de reserva, si no la cita no puede quedar vinculada al pedido del eCommerce."
+msgstr ""
+"El tipo de cita %(appointment_type)s no se puede usar para instalaciones: "
+"necesita paso de pago y un producto de reserva, si no la cita no puede "
+"quedar vinculada al pedido del eCommerce."
 
 #. module: website_sale_installation_appointment
 #: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation
 msgid ""
-"The batteries your lock needs are included with your shipping method — no\n"
-"                    extra charge."
-msgstr "Las pilas que necesita tu cerradura están incluidas en este método de envío, sin cargo adicional."
+"The batteries your lock needs are included with your shipping method — no "
+"extra charge."
+msgstr ""
+"Las pilas que necesita tu cerradura están incluidas en tu método de envío, "
+"sin cargo adicional."
 
 #. module: website_sale_installation_appointment
 #. odoo-python
@@ -534,27 +775,14 @@ msgid "The customer cancelled the installation appointment."
 msgstr "El cliente canceló la cita de instalación."
 
 #. module: website_sale_installation_appointment
-#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation_photo_examples
-msgid "The door edge, where the lock sits"
-msgstr "El canto de la puerta, donde va la cerradura"
-
-#. module: website_sale_installation_appointment
-#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation_photo_examples
-msgid "The door edge, where the lock sits, with the door open."
-msgstr "El canto de la puerta, donde va la cerradura, con la puerta abierta."
-
-#. module: website_sale_installation_appointment
-#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation_photo_examples
-msgid "The door from the outside, with the handle and the key cylinder"
-msgstr "La puerta desde afuera, con la manija y el cilindro de la llave"
-
-#. module: website_sale_installation_appointment
 #. odoo-python
 #: code:addons/website_sale_installation_appointment/controllers/website_sale_installation_appointment.py:0
 msgid ""
 "The file %(filename)s is not an image we can read. If it comes from an "
 "iPhone, send it as JPG."
-msgstr "El archivo %(filename)s no es una imagen que podamos leer. Si es de un iPhone, mandalo en JPG."
+msgstr ""
+"El archivo %(filename)s no es una imagen que podamos leer. Si es de un "
+"iPhone, mandalo en JPG."
 
 #. module: website_sale_installation_appointment
 #. odoo-python
@@ -586,7 +814,10 @@ msgid ""
 "The product %(product)s of the appointment type %(appointment_type)s must "
 "either create a task in a project or have a sales price, otherwise no "
 "booking is created when the customer schedules the installation."
-msgstr "El producto %(product)s del tipo de cita %(appointment_type)s tiene que crear una tarea en un proyecto o tener precio de venta, si no no se crea la reserva cuando el cliente agenda la instalación."
+msgstr ""
+"El producto %(product)s del tipo de cita %(appointment_type)s tiene que "
+"crear una tarea en un proyecto o tener precio de venta, si no no se crea la "
+"reserva cuando el cliente agenda la instalación."
 
 #. module: website_sale_installation_appointment
 #: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation
@@ -599,11 +830,23 @@ msgid "This is how each photo should look:"
 msgstr "Así tiene que salir cada foto:"
 
 #. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation
+msgid "Three steps. Each one opens when you finish the previous one."
+msgstr "Tres pasos. Cada uno se habilita al completar el anterior."
+
+#. module: website_sale_installation_appointment
 #: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation_photos_message
 msgid ""
-"Upload clear, well-lit photos showing your door from the outside, from the inside,\n"
-"            and the door edge (where the lock sits)."
-msgstr "Subí fotos claras y bien iluminadas donde se vea tu puerta desde afuera, desde adentro y el canto (el borde donde entra la cerradura)."
+"Upload 3 clear, well-lit photos: the front of your door (with the handle), the door\n"
+"            edge, and the frame."
+msgstr ""
+"Subí 3 fotos claras y bien iluminadas: el frente de tu puerta (con la "
+"manija), el canto y el marco."
+
+#. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation
+msgid "Upload photos<i class=\"fa fa-angle-right ms-2\" role=\"img\"/>"
+msgstr "Subir fotos<i class=\"fa fa-angle-right ms-2\" role=\"img\"/>"
 
 #. module: website_sale_installation_appointment
 #: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation
@@ -615,11 +858,6 @@ msgstr "Subidas hasta ahora:"
 #: code:addons/website_sale_installation_appointment/static/src/js/installation_photos.js:0
 msgid "Uploading photos…"
 msgstr "Subiendo las fotos…"
-
-#. module: website_sale_installation_appointment
-#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation
-msgid "We need these two things before confirming your appointment."
-msgstr "Necesitamos estos dos datos antes de confirmar el turno."
 
 #. module: website_sale_installation_appointment
 #: model:ir.model.fields.selection,name:website_sale_installation_appointment.selection__appointment_question__answer_format__integer
@@ -635,16 +873,11 @@ msgstr "Podés subir hasta %(max_photos)s fotos."
 #. module: website_sale_installation_appointment
 #: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation
 msgid ""
-"You'll need 4 or 8 AA/AAA batteries (depending on your model) on\n"
-"                            installation day — without them the device can't be set up."
-msgstr "Necesitás tener 4 u 8 pilas AA/AAA (según tu modelo) el día de la instalación — sin ellas no se puede configurar el equipo."
-
-#. module: website_sale_installation_appointment
-#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation
-msgid ""
-"Your address must be complete (street, number, and floor/apartment if\n"
-"                            applicable)."
-msgstr "La dirección debe estar completa (calle + altura + piso/depto si corresponde)."
+"You'll need 4 or 8 AA/AAA batteries (depending on your model) on "
+"installation day."
+msgstr ""
+"Vas a necesitar 4 u 8 pilas AA/AAA (según tu modelo) el día de la "
+"instalación."
 
 #. module: website_sale_installation_appointment
 #. odoo-python
@@ -653,39 +886,36 @@ msgid "Your installation is not scheduled yet."
 msgstr "Todavía no agendaste la instalación."
 
 #. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.appointment_type_view_form
+msgid "e.g. \"Upload clear, well-lit photos of your door...\""
+msgstr "p. ej. \"Subí fotos claras y bien iluminadas de tu puerta...\""
+
+#. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.res_partner_view_form
+msgid "e.g. Peru and Chile"
+msgstr "p. ej. Perú y Chile"
+
+#. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation
+msgid "e.g. black gate, ring the ground floor bell, call before going up"
+msgstr "p. ej. portón negro, timbre PB, avisar antes de subir"
+
+#. module: website_sale_installation_appointment
 #: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation
 msgid "of"
 msgstr "de"
 
 #. module: website_sale_installation_appointment
 #: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation
-msgid ""
-"⏳ Installation duration: set aside between 2 and 4 hours (it varies\n"
-"                            depending on the complexity of the door)."
-msgstr "⏳ Duración de la instalación: reservate entre 2 y 4 horas (varía según la complejidad de la puerta)."
+msgid "photos"
+msgstr "fotos"
 
 #. module: website_sale_installation_appointment
-#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.appointment_type_view_form
-msgid "Installation Site Photos"
-msgstr "Fotos del lugar de instalación"
-
-#. module: website_sale_installation_appointment
-#: model:ir.model.fields,help:website_sale_installation_appointment.field_appointment_type__installation_photos_message
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.installation
 msgid ""
-"Instructions shown above the photo upload, both in the eCommerce checkout "
-"and in the appointment form of the link shared by Nokey. Leave empty to show"
-" the default text of the module."
+"⏳ Installation duration: set aside between 2 and 4 hours (it\n"
+"                                    varies depending on the complexity of the door)."
 msgstr ""
-"Consigna que se muestra arriba de la subida de fotos, tanto en el checkout "
-"del eCommerce como en el formulario de la cita del link que comparte Nokey. "
-"Vacío = se muestra el texto por defecto del módulo."
-
-#. module: website_sale_installation_appointment
-#: model:ir.model.fields,field_description:website_sale_installation_appointment.field_appointment_type__installation_photos_message
-msgid "Site Photos Message"
-msgstr "Consigna de las fotos del lugar"
-
-#. module: website_sale_installation_appointment
-#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.appointment_type_view_form
-msgid "e.g. \"Upload clear, well-lit photos of your door...\""
-msgstr "p. ej. \"Subí fotos claras y bien iluminadas de tu puerta...\""
+"⏳ Duración de la instalación: reservate entre 2 y 4 horas (varía según la "
+"complejidad de la puerta)."
