@@ -1,47 +1,110 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Ficha del producto: precios por medio de pago debajo del precio. El JS de variantes
-         repinta este contenedor (clase o_wspmp_prices) al cambiar de variante. -->
+    <!-- Ficha del producto: recuadro de precio por medio de pago (D17). Contrato de locators por
+         `name` (D21): `div[@name='wspmp_box']` y el slot `div[@name='wspmp_installments']`. Dos
+         operaciones separadas, porque el `move` no puede ir anidado dentro del markup nuevo (T02):
+         (a) arma el recuadro como ultimo hijo de `div[@name='product_price']` (con `priority="18"`
+         se aplica despues de `l10n_ar_website_sale`, que agrega el `<small>` de impuestos
+         nacionales con la prioridad por defecto, D18); (b) mueve el contenedor del precio del
+         core (`product_price_container`, con el precio de lista y el comparativo) DENTRO del
+         recuadro, sin duplicarlo (D19), **antes** del slot de cuotas (`position="before"` sobre
+         `div[@name='wspmp_installments']`, no `inside` de `wspmp_box`): asi el orden en el DOM
+         queda badge -> precios -> precio de lista -> slot incluso cuando el recuadro esta
+         "display: contents" (sin reglas visibles, CA19) y `order: -1` no puede reordenar nada. El
+         JS de variantes (payment_method_price.js) repinta `.o_wspmp_prices` y togglea las clases
+         del recuadro al cambiar de variante. -->
     <template
         id="product_price"
         inherit_id="website_sale.product_price"
-        name="Product price - payment method prices"
+        name="Product price - payment method box"
+        priority="18"
     >
-        <xpath expr="//div[@name='product_price_container']" position="after">
+        <xpath expr="//div[@name='product_price']" position="inside">
+            <t t-set="wspmp_prices" t-value="combination_info.get('payment_method_prices') or []"/>
             <div
-                t-attf-class="o_wspmp_prices css_editable_mode_hidden #{'' if combination_info.get('payment_method_prices') else 'd-none'}"
+                name="wspmp_box"
+                t-attf-class="o_wspmp_box #{'o_wspmp_box_active' if wspmp_prices else ''} #{'o_wspmp_discounted' if wspmp_prices and wspmp_prices[0]['price_type'] == 'discount' else ''}"
             >
-                <t t-foreach="combination_info.get('payment_method_prices') or []" t-as="pm_price">
-                    <div class="o_wspmp_price">
-                        <span class="o_wspmp_price_amount" t-out="pm_price['price_formatted']"/>
-                        <span class="o_wspmp_price_label" t-out="pm_price['label']"/>
-                    </div>
-                </t>
-            </div>
-        </xpath>
-    </template>
-
-    <!-- Grilla del shop: mismos precios en la tarjeta del producto. -->
-    <template
-        id="products_item"
-        inherit_id="website_sale.products_item"
-        name="Product tile - payment method prices"
-    >
-        <xpath expr="//div[hasclass('product_price')]" position="inside">
-            <t t-if="template_price_vals.get('payment_method_prices')">
+                <span
+                    t-attf-class="o_wspmp_badge #{'' if wspmp_prices and wspmp_prices[0]['badge'] else 'd-none'}"
+                    t-out="wspmp_prices[0]['badge'] if wspmp_prices and wspmp_prices[0]['badge'] else ''"
+                />
                 <div class="o_wspmp_prices">
-                    <t t-foreach="template_price_vals['payment_method_prices']" t-as="pm_price">
+                    <t t-foreach="wspmp_prices" t-as="pm_price">
                         <div class="o_wspmp_price">
                             <span class="o_wspmp_price_amount" t-out="pm_price['price_formatted']"/>
-                            <span class="o_wspmp_price_label" t-out="pm_price['label']"/>
+                            <span class="o_wspmp_price_label">
+                                <t t-out="pm_price['label']"/>
+                                <b t-out="pm_price['name']"/>
+                            </span>
                         </div>
                     </t>
                 </div>
-            </t>
+                <div name="wspmp_installments" class="o_wspmp_installments"/>
+            </div>
+        </xpath>
+        <xpath expr="//div[@name='wspmp_installments']" position="before">
+            <xpath expr="//div[@name='product_price_container']" position="move"/>
         </xpath>
     </template>
 
-    <!-- Carrito y checkout: total por medio de pago debajo del total del pedido. -->
+    <!-- Grilla del shop: mismo recuadro en la tarjeta. Tres operaciones (T03): (a) arma el
+         recuadro dentro de `div.product_price` (clase estatica del core, `hasclass` vale aca);
+         (b) y (c) mueven, cada uno por separado y vacio, **antes** del slot de cuotas (mismo
+         motivo que en la ficha: el orden en el DOM no puede depender de `order: -1`, que no
+         aplica con el recuadro en `display: contents`), el precio actual (`span.fw-bold`, el
+         `price_reduce` del core) y el precio de lista ya tachado por el core si hay descuento de
+         lista de precios (`t[name='product_base_price']`). El recuadro NO hereda el layout de
+         `.product_price` (que no tiene fallback en la custom property de display del core): fija
+         el suyo en el SCSS. -->
+    <template
+        id="products_item"
+        inherit_id="website_sale.products_item"
+        name="Product tile - payment method box"
+        priority="18"
+    >
+        <xpath expr="//div[hasclass('product_price')]" position="inside">
+            <t t-set="wspmp_prices" t-value="template_price_vals.get('payment_method_prices') or []"/>
+            <div
+                name="wspmp_box"
+                t-attf-class="o_wspmp_box o_wspmp_box_tile #{'o_wspmp_box_active' if wspmp_prices else ''} #{'o_wspmp_discounted' if wspmp_prices and wspmp_prices[0]['price_type'] == 'discount' else ''}"
+            >
+                <span
+                    t-attf-class="o_wspmp_badge #{'' if wspmp_prices and wspmp_prices[0]['badge'] else 'd-none'}"
+                    t-out="wspmp_prices[0]['badge'] if wspmp_prices and wspmp_prices[0]['badge'] else ''"
+                />
+                <div class="o_wspmp_prices">
+                    <t t-foreach="wspmp_prices" t-as="pm_price">
+                        <div class="o_wspmp_price">
+                            <span class="o_wspmp_price_amount" t-out="pm_price['price_formatted']"/>
+                            <span class="o_wspmp_price_label">
+                                <t t-out="pm_price['label']"/>
+                                <b t-out="pm_price['name']"/>
+                            </span>
+                        </div>
+                    </t>
+                </div>
+                <div name="wspmp_installments" class="o_wspmp_installments"/>
+            </div>
+        </xpath>
+        <xpath expr="//div[@name='wspmp_installments']" position="before">
+            <!-- `aria-label` es un atributo traducible (TRANSLATED_ATTRS, odoo/tools/translate.py):
+                 la herencia de vistas lo rechaza como selector ("View inheritance may not use
+                 attribute 'aria-label' as a selector", ir_ui_view.py:412) y aborta la carga con
+                 ParseError. El span no tiene `name`, pero si clase propia (`fw-bold`, ademas de
+                 `mb-0`): unica dentro de `div.product_price` en el arch combinado. Por la misma
+                 razon los selectores CSS/JS van por esta clase y nunca por `aria-label`: en
+                 render el atributo sale traducido (`aria-label="Precio de venta"` en es_AR), asi
+                 que un selector CSS por el string en ingles simplemente no matchea (sin error). -->
+            <xpath expr="//div[hasclass('product_price')]//span[hasclass('fw-bold')]" position="move"/>
+        </xpath>
+        <xpath expr="//div[@name='wspmp_installments']" position="before">
+            <xpath expr="//t[@name='product_base_price']" position="move"/>
+        </xpath>
+    </template>
+
+    <!-- Carrito y checkout: fila por medio debajo del Total, con la etiqueta nueva y un pill por
+         fila (sin recuadro ni slot de cuotas, D23). -->
     <template
         id="total"
         inherit_id="website_sale.total"
@@ -55,6 +118,8 @@
             <tr t-foreach="wspmp_totals" t-as="pm_total" name="o_order_total_payment_method">
                 <td class="ps-0 pt-0 pb-0 border-0 text-muted o_wspmp_price_label" colspan="2">
                     <t t-out="pm_total['label']"/>
+                    <b t-out="pm_total['name']"/>
+                    <span t-if="pm_total['badge']" class="o_wspmp_badge o_wspmp_badge_inline" t-out="pm_total['badge']"/>
                 </td>
                 <td class="text-end pe-0 pt-0 pb-0 border-0 o_wspmp_price_amount">
                     <t t-out="pm_total['price_formatted']"/>

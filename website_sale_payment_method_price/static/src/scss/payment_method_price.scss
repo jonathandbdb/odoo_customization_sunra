@@ -1,27 +1,224 @@
-// Segundo precio por medio de pago, debajo del precio del producto
+// Bloque de precio por medio de pago (D17): recuadro fino, con el precio de lista tachado + un
+// pill de porcentaje, el precio del medio de pago como protagonista, la etiqueta "pagando con
+// <medio>" y un slot para las cuotas de ADHOC (el puente website_sale_installment_plans_ux).
+//
+// El recuadro (`.o_wspmp_box`) es "display: contents" por defecto: cuando no hay ninguna regla
+// visible no se decora nada y el precio del core conserva su tamaño y su posicion originales
+// (CA19); la caja "aparece" recien con `.o_wspmp_box_active`, y solo tacha el precio del core con
+// `.o_wspmp_discounted` (con recargo hay precio y etiqueta, pero no pill ni tachado, CA23).
+.o_wspmp_box {
+    display: contents;
+}
+
+.o_wspmp_box.o_wspmp_box_active {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    position: relative;
+    margin-top: 0.35rem;
+    padding: 0.6rem 0.85rem;
+    border: 1.5px solid #bbb;
+    border-radius: 12px;
+    max-width: 100%;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+// Grilla: `.product_price` usa `display: var(--o-wsale-card-price-display)` sin valor de
+// respaldo (product_tile.scss:298): sin ese custom property definido por el tema, el recuadro no
+// puede depender de que su padre sea flex. `display: flex` en el propio recuadro ya es un box de
+// nivel bloque por si mismo (no hereda `display` del padre) y `width: 100%` lo fuerza a ocupar
+// todo el ancho de la tarjeta sin importar el modo de layout del padre.
+.o_wspmp_box_tile.o_wspmp_box_active {
+    flex-basis: 100%;
+}
+
+// El precio de lista que el core ya publicaba (`oe_price` en la ficha, `span.fw-bold` en la
+// grilla) pasa a ser secundario: mas chico, alineado a la izquierda y primero en el recuadro
+// (con el `move` a `position="before"` del slot, T02/T03, ya queda antes en el DOM tambien).
+// Selectores de dos componentes: le ganan a las clases sueltas del core (`.h5`, `.fw-bold`) sin
+// necesitar `!important` (excepcion: `justify-content`, ver mas abajo).
+//
+// OJO: nunca por `aria-label`. Es un atributo TRADUCIBLE (igual que en los xpath, D21/T03): en
+// es_AR el core renderiza `aria-label="Precio de venta"` / `"Precio original"`, no los strings en
+// ingles del arch fuente, asi que un selector CSS por `[aria-label="Sale price"]` no matchea en el
+// sitio real (no tira error, simplemente no aplica). Se usa la clase estatica del core
+// (`product_tile_templates.xml:192-194`, `class="mb-0 fw-bold"`) y, para el precio de lista ya
+// tachado por una lista de precios, el `del` hijo directo del recuadro (unico `del` posible ahi,
+// `product_tile_templates.xml:199-201`).
+.o_wspmp_box_active[name="wspmp_box"] > [name="product_price_container"] {
+    order: -1;
+    font-size: 0.85rem;
+    width: auto;
+    // El nodo movido trae `justify-content-end` del core (`templates.xml:2701`), utilidad de
+    // Bootstrap declarada con `!important`: sin el propio `!important` esta regla no le gana.
+    // Alineado a la izquierda, junto con el precio protagonista (maqueta aprobada, D17).
+    justify-content: flex-start !important;
+}
+
+.o_wspmp_box_active[name="wspmp_box"] > span.fw-bold {
+    order: -1;
+    font-size: 0.85rem;
+    font-weight: 400;
+}
+
+.o_wspmp_box_active[name="wspmp_box"] > del {
+    order: -1;
+}
+
+// Tachado del precio del core: solo con descuento (CA23 lo deja afuera con recargo).
+.o_wspmp_discounted[name="wspmp_box"] > [name="product_price_container"] .oe_price,
+.o_wspmp_discounted[name="wspmp_box"] > span.fw-bold {
+    text-decoration: line-through;
+}
+
+// D17(1): el precio sin impuestos nacionales de `l10n_ar_website_sale` (el `<small>` que agrega
+// al final del bloque, D18) va fuera del recuadro pero tiene que verse chico y gris, no con el
+// tamano/peso que le da el tema (medido: 16px/700 en la ficha). No se toca el nodo (D18): solo se
+// lo estiliza por CSS. Fix post-review: `[name="product_price"] > small` sin mas matcheaba
+// TAMBIEN el `tax_disclaimer` del core (hermano directo dentro del mismo wrapper,
+// `website_sale/views/templates.xml:2743`) y se aplicaba siempre, incluso sin ninguna regla
+// visible (rompia CA19: con `show_on_website=false` esa linea de impuestos igual cambiaba de
+// 16px/700 a 14px/400). Acotado a: (a) solo con el recuadro activo (`:has(.o_wspmp_box_active)`,
+// mismo criterio que el resto del modulo); (b) solo el `<small>` de la AR, que trae adentro el
+// span propio `.o_l10n_ar_price_tax_excluded` (`l10n_ar_website_sale/views/templates.xml:9`) — el
+// `tax_disclaimer` del core no lo tiene, asi que ya no matchea.
+[name="product_price"]:has(.o_wspmp_box_active) > small:has(.o_l10n_ar_price_tax_excluded) {
+    font-size: 0.875rem;
+    font-weight: 400;
+}
+
+// El pill de porcentaje siempre esta en el DOM (para que el JS solo tenga que togglear clases y
+// texto, D21/T07): un badge de esquina, independiente del orden de flujo.
+.o_wspmp_badge {
+    position: absolute;
+    top: -0.65rem;
+    right: 0.6rem;
+    background-color: #A3EA24;
+    color: #1a1a1a;
+    font-size: 0.7rem;
+    font-weight: 700;
+    line-height: 1;
+    padding: 0.2rem 0.5rem;
+    border-radius: 999px;
+    white-space: nowrap;
+}
+
+// En el carrito no hay recuadro (D23): el pill viaja inline, junto a la etiqueta.
+.o_wspmp_badge_inline {
+    position: static;
+    display: inline-block;
+    margin-left: 0.35rem;
+    vertical-align: middle;
+}
+
+// Precio del medio de pago: protagonista.
 .o_wspmp_prices {
     display: flex;
     flex-direction: column;
-    gap: 0.1rem;
-    margin-top: 0.15rem;
+    gap: 0.2rem;
 }
 
 .o_wspmp_price {
     display: flex;
-    align-items: baseline;
-    flex-wrap: wrap;
-    gap: 0.3rem;
-    line-height: 1.25;
+    flex-direction: column;
+    gap: 0.1rem;
+    line-height: 1.2;
 }
 
 .o_wspmp_price_amount {
-    font-weight: 600;
+    font-size: 1.35rem;
+    font-weight: 700;
     white-space: nowrap;
 }
 
+// D20: sin text-transform forzado (se saca el uppercase que tenia el segundo precio de 1.1.0).
 .o_wspmp_price_label {
     font-size: 0.8125rem;
-    text-transform: uppercase;
-    letter-spacing: 0.02em;
-    opacity: 0.75;
+    letter-spacing: 0.01em;
+    opacity: 0.85;
+}
+
+// Slot de las cuotas de ADHOC (D21): sin el puente instalado queda vacio y no debe ocupar
+// espacio ni el `gap` del recuadro.
+.o_wspmp_installments:empty {
+    display: none;
+}
+
+// Sin corte ni desborde a 360px (CA18).
+@include media-breakpoint-down(md) {
+    .o_wspmp_price_label {
+        white-space: normal;
+        overflow-wrap: break-word;
+    }
+
+    .o_wspmp_badge {
+        white-space: normal;
+        max-width: 45%;
+        text-align: center;
+    }
+}
+
+// D22: tarjetas de la grilla de igual altura, con el bloque precio+CTA al pie. El core avisa que
+// `.o_wsale_product_sub` puede quedar en `display: contents` segun el tema
+// (product_tile.scss:186): ahi ese nodo no genera caja y `margin-top: auto` sobre el no hace
+// nada, asi que el anclaje va tambien sobre sus hijos directos (precio y CTA), que en ese caso
+// pasan a ser hijos flex de `.o_wsale_product_information` (product_tile.scss:169). El CSS cubre
+// los dos casos; cual usa el tema de Nokey se confirma con la verificacion visual (T09/T06).
+//
+// Fix post-review (scope + especificidad, medido en el navegador sobre Nokey `website_id=1` y
+// Sunra `website_id=3`): a diferencia del resto del modulo, estas 4 reglas NO colgaban de
+// `.o_wspmp_box*`, y van en `web.assets_frontend` (bundle global, carga en cualquier sitio).
+// Medido con `document.styleSheets`: (a) en Sunra el efecto real era `text-align: center` sobre
+// `.o_wsale_product_information` — ese sitio no trae `text-center` en el markup, asi que era un
+// cambio no pedido en un sitio ajeno; (b) las 3 reglas sobre `.o_wsale_product_sub` eran inertes
+// en los DOS sitios: el core declara `.oe_product_cart .o_wsale_product_sub { flex-direction:
+// var(--o-wsale-card-sub-flex-direction, row); ... }` (especificidad 0-2-0, `product_tile.scss`
+// arriba) y le ganaba a nuestra `.o_wsale_product_sub` suelta (0-1-0). El apilado que se ve en
+// Nokey sale del tema (la variable CSS) mas las utilidades Bootstrap `flex-column
+// align-items-center` (con `!important`) que trae la copia COW del sitio editada a mano
+// (`website_sale.products_item`, ver nota de D22 mas abajo), NO de este CSS — con lo cual D22 (el
+// SCSS pasa a ser dueno del centrado para que esa copia se pueda restablecer, Plane #68) no se
+// cumplia. Corregido: (1) scope a `:has(.o_wspmp_box_active)`, para que solo actuen con el
+// recuadro activo (sin reglas visibles, CA19, no tocan nada — ni acá ni en otro sitio); (2)
+// prefijo `.oe_product_cart` para subir a especificidad 0-3-0 y ganarle al 0-2-0 del core, sin
+// `!important`. Verificado con Playwright (medicion en el reporte de la tarea): en Nokey el
+// bloque queda apilado y centrado aunque se quiten por JS las clases `flex-column
+// align-items-center justify-content-center` de `.o_wsale_product_sub` (simula la COW ya
+// restablecida a la generica); en Sunra `.o_wsale_product_information` ya no queda
+// `text-align: center` por causa nuestra.
+.oe_product_cart .o_wsale_product_sub:has(.o_wspmp_box_active) {
+    margin-top: auto;
+}
+
+.oe_product_cart .o_wsale_product_information:has(.o_wspmp_box_active) {
+    .product_price,
+    .o_wsale_product_btn {
+        margin-top: auto;
+    }
+}
+
+// D22: el SCSS pasa a ser dueno del centrado del bloque de precio+CTA de la grilla, que hoy
+// aporta la copia COW del sitio (`website_sale.products_item`, vista 19099, editada a mano el
+// 07-08-2026: `.o_wsale_product_information` con `text-center` y `.o_wsale_product_sub` de
+// `justify-content-between` a `justify-content-center flex-column align-items-center gap-2`).
+// Replicado aca (scopeado a `:has(.o_wspmp_box_active)` y con especificidad `.oe_product_cart`
+// propia, ver nota de arriba) para que esa copia se pueda restablecer a la generica (Plane #68,
+// en produccion) sin cambiar el layout, y sin filtrar a otros sitios (Sunra `website_id=3`).
+.oe_product_cart .o_wsale_product_information:has(.o_wspmp_box_active) {
+    text-align: center;
+}
+
+.oe_product_cart .o_wsale_product_sub:has(.o_wspmp_box_active) {
+    flex-direction: column;
+    align-items: center;
+    // El template GENERICO (sin la copia COW) trae `justify-content-between` como utilidad de
+    // Bootstrap DIRECTO en el markup (`product_tile_templates.xml:186`), que Bootstrap declara con
+    // `!important`: medido con Playwright tras simular el restablecimiento de la COW (Plane #68),
+    // sin el propio `!important` esta propiedad quedaba en `space-between` (ganaba la utilidad),
+    // aunque `flex-direction`/`align-items` si se corrigen (el core los fija por custom property,
+    // sin `!important`, y ahi alcanza con la especificidad). Misma excepcion que D19/`justify-content:
+    // flex-start !important` en la ficha, mismo motivo.
+    justify-content: center !important;
+    gap: 0.5rem;
 }

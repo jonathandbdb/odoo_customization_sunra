@@ -1,24 +1,25 @@
 # website_sale_payment_method_price
 
-Descuento (o recargo) por **medio de pago** en el eCommerce: se muestra como un segundo precio
-debajo del precio de lista y se aplica de verdad al pedido en el checkout.
+Descuento (o recargo) por **medio de pago** en el eCommerce: se publica en un **recuadro propio**
+(precio de lista tachado, pill con el porcentaje y el precio del medio como protagonista) y se
+aplica de verdad al pedido en el checkout.
 
 | | |
 |---|---|
-| **Versión** | 1.0.2 |
+| **Versión** | 1.2.0 |
 | **Depende de** | `website_sale` |
 | **Repos/entornos** | `odoo_customization_sunra`, rama `develop_19.0` |
 | **Spec SDD** | `specs/website_sale_payment_method_price.md` |
 
 ## Para qué sirve
 
-Nokey vende hoy en Tiendanube, donde cada producto muestra el precio de lista y debajo un segundo
-precio con la etiqueta *"con TRANSFERENCIA"* (15 % menos). Odoo no tiene nada equivalente: los
+Nokey vende hoy en Tiendanube, donde cada producto muestra el precio de lista tachado, un pill con
+el porcentaje y el precio con transferencia como protagonista. Odoo no tiene nada equivalente: los
 recargos por medio de pago existieron en `payment.provider` hasta la v15 y fueron eliminados, y el
 precio del carrito se calcula **antes** de que el cliente elija cómo pagar.
 
-Este módulo cubre las dos puntas: la vidriera (el segundo precio) y el cobro (el descuento real en
-el pedido).
+Este módulo cubre las dos puntas: la vidriera (el recuadro de precio) y el cobro (el descuento real
+en el pedido).
 
 ## Configuración
 
@@ -31,7 +32,7 @@ el pedido).
 | **Porcentaje** | 0 a 100. Una línea en 0 no tiene efecto |
 | **Aplica a** | `Productos`, `Envíos` o `Productos y envíos`. Solo afecta al checkout: la vidriera muestra siempre el precio del producto |
 | **Redondeo del precio** | Deja el precio como múltiplo de este valor, **después** del porcentaje. En 0 no redondea. Misma semántica que `price_round` de las listas de precios |
-| **Mostrar el precio en el sitio web** | Si se dibuja el segundo precio. Un medio puede aplicar el descuento sin publicarlo |
+| **Mostrar el precio en el sitio web** | Si se dibuja el recuadro de precio. Un medio puede aplicar el descuento sin publicarlo |
 
 La pestaña solo aparece en los medios **primarios** (Transferencia, Tarjeta, Mercado Pago Wallet…),
 porque la acción del core filtra `is_primary = True`.
@@ -39,20 +40,41 @@ porque la acción del core filtra `is_primary = True`.
 ### Ejemplo (configuración real de Nokey)
 
 Medio *Transferencia bancaria* → sitio *Nokey* → Descuento, 15,00, Productos, redondeo 0, Mostrar sí.
-Con un producto a $ 157.300,00 la ficha muestra `$ 133.705,00 con Transferencia bancaria` y el
+Con un producto a $ 157.300,00 la ficha muestra el recuadro con `$ 157.300,00` tachado, el pill
+`-15% OFF` y `$ 133.705,00` protagonista con la etiqueta *pagando con* **Transferencia bancaria**; el
 checkout cobra $ 133.705,00.
 
 ## Cómo funciona
 
-### La vidriera
+### La vidriera: el recuadro de precio
 
-El segundo precio se calcula sobre el precio **ya mostrado** (después de impuestos, según
-`show_line_subtotals_tax_selection` del sitio), así los dos números son comparables. Aparece en:
+Desde 1.2.0 el bloque de precio es un **recuadro propio** (maqueta aprobada por la cliente), de
+arriba a abajo:
+
+1. El precio sin impuestos nacionales de `l10n_ar_website_sale` (si el sitio es AR), **fuera** del
+   recuadro — no se toca, no se mueve y no se elimina.
+2. Dentro del recuadro, el precio de lista **tachado** — es el mismo nodo que el core ya renderiza
+   (`oe_price` en la ficha, `price_reduce`/"Sale price" en la grilla): se **mueve** ahí y se tacha
+   por CSS, no se duplica ni se recalcula.
+3. Un **pill** de marca (`#A3EA24`) con el porcentaje (`-15% OFF`), solo si la regla es un
+   descuento; con recargo no hay pill ni tachado.
+4. El precio del medio de pago, **protagonista**, con la etiqueta *pagando con* **`<medio>`**.
+5. Un **slot vacío** (`div[@name='wspmp_installments']`) para que el módulo puente
+   `website_sale_installment_plans_ux` publique ahí la línea de cuotas de ADHOC, si está instalado.
+
+El recuadro entero es `div[@name='wspmp_box']`: **el contrato de cualquier integración es el
+atributo `name`, no la clase** — las clases (`o_wspmp_box_active`, `o_wspmp_discounted`) son
+dinámicas (`t-attf-class`) para togglear la decoración según haya o no reglas visibles, y
+`hasclass()` no las ve.
+
+Se calcula sobre el precio **ya mostrado** (después de impuestos, según
+`show_line_subtotals_tax_selection` del sitio), así los números son comparables. Aparece en:
 
 - la grilla del shop (`_get_sales_prices`);
 - la ficha del producto (`_get_additionnal_combination_info`), y se **repinta por JS** al cambiar de
   variante, porque ese precio se recalcula por jsonrpc y no re-renderiza el HTML;
-- el total del carrito y del checkout, como una fila por medio de pago debajo del Total.
+- el total del carrito y del checkout, como una fila por medio de pago debajo del Total, con su
+  propia etiqueta y su propio pill (sin recuadro ni slot de cuotas).
 
 ### El checkout
 
@@ -118,13 +140,33 @@ producto sin impuestos), el descuento sí se parte por grupo: es lo correcto, no
 - **Impuestos mixtos.** El redondeo es por precio unitario y el ajuste se entrega al core como
   importe con impuestos, que lo reparte por grupo de impuesto: el total cierra exacto. Con 21 % y
   10,5 % en el mismo carrito puede haber diferencias de centavos en el reparto entre grupos.
+- **`aria-label` no sirve como locator de herencia.** Es un atributo traducible
+  (`TRANSLATED_ATTRS`, `odoo/tools/translate.py`) y la validación de vistas de Odoo 19 rechaza
+  `View inheritance may not use attribute 'aria-label' as a selector` con `ParseError`
+  (`ir_ui_view.py:412`), abortando la carga. El precio de la grilla (`span[@aria-label='Sale
+  price']`) no tiene `name`, pero sí clase propia (`fw-bold`, además de `mb-0`): el `move` usa
+  `//div[hasclass('product_price')]//span[hasclass('fw-bold')]`, único dentro del bloque de precio.
+- **El recuadro se localiza siempre por `name`, nunca por clase.** `div[@name='wspmp_box']` y
+  `div[@name='wspmp_installments']` son el contrato para cualquier integración (el módulo puente de
+  cuotas incluido): el recuadro lleva clases condicionales por `t-attf-class`
+  (`o_wspmp_box_active`, `o_wspmp_discounted`) y `hasclass()` solo lee el atributo estático `class`,
+  con lo que un xpath por clase no matchearía y abortaría la combinación de la vista.
+- **El pill vive siempre en el DOM.** Para que el JS de variantes solo tenga que togglear clases y
+  texto (nunca crear/destruir nodos dentro del recuadro), el `span.o_wspmp_badge` se renderiza
+  siempre, oculto con `d-none` cuando no hay pill que mostrar.
 
 ## Validación manual
 
-1. Configurar la regla y abrir `/shop`: cada tarjeta muestra el precio y debajo el del medio de pago.
-2. Abrir una ficha y **cambiar de variante**: el segundo precio se actualiza.
-3. `/shop/cart`: el total muestra la fila del medio de pago debajo del Total.
+1. Configurar la regla y abrir `/shop`: cada tarjeta muestra el recuadro con el precio de lista
+   tachado, el pill `-15% OFF` y el precio del medio en grande.
+2. Abrir una ficha y **cambiar de variante**: el recuadro se repinta (precio, pill y decoración).
+3. `/shop/cart`: el total muestra la fila del medio de pago debajo del Total, con su propio pill.
 4. `/shop/payment`: elegir el medio con descuento → aparece la línea *Descuento* con su IVA y el
    Total baja al precio mostrado en la vidriera. Cambiar de medio → el descuento se cae.
 5. Cambiar cantidades en el carrito con el descuento aplicado y volver al pago: el descuento se
    recalcula sobre el nuevo total.
+6. Poner la regla en `Recargo` (surcharge): el recuadro muestra precio y etiqueta, pero **sin**
+   pill ni tachado (CA23).
+7. Con el módulo puente `website_sale_installment_plans_ux` instalado, verificar que la línea de
+   cuotas queda **dentro** del recuadro, debajo del precio del medio de pago.
+8. A 360 px de ancho, la etiqueta y el pill no se cortan ni desbordan el recuadro.

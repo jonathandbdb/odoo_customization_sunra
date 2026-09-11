@@ -76,7 +76,11 @@ class SaleOrder(models.Model):
         Si el pedido ya tiene un ajuste aplicado no se muestra nada: el total ya lo incluye y
         listar los precios de nuevo lo contaria dos veces.
 
-        :return: lista de dicts con label, price y price_formatted
+        Los mismos campos que `ProductTemplate._get_payment_method_price_vals` (`label`, `name`,
+        `price`, `price_formatted`, `price_type`, `badge`), la misma firma, para que la fila del
+        carrito arme su propio pill sin volver a resolver la regla (D23).
+
+        :return: lista de dicts con name, label, price, price_formatted, price_type y badge
         :rtype: list
         """
         self.ensure_one()
@@ -92,9 +96,14 @@ class SaleOrder(models.Model):
                 continue
             total = self.amount_total - amount
             vals.append({
-                "label": _("with %(method)s", method=rule.payment_method_id.name),
+                "name": rule.payment_method_id.name,
+                "label": _("paying with"),
                 "price": total,
                 "price_formatted": format_amount(self.env, total, self.currency_id),
+                "price_type": rule.price_type,
+                "badge": _(
+                    "-%(percentage)s%% OFF", percentage=rule._get_percentage_label()
+                ) if rule.price_type == "discount" else False,
             })
         return vals
 

@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
-from odoo.tools import float_round
+from odoo.tools import float_round, formatLang
 
 
 class PaymentMethodWebsitePrice(models.Model):
     _name = "payment.method.website.price"
     _description = "Payment Method Website Price"
-    _order = "payment_method_id, sequence, id"
+    _order = "sequence, payment_method_id, id"
 
     payment_method_id = fields.Many2one(
         comodel_name="payment.method",
@@ -104,6 +104,22 @@ class PaymentMethodWebsitePrice(models.Model):
         if self.price_round:
             new_price = float_round(new_price, precision_rounding=self.price_round)
         return new_price
+
+    def _get_percentage_label(self):
+        """
+        Formatear el porcentaje de esta regla como texto, para el pill del bloque de precio.
+
+        Sin decimales cuando el porcentaje es un numero entero (`15`); con el separador del
+        idioma (`formatLang`) cuando no lo es. Unico lugar donde se formatea el porcentaje.
+
+        :return: porcentaje formateado
+        :rtype: str
+        """
+        self.ensure_one()
+        rounded = round(self.percentage, 2)
+        if rounded == int(rounded):
+            return str(int(rounded))
+        return formatLang(self.env, rounded, digits=2)
 
     @api.model
     def _get_website_rules(self, website, only_visible=False):

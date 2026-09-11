@@ -5,12 +5,12 @@
         <div style="padding: 28px 30px; border: 1px solid ButtonBorder; border-radius: 8px; background: Canvas;">
             <p style="margin: 0 0 8px; color: LinkText; font-size: 13px; font-weight: 700; text-transform: uppercase;">eCommerce - Precios y medios de pago</p>
             <h1 style="margin: 0 0 12px; color: CanvasText; font-size: 32px; line-height: 1.2;">website_sale_payment_method_price</h1>
-            <p style="margin: 0; max-width: 760px; color: GrayText; font-size: 16px;">Descuento o recargo por medio de pago en el eCommerce: se muestra como un segundo precio debajo del precio de lista y se aplica de verdad al pedido en el checkout, con su IVA.</p>
+            <p style="margin: 0; max-width: 760px; color: GrayText; font-size: 16px;">Descuento o recargo por medio de pago en el eCommerce: se publica en un recuadro propio (precio de lista tachado, pill con el porcentaje y el precio del medio como protagonista) y se aplica de verdad al pedido en el checkout, con su IVA.</p>
         </div>
 
         <div style="margin-top: 30px;">
             <h2 style="margin: 0 0 10px; color: LinkText; font-size: 23px;">Objetivo</h2>
-            <p style="margin: 0;">En Argentina es habitual publicar el precio de lista y, debajo, el precio con transferencia o efectivo. Odoo no trae nada de eso: los recargos por medio de pago existieron en el proveedor de pago hasta la v15 y fueron eliminados, y el precio del carrito se calcula <strong>antes</strong> de que el cliente elija como pagar. Este modulo cubre las dos puntas: la vidriera (el segundo precio en la grilla, la ficha y el carrito) y el cobro (el descuento real en el pedido al elegir el medio en el checkout).</p>
+            <p style="margin: 0;">En Argentina es habitual publicar el precio de lista y, debajo, el precio con transferencia o efectivo. Odoo no trae nada de eso: los recargos por medio de pago existieron en el proveedor de pago hasta la v15 y fueron eliminados, y el precio del carrito se calcula <strong>antes</strong> de que el cliente elija como pagar. Este modulo cubre las dos puntas: la vidriera (un recuadro con el precio de lista tachado, un pill con el porcentaje y el precio del medio de pago como protagonista con la etiqueta <em>"pagando con &lt;medio&gt;"</em>, en la grilla y la ficha, mas la fila por medio debajo del Total del carrito — y, con el modulo puente de cuotas instalado, la linea de cuotas dentro del mismo recuadro) y el cobro (el descuento real en el pedido al elegir el medio en el checkout).</p>
         </div>
 
         <div style="margin-top: 30px;">
@@ -22,8 +22,8 @@
                         <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">Cada medio de pago gana una pestana <strong>Website</strong> con una linea por sitio: tipo (descuento o recargo), porcentaje, sobre que aplica (productos, envios o ambos), redondeo y si el precio se publica. Un mismo medio puede tener porcentajes distintos en cada sitio.</td>
                     </tr>
                     <tr>
-                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; font-weight: 700; background: ButtonFace; color: ButtonText;">Segundo precio en la vidriera</td>
-                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">Debajo del precio aparece <em>"$ 133.705,00 con Transferencia bancaria"</em> en la grilla del shop y en la ficha del producto, y una fila por medio debajo del Total en el carrito. Se calcula sobre el precio <strong>ya mostrado</strong> (con o sin IVA segun la configuracion del sitio), asi los dos numeros son comparables.</td>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; font-weight: 700; background: ButtonFace; color: ButtonText;">Recuadro de precio en la vidriera</td>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">En la grilla del shop y en la ficha del producto, un recuadro fino agrupa el precio de lista <strong>tachado</strong>, un pill con el porcentaje (<em>-15% OFF</em>) y el precio del medio de pago <strong>protagonista</strong>, con la etiqueta <em>"pagando con Efectivo/Transferencia"</em>. El carrito muestra una fila por medio debajo del Total, con la misma etiqueta y su propio pill (sin recuadro). Se calcula sobre el precio <strong>ya mostrado</strong> (con o sin IVA segun la configuracion del sitio), asi los numeros son comparables. El recuadro expone ademas un slot estable para que el modulo puente de cuotas (<code>website_sale_installment_plans_ux</code>) publique ahi la linea de cuotas.</td>
                     </tr>
                     <tr>
                         <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; font-weight: 700; background: ButtonFace; color: ButtonText;">Redondeo</td>
@@ -50,7 +50,7 @@
             <p style="margin: 0 0 12px;"><strong>Ajustes &rarr; Medios de pago &rarr; abrir un medio &rarr; pestana <em>Website</em></strong> y agregar una linea por sitio. La pestana aparece en los medios primarios (Transferencia, Tarjeta, Mercado Pago Wallet).</p>
             <div style="padding: 16px 18px; border: 1px solid ButtonBorder; border-radius: 6px; background: Canvas;">
                 <p style="margin: 0 0 6px; font-weight: 700; color: CanvasText;">Ejemplo</p>
-                <p style="margin: 0; color: CanvasText;">Medio <em>Transferencia bancaria</em>, sitio <em>Nokey</em>, Descuento, 15,00, Productos, redondeo 0, Mostrar si. Un producto de $ 157.300,00 publica <strong>$ 133.705,00 con Transferencia bancaria</strong> y el checkout cobra $ 133.705,00.</p>
+                <p style="margin: 0; color: CanvasText;">Medio <em>Transferencia bancaria</em>, sitio <em>Nokey</em>, Descuento, 15,00, Productos, redondeo 0, Mostrar si. Un producto de $ 157.300,00 muestra el recuadro con el precio de lista tachado, el pill <em>-15% OFF</em> y, como protagonista, <strong>$ 133.705,00 pagando con Transferencia bancaria</strong>; el checkout cobra $ 133.705,00.</p>
             </div>
         </div>
 
@@ -60,6 +60,7 @@
                 <li style="margin-bottom: 8px;">Modelo nuevo <code>payment.method.website.price</code> (unico por medio y sitio). Todo el calculo vive en <code>_apply_to_price()</code>: porcentaje y despues redondeo, mismo orden que <code>product.pricelist.item</code> del core.</li>
                 <li style="margin-bottom: 8px;">La regla se resuelve <strong>por el medio primario</strong>: el proveedor reescribe el medio de la transaccion con la marca real (<code>card</code> &rarr; <code>visa</code>) al procesar el feedback, asi que buscar por el medio tal cual llega perderia la configuracion.</li>
                 <li style="margin-bottom: 8px;">Vidriera por <code>_get_sales_prices</code> (grilla) y <code>_get_additionnal_combination_info</code> (ficha), con repintado en JS al cambiar de variante. El JS parchea <code>WebsiteSale.prototype</code>, no el mixin: el core copia el mixin al prototipo con <code>Object.assign</code>.</li>
+                <li style="margin-bottom: 8px;">El recuadro se arma <strong>moviendo</strong> los nodos que el core ya renderiza (<code>position="move"</code>) y decorandolos por CSS: no se duplica ni se recalcula ningun precio. Los locators propios se resuelven siempre por atributo <code>name</code> (<code>div[@name='wspmp_box']</code>, <code>div[@name='wspmp_installments']</code>), nunca por clase, porque el recuadro lleva clases condicionales dinamicas.</li>
                 <li style="margin-bottom: 8px;">Ruta <code>POST /shop/payment/method_price</code>, que opera solo sobre el carrito de la sesion. El paso de pago se recarga porque el importe vive en el <code>dataset</code> del formulario.</li>
                 <li style="margin-bottom: 0;">No se modifica core ni enterprise: todo es <code>_inherit</code>, <code>t-inherit</code> y <code>patch()</code>.</li>
             </ul>

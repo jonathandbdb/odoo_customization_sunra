@@ -19,13 +19,19 @@ class ProductTemplate(models.Model):
         Se devuelve tambien el precio ya formateado porque el JS de variantes tiene que repintarlo
         sin volver a resolver la moneda ni su precision.
 
+        `label` es el prefijo traducible (`_("paying with")`) y `name` el nombre del medio: viajan
+        separados para que la vista y el JS los compongan como `prefijo` + `<b>nombre</b>` sin
+        meter HTML dentro de un string traducible ni `innerHTML` en el repintado (D20). `badge` es
+        el texto del pill (`-15% OFF`) y solo viaja si la regla es un descuento; con recargo viaja
+        `False` (no hay pill ni tachado, D19/CA23).
+
         :param website: sitio web que se esta renderizando
         :type website: recordset de `website`
         :param price: precio mostrado del producto
         :type price: float
         :param rules: reglas ya resueltas, para no re-buscarlas por producto en la grilla
         :type rules: recordset de `payment.method.website.price` o None
-        :return: lista de dicts con name, label, price y price_formatted
+        :return: lista de dicts con name, label, price, price_formatted, price_type y badge
         :rtype: list
         """
         if rules is None:
@@ -40,15 +46,21 @@ class ProductTemplate(models.Model):
             adjusted = rule._apply_to_price(price)
             vals.append({
                 "name": rule.payment_method_id.name,
-                "label": _("with %(method)s", method=rule.payment_method_id.name),
+                "label": _("paying with"),
                 "price": adjusted,
                 "price_formatted": format_amount(self.env, adjusted, currency),
+                "price_type": rule.price_type,
+                "badge": _(
+                    "-%(percentage)s%% OFF", percentage=rule._get_percentage_label()
+                ) if rule.price_type == "discount" else False,
             })
         return vals
 
     def _get_sales_prices(self, website):
         """Override de `website_sale` para agregar los precios por medio de pago a la grilla."""
         res = super()._get_sales_prices(website)
+        if not self:
+            return res
         rules = self.env["payment.method.website.price"]._get_website_rules(
             website, only_visible=True
         )

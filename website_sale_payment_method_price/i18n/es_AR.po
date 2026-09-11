@@ -16,6 +16,14 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: website_sale_payment_method_price
+#. odoo-python
+#: code:addons/website_sale_payment_method_price/models/product_template.py:0
+#: code:addons/website_sale_payment_method_price/models/sale_order.py:0
+msgid "-%(percentage)s%% OFF"
+msgstr "-%(percentage)s%% OFF"
+
+
+#. module: website_sale_payment_method_price
 #: model:ir.model.fields,field_description:website_sale_payment_method_price.field_payment_method_website_price__applies_to
 msgid "Applies To"
 msgstr "Aplica a"
@@ -262,5 +270,5 @@ msgstr ""
 #. odoo-python
 #: code:addons/website_sale_payment_method_price/models/product_template.py:0
 #: code:addons/website_sale_payment_method_price/models/sale_order.py:0
-msgid "with %(method)s"
-msgstr "con %(method)s"
+msgid "paying with"
+msgstr "pagando con"

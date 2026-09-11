@@ -129,7 +129,10 @@ def _get_token_payment_method_id(token_id):
     """
     if not token_id:
         return None
-    token_sudo = request.env["payment.token"].sudo().browse(int(token_id)).exists()
+    try:
+        token_sudo = request.env["payment.token"].sudo().browse(int(token_id)).exists()
+    except (TypeError, ValueError):
+        return None
     return token_sudo.payment_method_id.id if token_sudo else None
 
 
@@ -147,7 +150,10 @@ def _get_rule_for_method(payment_method_id, website):
     empty = request.env["payment.method.website.price"].sudo()
     if not payment_method_id:
         return empty
-    method_sudo = request.env["payment.method"].sudo().browse(int(payment_method_id)).exists()
+    try:
+        method_sudo = request.env["payment.method"].sudo().browse(int(payment_method_id)).exists()
+    except (TypeError, ValueError):
+        return empty
     if not method_sudo:
         return empty
     return method_sudo._get_website_price_rule(website)
