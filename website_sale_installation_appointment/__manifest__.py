@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     "name": "website_sale_installation_appointment",
-    "version": "1.10.0",
+    "version": "1.11.0",
     "summary": "Envio con instalacion en el eCommerce: agenda la cita y pide fotos del lugar en el checkout",
     "description": """
 Permite vender un envio "con instalacion incluida" desde el eCommerce y que esa venta quede agendada
@@ -15,7 +15,12 @@ como Cita (app Citas), con las fotos del lugar y los datos que cargo el cliente.
   de instalacion (con "entre calles" e indicaciones para el instalador), turno y fotos, y pago.
 - En el segundo bloque el cliente agenda dia y hora sobre la disponibilidad real de la cuadrilla
   (reutiliza la pagina nativa de Citas y su control de capacidad) y sube las fotos del lugar de
-  instalacion, guiado por una guia visual con ejemplos de fotos correctas e incorrectas.
+  instalacion, guiado por una guia visual con ejemplos de fotos correctas e incorrectas. El
+  formulario de la cita NO le vuelve a pedir lo que ya cargo en el checkout: ni nombre, ni correo,
+  ni las fotos.
+- Los tipos de cita que se agendan FUERA del eCommerce (el link que comparte Nokey) pueden pedir la
+  direccion de instalacion en el propio formulario: sin eso la tarea del instalador queda sin lugar
+  al que ir.
 - Al confirmarse/pagarse el pedido, el mecanismo nativo (website_appointment_sale) convierte la
   reserva en Cita y este modulo copia las fotos a la Cita y a la tarea de Field Service, con las
   indicaciones del cliente en la descripcion de la tarea.

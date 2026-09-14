@@ -20,6 +20,7 @@
                  crea este modulo con el proyecto de acá. -->
             <xpath expr="//group[@name='right_details']" position="inside">
                 <field name="installation_fsm_project_id"/>
+                <field name="installation_request_address"/>
                 <field name="installation_request_photos"/>
                 <field name="installation_min_photos" invisible="not installation_request_photos"/>
             </xpath>

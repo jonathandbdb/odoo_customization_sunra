@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import base64
+import logging
 import re
 from urllib.parse import urlencode
 
@@ -15,6 +16,8 @@ from odoo.addons.website_sale_installation_appointment.models.website import INS
 # Limites del upload publico de fotos (el endpoint es auth="public").
 MAX_PHOTOS = 10
 MAX_PHOTO_SIZE = 10 * 1024 * 1024
+
+_logger = logging.getLogger(__name__)
 
 
 
@@ -310,6 +313,11 @@ class AppointmentInstallation(WebsiteAppointmentSale):
             response.qcontext["installation_answer_errors"] = request.session.pop(
                 "installation_answer_errors", [],
             )
+            # Lo que el cliente ya habia escrito en el bloque de direccion (D58): sin esto, un
+            # error de validacion le vacia el formulario y tiene que volver a cargar todo.
+            response.qcontext["installation_address_data"] = request.session.pop(
+                "installation_address_data", {},
+            )
         return response
 
     def appointment_form_submit(self, appointment_type_id, datetime_str, duration_str, name, email,
@@ -323,6 +331,16 @@ class AppointmentInstallation(WebsiteAppointmentSale):
         """
         appointment_type = request.env["appointment.type"].sudo().browse(int(appointment_type_id)).exists()
         errors = []
+        # Direccion de la instalacion (D58): solo en los tipos que la piden (el link que comparte
+        # Nokey). Se valida antes de reservar; si falta algo se vuelve al formulario con lo cargado.
+        address_vals = {}
+        # `appointment_type` puede venir VACIO (`.exists()` sobre un id borrado, o un tipo que se
+        # dio de baja con el formulario abierto): los gates hacen `ensure_one()` y en un endpoint
+        # `auth="public"` eso seria un 500. Sin el tipo no hay nada que validar y el `super()` ya
+        # levanta el NotFound del core (appointment/controllers/appointment.py:693).
+        if appointment_type and appointment_type._is_installation_asking_address():
+            address_vals, address_errors = self._get_installation_address_vals(kwargs)
+            errors.extend(address_errors)
         for question in appointment_type.question_ids:
             key = "question_%s" % question.id
             if key not in kwargs:
@@ -330,9 +348,12 @@ class AppointmentInstallation(WebsiteAppointmentSale):
             error = question._validate_answer(kwargs.get(key))
             if error:
                 errors.append(error)
-        # Fotos del lugar: solo en los tipos de cita que las piden (el link que comparte Nokey).
+        # Fotos del lugar: solo cuando el formulario de la cita las pide de verdad. Espeja al
+        # template (`_is_installation_asking_photos()`, D57): en el camino del checkout el input ni
+        # siquiera se pinta, asi que exigirlas aca dejaba el formulario rechazando el turno con un
+        # error sobre un campo que el cliente no tiene delante.
         photos = request.env["ir.attachment"].sudo()
-        if appointment_type.installation_request_photos:
+        if appointment_type and appointment_type._is_installation_asking_photos():
             uploads = request.httprequest.files.getlist("installation_photos")
             photos, photo_warnings = create_installation_photos(uploads, MAX_PHOTOS)
             errors.extend(photo_warnings)
@@ -346,6 +367,7 @@ class AppointmentInstallation(WebsiteAppointmentSale):
         if errors:
             photos.unlink()
             request.session["installation_answer_errors"] = errors
+            request.session["installation_address_data"] = address_vals
             return request.redirect("/appointment/%s/info?%s" % (
                 appointment_type.id, self._get_installation_info_query(
                     datetime_str, duration_str, staff_user_id, available_resource_ids,
@@ -358,13 +380,97 @@ class AppointmentInstallation(WebsiteAppointmentSale):
             staff_user_id=staff_user_id, available_resource_ids=available_resource_ids,
             asked_capacity=asked_capacity, guest_emails_str=guest_emails_str, **kwargs,
         )
+        event = self._get_submitted_appointment_event(response) if (photos or address_vals) else None
         if photos:
-            event = self._get_submitted_appointment_event(response)
             if event:
                 event._installation_post_photos(photos)
             else:
                 photos.unlink()
+        if address_vals and event:
+            # La reserva del cliente ya esta hecha: un fallo guardando la direccion (un constraint
+            # de otro modulo sobre res.partner, por ejemplo) no puede traducirse en un 500 que le
+            # haga perder el turno. Mismo criterio que el create() de la tarea FSM.
+            try:
+                with request.env.cr.savepoint():
+                    self._save_appointment_installation_address(event, address_vals)
+            except Exception:
+                _logger.warning(
+                    "website_sale_installation_appointment: no se pudo guardar la direccion de "
+                    "instalacion de la cita %s", event.id, exc_info=True,
+                )
         return response
+
+    def _get_installation_address_vals(self, post):
+        """ Read and validate the installation address block of the appointment form (D58).
+
+        :param post: raw POST values
+        :type post: dict
+        :return: (values ready for `res.partner.write`, list of errors)
+        :rtype: tuple
+        """
+        # Se truncan server-side a los mismos largos que declara el `maxlength` del input: el POST
+        # es publico y el `maxlength` solo frena en el navegador.
+        vals = {
+            "street": (post.get("installation_street") or "").strip()[:128],
+            "street2": (post.get("installation_street2") or "").strip()[:128],
+            "city": (post.get("installation_city") or "").strip()[:64],
+            "zip": (post.get("installation_zip") or "").strip()[:16],
+            "between_streets": (post.get("installation_between_streets") or "").strip()[:100],
+        }
+        errors = []
+        if not vals["street"]:
+            errors.append(_("Please enter the street and number of the installation address."))
+        if not vals["city"]:
+            errors.append(_("Please enter the town of the installation address."))
+        return vals, errors
+
+    def _save_appointment_installation_address(self, event, address_vals):
+        """ Store the installation address on the customer of the booking (D58).
+
+        The Field Service task created for this appointment takes its address from the customer
+        (`calendar_event._installation_generate_fsm_task`), so writing it here is what puts the
+        place on the crew's task.
+
+        Decision is **all or nothing on the street** (not field by field): a contact that already
+        has a street but no town would otherwise end up with the old street and the new town — an
+        address that does not exist anywhere. If the contact already has a street, nothing is
+        written and what the customer declared is posted on the appointment **and on the task**,
+        which is where the crew actually looks.
+
+        :param event: the appointment just created (sudo)
+        :param address_vals: values returned by `_get_installation_address_vals`
+        """
+        # `appointment_booker_id` es el contacto que acaba de reservar (lo setea el create() nativo
+        # de la cita). NO se cae a `partner_ids[:1]`: ese recordset arranca por el partner del
+        # EMPLEADO, y escribir ahi la direccion del cliente ensuciaria una ficha ajena.
+        partner_sudo = event.appointment_booker_id.sudo()
+        if not partner_sudo:
+            return
+        task = event.sudo().installation_task_id
+        declared = {field: value for field, value in address_vals.items() if value}
+        if not partner_sudo.street:
+            partner_sudo.write(declared)
+        elif declared:
+            # El contacto ya tenia domicilio cargado (cliente conocido): no se le pisa, pero lo que
+            # declaro tiene que llegar al que va a ir. Etiquetas legibles, no nombres de campo.
+            labels = {
+                "street": _("Street"), "street2": _("Floor / apartment"), "city": _("Town"),
+                "zip": _("ZIP code"), "between_streets": _("Cross streets"),
+            }
+            body = _(
+                "Address declared by the customer when booking: %(address)s",
+                address=", ".join(
+                    "%s: %s" % (labels.get(field, field), value)
+                    for field, value in declared.items()
+                ),
+            )
+            event.sudo().message_post(body=body)
+            if task:
+                task.message_post(body=body)
+        # Fuera del `if`: el "entre calles" tiene que llegar al cuerpo de la tarea aunque no se
+        # haya escrito nada en el contacto (CA51), porque se lee de ahi y no del domicilio.
+        if task:
+            task.description = event._installation_task_description(partner_sudo)
 
     def _get_submitted_appointment_event(self, response):
         """ Recover the event just created by the native submit.

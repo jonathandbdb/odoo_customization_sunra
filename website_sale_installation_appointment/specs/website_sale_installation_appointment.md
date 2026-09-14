@@ -3,10 +3,10 @@
 | Campo | Valor |
 |-------|-------|
 | **Modulo** | `website_sale_installation_appointment` |
-| **Version** | `1.10.0` (== `version` del `__manifest__.py`, formato `x.x.x`) |
+| **Version** | `1.11.0` (== `version` del `__manifest__.py`, formato `x.x.x`) |
 | **Serie Odoo** | `19` (informativa) |
-| **Estado** | `verified` |
-| **Actualizado** | `2026-09-11` |
+| **Estado** | `implemented` (1.10.0 quedo `verified`; **1.11.0** = se deja de pedir dos veces lo mismo en el camino del checkout y se pide la direccion en el camino del link, a partir de lo que el cliente vio el 14-09-2026. Implementado y recorrido de punta a punta en el navegador por el orquestador —checkout completo hasta el paso de pago, y link hasta la reserva con la tarea de Field Service creada—. Queda `implemented` hasta la pasada de @reviewer) |
+| **Actualizado** | `2026-09-14` |
 
 > Cliente: **Miluan SRL / Nokey** (eCommerce de cerraduras inteligentes, `nokey.odoo.com`).
 > Repo: `extra-addons/odoo_customization_sunra`. Licencia LGPL-3, autor Sunra.
@@ -115,6 +115,8 @@ elemento nuevo agregado adentro sin su clase propia queda igual **protegido** po
 | D54 | ¿Como se evita repetir el intro en la pagina de la cita? | Condicionando por **carrito**, no por URL: `appointment.type._is_installation_checkout_source()` devuelve `True` cuando `request.cart` requiere instalacion **con ese** tipo de cita, y el override de `appointment_info` apaga tambien en ese caso el bloque nativo de `message_intro`. **Por que no un parametro en la URL de "Agendar"**: el flujo nativo navega varias veces (calendario → `/appointment/<id>/info?...` que arma el **core**) y el parametro **se pierde** en el camino. `request.cart` esta disponible en cualquier pagina del frontend (`odoo/addons/website_sale/models/ir_http.py:L32`). El camino del **link compartido** (sin carrito) sigue viendo el intro arriba del calendario (D8). |
 | D55 | ¿De donde salen las fotos de la guia? | De las **6 fotos reales** que entrego el cliente, que hoy viven **fuera del repo** en `/home/leandro/Descargas/nokey-propuesta-fuente/mk/` como **PNG de 240–540 KB**: `foto-ok-frente.png` (600×800), `foto-ok-canto.png` (600×800), `foto-ok-marco.png` (600×800), `foto-no-borrosa.png` (600×804), `foto-no-cortada.png` (600×804), `foto-no-obstruida.png` (600×773). Se **convierten a JPEG** (calidad ~82, ancho maximo 600 px) y se copian al repo en `static/src/img/` con nombres estables: `photo_ok_front.jpg`, `photo_ok_edge.jpg`, `photo_ok_frame.jpg`, `photo_bad_blurry.jpg`, `photo_bad_cropped.jpg`, `photo_bad_obstructed.jpg` (sin prefijo `installation_`: ya viven dentro de `static/src/img/` del modulo; las de **medidas** A/B **no se renombran** — diff minimo). Las dos de ejemplo viejas (`installation_example_lock.jpg`, `installation_example_door_edge.jpg`) **se dan de baja** junto con sus `msgid` de alt y pie. **Criterio de baja** (corregido tras revision, el rango de lineas fijo quedaba incompleto): **todas** las entradas de `i18n/es_419.po` cuyo `#:` apunte a `…installation_photo_examples` (no un rango de lineas — el archivo se reconstruye completo en T10). Nunca se linkean externas (AGENTS.md). |
 | D56 | ¿El mapa de confirmacion del punto entra en este cambio? | **No**: es **etapa aparte (issue Plane #69)**. La maqueta aprobada lo muestra al pie del Paso 1, pero necesita proveedor de mapas, geocoding y coordenadas en el pedido — nada de eso entra aca. Este cambio cierra el Paso 1 con el boton **Confirm address**; el mapa se sumara despues, dentro del mismo bloque. |
+| D57 | ¿Que pide el formulario de la cita cuando el cliente **viene del checkout**? | **Solo lo que no le preguntamos todavia.** El cliente reporto el 14-09-2026 que al elegir dia y hora "me hace completar de nuevo todos los datos y me pide de nuevo las fotos de la puerta": el formulario nativo de la cita volvia a pedir nombre, correo, las notas para el instalador y **las 3 fotos**, todo ya cargado en el checkout — y las fotos subidas ahi **no contaban** para el gate del Paso 2 (se guardan en la cita, no en el pedido), asi que habia que subirlas dos veces. Se corrige en **tres niveles**: (a) **codigo**, `appointment.type._is_installation_asking_photos()` —la condicion del bloque de fotos pasa de `installation_request_photos` a secas a "y ademas no venir del checkout" (`_is_installation_checkout_source()`, D54), **tanto en la plantilla como en la validacion del controller**, que si no rechazaba el turno por un campo que el cliente no tiene delante—; (b) **codigo**, nombre y correo se colapsan a `input[type=hidden]` + una linea "Reservas como `<nombre>` `<mail>`" cuando ya los sabemos (el submit nativo los sigue necesitando; si `partner_data` viniera vacio se cae al formulario nativo); (c) **dato**, la pregunta "Notas aclaratorias" se saca del tipo de cita del checkout —duplica el campo "Indicaciones para el instalador" del Paso 1— y queda solo en el tipo del link (las preguntas son reutilizables y las compartian los dos tipos). El gate va en codigo y no solo en configuracion porque **el mismo tipo de cita puede usarse en los dos caminos**, y ahi ninguna configuracion los distingue. |
+| D58 | ¿De donde sale la direccion cuando la cita se agenda **por el link**? | **Se la pide el formulario de la cita**, con un bloque propio: calle y numero (obligatorio), piso/depto, localidad (obligatorio), codigo postal y **entre calles**. Hasta 1.10.0 ese camino no pedia ninguna direccion: el formulario crea un contacto nuevo con nombre y mail, y la tarea de Field Service salia **sin lugar al que ir** (lo marco el cliente el 14-09-2026 mirando "Instalacion > Agenda tu instalacion"). Se activa con el campo nuevo `appointment.type.installation_request_address`, y nunca se muestra en el camino del checkout (ahi la direccion es la de entrega del pedido y se confirma en el Paso 1, mismo criterio que D57). Los valores se escriben en el **contacto** que reserva —que es de donde la tarea toma la direccion— con criterio **todo o nada sobre la calle**: si el contacto todavia no tiene domicilio se escribe la direccion completa; si ya lo tiene (cliente conocido, alta del backoffice) **no se le pisa nada** y lo declarado se postea en la cita **y en la tarea de Field Service**, que es donde mira la cuadrilla. Escribir campo por campo ("solo los vacios") era peor que cualquiera de las dos opciones: un contacto con calle cargada pero sin localidad terminaba con la calle vieja y la localidad nueva, una direccion que no existe. El "entre calles" ademas se **agrega al cuerpo de la tarea**, porque ninguna vista estandar de `project.task` imprime ese campo; como la tarea la crea el `create()` de la cita (antes de que el controller escriba la direccion), se **refresca** la descripcion — y ese refresco va **fuera** de la condicion de escritura, para que el entre calles llegue igual cuando no se escribio el contacto. Todo el bloque corre dentro de un **savepoint**: la reserva ya esta hecha y un fallo escribiendo el contacto no puede costarle el turno al cliente. |
 
 ## Alcance
 
@@ -237,7 +239,8 @@ el segundo no cambia.
 | `sale.order` | **`installation_address_confirmed`** *(nuevo)* | Boolean | Installation Address Confirmed | No | `False` | **`copy=False`**; lo setea el boton del Paso 1 y lo **resetea** todo cambio posterior de la direccion (D48); default `False` → **sin migracion** |
 | `sale.order.line` | **`is_free_battery_line`** *(nuevo)* | Boolean | Is a Free Battery Line | No | `False` | **sin `copy=`** (default `True` — D33, critico para el duplicado de pedidos); flag tecnico, no va en vistas |
 | `appointment.type` | `installation_fsm_project_id` | Many2one `project.project` | Field Service Project | No | — | `domain=[('is_fsm','=',True)]` |
-| `appointment.type` | `installation_request_photos` | Boolean | Ask for Site Photos | No | `False` | — |
+| `appointment.type` | `installation_request_photos` | Boolean | Ask for Site Photos | No | `False` | Pide las fotos en el **formulario de la cita**. En el tipo del checkout no hace falta (ahi las pide el Paso 2) y el codigo las esconde igual en ese camino (D57) |
+| `appointment.type` | **`installation_request_address`** *(nuevo 1.11.0)* | Boolean | Ask for the Installation Address | No | `False` | Pide la direccion de instalacion en el formulario de la cita. Se tilda en los tipos agendados **fuera** del eCommerce (el link): ahi no hay pedido que la aporte (D58). Nunca se muestra en el camino del checkout |
 | `appointment.type` | `installation_min_photos` | Integer | Minimum Site Photos | No | `0` | — |
 | `appointment.type` | `installation_photos_message` | Html | Site Photos Message | No | — | `translate=True`, `sanitize_attributes=False` (espeja el `message_intro` nativo). Vacio = texto por defecto del modulo |
 | `appointment.question` | `answer_format` | Selection | Answer Format | Si | `free` | `free`/`integer`/`decimal`/`phone`/`identification` |
@@ -291,6 +294,7 @@ ambiguedad de la UoM es el riesgo #1 de esta feature):
 #### `calendar.event`
 - `create()` / `write()` — **overrides**: generan la tarea de FSM de las citas con `installation_fsm_project_id` (aislado en savepoint) y la mantienen en linea al reprogramar/cancelar/desarchivar.
 - `_installation_generate_fsm_task()`, `_installation_cancel_task()`, `_installation_restore_task()`, `_installation_post_photos(attachments)`.
+- `_installation_task_description(customer)` *(nuevo 1.11.0)* — cuerpo de la tarea de FSM: la descripcion de la cita mas el **"entre calles"** del contacto (D58). `Markup + Markup` (concatenar un `str` crudo escaparia el lado derecho) y la etiqueta en el idioma de la **compania**, no del visitante (mismo molde que `sale.order._get_installation_task_notes()`).
 - `_mail_get_companies(default=False)` — **override** (D43): resolvedor de "que compania es esta
   cita" — pedido que la origino (el mas viejo, no cancelado) > organizador (`user_id.company_id`) >
   quien la creo (`create_uid.company_id`) > `super()` con el `default`. Influye en `record_company_id`
@@ -319,6 +323,8 @@ ambiguedad de la UoM es el riesgo #1 de esta feature):
 - `appointment_type_id_form()` / `appointment_form_submit()` / `_get_customer_partner()` / `_redirect_to_payment()` — **overrides** del flujo de citas (errores de formato, fotos, partner del carrito, vuelta al paso).
 - `create_installation_photos(uploads, available_slots, res_model, res_id)` — helper compartido de validacion/creacion de adjuntos.
 - `_prepare_installation_values(order_sudo)` *(se extiende)* — valores del paso; suma el estado de los 3 bloques, el partner de envio, la URL de edicion de la direccion y el href del paso siguiente.
+- `_get_installation_address_vals(post)` *(nuevo 1.11.0)* — lee y valida el bloque de direccion del formulario de la cita (D58): devuelve `(vals, errores)`, con los valores **truncados server-side** a los mismos largos que declara el `maxlength` del input (el POST es publico) y calle y localidad obligatorias.
+- `_save_appointment_installation_address(event, address_vals)` *(nuevo 1.11.0)* — guarda esa direccion en el contacto que reservo (`appointment_booker_id`, nunca `partner_ids[:1]`, que arranca por el partner del **empleado**) y refresca la descripcion de la tarea de FSM. Criterio **todo o nada sobre la calle**: si el contacto ya tiene domicilio cargado no se le pisa nada y lo declarado se postea en la cita **y en la tarea** (que es donde mira la cuadrilla); escribir campo por campo armaria una direccion mezclada que no existe. El refresco de la descripcion va **fuera** de esa condicion: el "entre calles" tiene que llegar a la tarea aunque no se escriba el contacto (CA51). Todo el bloque corre dentro de un **savepoint** en el llamador: la reserva ya esta hecha y un fallo escribiendo el contacto no puede costarle el turno al cliente.
 
 ---
 
@@ -639,6 +645,20 @@ ambiguedad de la UoM es el riesgo #1 de esta feature):
   por otro camino (`_prepare_task_template_vals`, `odoo/addons/sale_project/models/sale_order_line.py:L285`)
   que **no pasa** por este override. Hoy el producto de reserva no usa plantilla (ver *Edge cases*).
 
+### `AppointmentType._is_installation_asking_photos()` / `_is_installation_asking_address()`
+
+- **Proposito**: decidir si el **formulario de la cita** pide las fotos y/o la direccion (D57/D58).
+  Son `installation_request_photos` / `installation_request_address` **y ademas** no venir del
+  checkout (`_is_installation_checkout_source()`).
+- **Por que en codigo y no solo en configuracion**: el mismo tipo de cita puede usarse en los dos
+  caminos, y ahi ninguna configuracion los distingue.
+- **Los consumen la plantilla y el controller**: el gate tiene que estar en los dos. Con el gate solo
+  en la plantilla, `appointment_form_submit()` seguia exigiendo las fotos y **rechazaba el turno**
+  por un campo que ya no se pinta (encontrado recorriendo el flujo, no en revision estatica).
+- **Llamada defensiva**: los dos hacen `ensure_one()`, asi que el controller los invoca solo con el
+  tipo de cita **existente** (`if appointment_type and ...`): un id borrado dejaria un `ValueError`
+  sin capturar en un endpoint `auth="public"` (500) donde el core ya devuelve 404.
+
 ### `AppointmentType._is_installation_checkout_source()`
 
 - **Proposito**: saber si el visitante llego a la pagina del turno **desde el checkout**, para no
@@ -858,7 +878,13 @@ ambiguedad de la UoM es el riesgo #1 de esta feature):
     uno vertical con `object-fit: cover`, si no recorta justo lo que hay que mirar.
   - Lo llaman con `t-call` los dos caminos (checkout y formulario del link): un solo lugar para
     mantener.
-- `appointment_form` (hereda `appointment.appointment_form`): errores de formato, `enctype` multipart, guia de medidas junto a la pregunta marcada, input de fotos (con `installation_photos_message` arriba) e inputs con `type`/`pattern` reales.
+> **Conflicto latente con `appointment_sms`** (preexistente, no de este cambio): nuestro
+> `//input[@type='phone']` con `position="replace"` elimina el nodo que `appointment_sms` ancla con
+> `position="after"` (`enterprise/appointment_sms/views/appointment_templates_registration.xml:4`).
+> Ese modulo **no** esta instalado; si algun dia se instala, la pagina del turno rompe al combinar
+> las vistas y hay que pasar nuestro override a `position="attributes"` o reordenar por `priority`.
+
+- `appointment_form` (hereda `appointment.appointment_form`): errores de formato, `enctype` multipart, guia de medidas junto a la pregunta marcada, input de fotos (con `installation_photos_message` arriba) e inputs con `type`/`pattern` reales. **1.11.0** suma: (a) el input de fotos pasa a `_is_installation_asking_photos()` (D57); (b) los dos `div.row` de **nombre** y **correo** se reemplazan (`//label[@for='name']/..` y `//label[@for='email']/..`, con `$0` en la rama `t-else`) por `input[type=hidden]` mas la linea "Reservas como ..." cuando el visitante viene del checkout y `partner_data` trae los dos datos — `for` **no** es atributo traducible (a diferencia de `aria-label`), asi que el locator aguanta en `es_AR`; (c) el bloque de **direccion de instalacion** (`_is_installation_asking_address()`, D58), marcado `o_not_editable` porque vive dentro de un `oe_structure` del core y su prosa se podria congelar en una copia COW (D42). Los dos `position="before"` sobre `//t[@t-if='appointment_type.allow_guests']` dejan **direccion antes que fotos**: primero donde es, despues como es.
 - `appointment_info` (hereda `appointment.appointment_info`): el bloque nativo de `message_intro` del
   final (`enterprise/appointment/views/appointment_templates_appointments.xml:L231`) se apaga en
   **dos** casos: (a) en el tipo de cita **del link** (`installation_fsm_project_id`), donde el
@@ -921,6 +947,20 @@ ambiguedad de la UoM es el riesgo #1 de esta feature):
   PDF/descripcion de la tarea que los reusa.
 - `between_streets` es un campo mas de `res.partner`: hereda su seguridad (ACL/record rules del core) y
   no agrega modelos nuevos → **sigue sin haber cambios de ACLs, grupos ni record rules**.
+- **`sudo()` del bloque de direccion del formulario de la cita (1.11.0, D58)** — es la superficie de
+  seguridad nueva de esta version. `_save_appointment_installation_address()` escribe 5 campos fijos
+  (`street`, `street2`, `city`, `zip`, `between_streets`) sobre **`event.appointment_booker_id`**, que
+  es siempre el contacto del visitante que acaba de reservar: el `create()` nativo de la cita lo setea
+  en el mismo dict (`enterprise/appointment/models/appointment_type.py:L1217`) con el partner que
+  devuelve `_get_customer_partner()`, y ese, para un visitante publico, o es un contacto **recien
+  creado** por el propio submit (`enterprise/appointment/controllers/appointment.py:L800-824`, nunca
+  busca por email) o —por el override de este modulo— el partner del **carrito no anonimo** del propio
+  visitante. **No** se cae a `partner_ids[:1]`: ese recordset arranca por el partner del **empleado**
+  (`enterprise/appointment/models/appointment_type.py:L1205`), y escribir ahi la direccion del cliente
+  ensuciaria una ficha ajena. Nunca se pasa el `post` completo a un `write()`, los 5 valores se
+  **truncan server-side** a los mismos largos que declara el `maxlength` del input, y un valor vacio no
+  borra dato del contacto. El aviso de lo declarado cuando no se escribe va por `message_post` con el
+  subtipo interno por defecto (`mail.mt_note`): no le llega al cliente ni a los invitados de la cita.
 
 ## Reglas de negocio
 
@@ -1197,6 +1237,10 @@ ambiguedad de la UoM es el riesgo #1 de esta feature):
 - [ ] **CA48**: Todos los textos del paso hablan **de vos** (voseo) en es_419 — no conviven "Subi" y
   "Sube"/"Asegurate"— y los strings nuevos estan en **ingles** en el codigo, con su entrada traducida
   en `i18n/es_419.po`.
+| **CA49** | Viniendo del checkout, el formulario de la cita **no** vuelve a pedir nombre, correo ni fotos: muestra "Reservas como `<nombre>` `<mail>`" y solo las preguntas que el checkout no hace. El turno se reserva sin subir ninguna foto ahi | OK |
+| **CA50** | Entrando por el link (`/book/...`), el formulario pide la direccion de instalacion: calle y numero y localidad **obligatorias**, piso/depto, CP y entre calles opcionales | OK |
+| **CA51** | Al reservar por el link, el contacto creado queda con la direccion cargada y la tarea de Field Service la muestra; el "entre calles" aparece en el cuerpo de la tarea | OK |
+| **CA52** | Si el contacto que reserva **ya tenia** calle cargada, no se le pisa **ningun** campo de la direccion: lo declarado queda como mensaje en la cita **y en la tarea de Field Service** | OK |
 
 ## Referencias al core
 
@@ -1323,37 +1367,34 @@ ambiguedad de la UoM es el riesgo #1 de esta feature):
 
 ## Documentacion afectada
 
-| Archivo | Accion | Que reflejar |
-|---------|--------|-------------|
-| `website_sale_installation_appointment/README.md` | actualizar | (a) **Version** → `1.10.0`; (b) *Contenido del paso Instalacion* **reescrito**: los 3 bloques, que habilita cada uno y donde quedaron los avisos (duracion, pago, garantia/pilas); (c) *Imagenes*: las **6 fotos nuevas** de la guia y la **baja** de `installation_example_lock.jpg` / `installation_example_door_edge.jpg`; (d) *Textos configurables*: `message_intro` pasa a leerse **dentro del Paso 2** y **no se repite** en la pagina del turno cuando se viene del checkout; (e) *Configuracion*: el paso de **dato** para actualizar `installation_photos_message` (y revisar `message_intro`) en produccion; (f) *Gotchas*: la confirmacion de direccion **se cae** si despues se edita la direccion, `between_streets` es del **contacto** y `installation_notes` del **pedido**, y sin JS el acordeon no colapsa (se ve igual); (g) *Validacion manual*: los pasos de CA39–CA48 |
-| `website_sale_installation_appointment/static/description/index.html` | actualizar | Funcionalidad visible nueva: el paso de instalacion en **3 bloques** (direccion · turno y fotos · pago) y la **guia de fotos definitiva** (3 "asi si" + 3 "asi no") |
-| `odoo_customization_sunra/README.md` (raiz del repo) | actualizar | Sumar "paso de instalacion en 3 bloques + guia de fotos" al resumen de la fila del modulo en el indice |
-| `website_sale_installation_appointment/specs/website_sale_installation_appointment.md` | actualizar | Esta spec: `Estado` → `implemented` y `Version` sincronizada con el manifest (`1.10.0`) al cerrar T12 |
+| Archivo | Que se actualiza |
+|---------|------------------|
+| `README.md` del modulo | Version `1.11.0`; el camino del **link** suma el punto de la direccion de instalacion y la advertencia de que en el tipo del checkout no hace falta pedir fotos; el *Flujo del cliente* aclara que el formulario del turno no vuelve a pedir nombre, correo ni fotos |
+| `static/description/index.html` | Bloque nuevo "Agenda por link con direccion (v1.11.0)" y la fila de fotos aclara que no se piden dos veces |
+| `README.md` del repo | Fila del modulo: "sin volver a pedir lo que ya cargo" + la direccion en el camino del link |
+| `__manifest__.py` | `version` `1.11.0`; `description` con los dos puntos nuevos |
+| Esta spec | D57/D58, CA49–CA52, Campos, Metodos (controllers, `calendar.event`, `AppointmentType`), Vistas, Seguridad y el plan T01–T08 |
 
 ## Plan del cambio
 
-> **Plan del cambio CERRADO (11/09/2026)**: rediseño del paso de instalacion (3 bloques) + guia de
-> fotos definitiva, aprobado por el cliente el 11/09/2026 e implementado el mismo dia. **T01..T10 y
-> T12 quedaron ejecutados**; **T11 queda pendiente** (es un paso de **dato en produccion**, no de
-> codigo — no aplica a esta base de desarrollo, ver su fila). Los planes anteriores estan **cerrados**
-> y no se acumulan aca: pilas incluidas (T01..T12 de la version `1.8.0`) y marca del correo de
-> recordatorio (T13 de la `1.9.0`) viven en el historial de git; su resultado esta descrito como
-> **current-state** en *Decisiones vigentes*, *Metodos*, *Vistas* y `CA01`–`CA38`.
+> **Plan en curso (14/09/2026, 1.10.0 -> 1.11.0)**: no volver a pedir en el formulario de la cita lo
+> que el cliente ya cargo en el checkout (D57) y pedir la direccion cuando la cita se agenda por el
+> link (D58). Los planes anteriores estan **cerrados** y no se acumulan aca (rediseño del paso en 3
+> bloques y guia de fotos en `1.10.0`, pilas incluidas en `1.8.0`, marca del correo en `1.9.0`): su
+> resultado esta descrito como **current-state** en *Decisiones vigentes*, *Metodos* y *Vistas*.
+> **T11 del plan de 1.10.0 sigue pendiente** (dato en produccion: `installation_photos_message` y
+> `message_intro` del tipo de cita del checkout) y viaja con la configuracion de Plane #68.
 
 | Tarea | Descripcion | Depende de | Archivos | Cubre |
 |-------|-------------|------------|----------|-------|
-| **T01** ✅ | `res.partner`: campo `between_streets` (Char, opcional, `help` con ejemplo) + vista nueva que lo muestra junto a los campos de direccion. **Sin** override de `_get_frontend_writable_fields()`: el form de direccion del core no renderiza el campo, asi que la whitelist no tendria consumidor — lo escribe nuestra ruta con `sudo()` acotado (D49) | — | `models/res_partner.py` (nuevo), `models/__init__.py`, `views/res_partner_views.xml` (nuevo), `__manifest__.py` | CA41, CA46 |
-| **T02** ✅ | `sale.order`: campos `installation_notes` (Text, `copy=False`) e `installation_address_confirmed` (Boolean, `copy=False`, default `False`) + los dos en la pestaña **Installation** del form (el flag **readonly**) | — | `models/sale_order.py`, `views/sale_order_views.xml` | CA41 |
-| **T03** ✅ | Estado y gates: `sale.order._get_installation_block_states()` (D44), `_get_installation_errors()` suma la direccion sin confirmar (`[ASUNCION]` D50) y los **dos resets** de la confirmacion — `sale.order.write()` (cambia `partner_shipping_id`) y `res.partner.write()` (se edita el domicilio del partner de envio, molde `odoo/addons/website_sale/models/res_partner.py:L58`) | T01, T02 | `models/sale_order.py`, `models/res_partner.py` | CA42, CA43, CA44 |
-| **T04** ✅ | Controller: `_prepare_installation_values()` suma `block_states`, el partner de envio y la URL de edicion **con `&callback=/shop/installation`** (D12/D45); `shop_installation_submit()` suma la rama `confirm_installation_address` → `_save_installation_address()` con (a) **guarda de carrito anonimo** (`order_sudo._is_anonymous_cart()` → aviso + link a `/shop/address`, **sin** confirmar), (b) `sudo()` **acotado a los dos campos**, (c) **truncado** server-side (`installation_notes` 1000, `between_streets` 100) y (d) partner **antes** que el flag. La rama final sin `stay_on_step` y `_get_installation_next_step_href()` (`:L117`, `:L122`, `:L245`) **se conservan** como fallback defensivo: ya no las alcanza la UI, pero borrarlas no aporta nada | T03 | `controllers/website_sale_installation_appointment.py` | CA40, CA41, CA43, CA44 |
-| **T05** ✅ | Imagenes (ejecutable, D55): **origen** `/home/leandro/Descargas/nokey-propuesta-fuente/mk/` — `foto-ok-frente.png` (600×800), `foto-ok-canto.png` (600×800), `foto-ok-marco.png` (600×800), `foto-no-borrosa.png` (600×804), `foto-no-cortada.png` (600×804), `foto-no-obstruida.png` (600×773); PNG de 240–540 KB. **Convertir a JPEG** (calidad ~82, ancho maximo 600 px, con `convert`/ImageMagick o PIL) y guardarlas en `static/src/img/` como `photo_ok_front.jpg`, `photo_ok_edge.jpg`, `photo_ok_frame.jpg`, `photo_bad_blurry.jpg`, `photo_bad_cropped.jpg`, `photo_bad_obstructed.jpg`. **Dar de baja** `installation_example_lock.jpg` + `installation_example_door_edge.jpg` (**todas** las entradas de `i18n/es_419.po` cuyo `#:` apunte a `…installation_photo_examples`, las da de baja T10). Las de **medidas** A/B no se tocan ni se renombran | — | `static/src/img/*` | CA45 |
-| **T06** ✅ | Templates de fotos: `installation_photo_examples` **redefinido** (fila "asi si" con las 3 tomas + fila "asi no" con los 3 motivos, relacion de aspecto vertical) y **texto por defecto** de `installation_photos_message` reescrito a **3 fotos** (D51) | T05 | `views/website_sale_installation_templates.xml` | CA45 |
-| **T07** ✅ | Template `installation` **reestructurado en 3 bloques** (D44): encabezado, acordeon con estados desde `block_states`, Paso 1 (resumen + editar + entre calles + notas + *Confirm address*), Paso 2 (`message_intro`, duracion, boton de agendar **con margen superior**, fotos + progreso "N de min"), Paso 3 (candado / link a `next_website_checkout_step_href`), **renglon corto** de garantia + pilas con `t-if`/`t-else` (D52) y el link **Back**. El form de fotos lleva `stay_on_step` oculto y el JS **deja de inyectarlo**. **Restricciones de esta tarea**: (a) el `<form>` de fotos conserva `data-installation-photos="1"`, sigue dentro de `id="shop_installation"` y su submit conserva `name="installation_continue"` —son el `selector` y el boton de `installation_photos.js:L17`/`:L33`; solo cambia la **etiqueta visible**—; (b) `o_not_editable` va a nivel **contenedor** —`div.accordion#installation_accordion` y el `div` que envuelve `installation_photo_examples`— en vez de elemento por elemento, dejando fuera el `oe_structure` y los `t-field` de `message_intro` / `installation_photos_message` (D42, fix de revision M6); (c) el rotulo del Paso 3 sale de `next_website_checkout_step.name` (D44); (d) los mensajes "falta X" viven **solo** en la razon del candado del bloque — el `alert` de arriba queda para los errores de submit; (e) el `message_intro` vacio **no** pinta checklist por defecto (D52/CA35) | T03, T04, T06 | `views/website_sale_installation_templates.xml`, `static/src/js/installation_photos.js` | CA02, CA29, CA35, CA37, CA39, CA40, CA42, CA44, CA45 |
-| **T08** ✅ | No repetir el intro (D54): `appointment.type._is_installation_checkout_source()` (defensivo con `request`) + el override de `appointment_info` apaga el bloque nativo tambien en ese caso | — | `models/appointment_type.py`, `views/appointment_templates.xml` | CA47 |
-| **T09** ✅ | Propagacion al instalador: `sale.order._get_installation_task_notes()` — entre calles + notas, cada valor por `markupsafe.escape()` y retorno `Markup` (el destino `project.task.description` es Html, `odoo/addons/project/models/project_task.py:L153`), con las etiquetas *"Between streets:"* / *"Notes for the installer:"* en el idioma de la **compañia** (`order.company_id.partner_id.lang`: el lector es la cuadrilla interna) — y `sale.order.line._timesheet_create_task_prepare_values()` que lo antepone a `description` cuando la linea es la de la reserva | T01, T02 | `models/sale_order.py`, `models/sale_order_line.py` | CA46 |
-| **T10** ✅ | `i18n/es_419.po`: entradas nuevas de **todos** los textos del paso rediseñado, **una sola voz (voseo)** (D53); ademas de la plantilla, cubre los `string`/`help` de los **campos nuevos** (`between_streets`, `installation_notes`, `installation_address_confirmed`) y las **etiquetas de la descripcion de la tarea de FSM** (*"Between streets:"* / *"Notes for the installer:"*, T09). **Ejecutado reconstruyendo el archivo completo** desde `odoo.tools.translate.trans_export` contra el arch final (no a mano linea por linea): se comparo el `.pot` resultante contra el `.po` viejo, se dieron de baja las entradas que dejaron de existir (el checklist por defecto completo, el `<li>` historico de las pilas y **todas** las entradas cuyo `#:` apunta a `installation_photo_examples`) y se tradujeron en voseo las genuinamente nuevas/reescritas; las entradas viejas ya estaban en voseo (nada que reescribir ahi) | T01, T02, T06, T07, T08, T09 | `i18n/es_419.po` | CA35, CA37, CA48 |
-| **T11** ⏳ pendiente | **Dato en produccion** (no codigo): actualizar `installation_photos_message` del tipo de cita del checkout con la consigna de 3 fotos y **revisar `message_intro`** para que no repita los avisos que ahora estan repartidos por bloque. Se hace desde la ficha del tipo de cita en el **backend** (nunca desde el editor web: copia COW, D42) y queda documentado como paso de configuracion. **No aplica a esta base de desarrollo** (`nokey` local): es un paso operativo sobre la base de **produccion** (Odoo.sh), fuera del alcance de esta sesion de implementacion — queda pendiente para quien administre esa base | T06 | (sin archivos del repo) · se documenta en `README.md` en T12 | CA45 |
-| **T12** ✅ | **Cierre**: documentacion (README del modulo, `static/description/index.html`, fila del README del repo — ver *Documentacion afectada*) + bump `version` del manifest `1.9.0` → **`1.10.0`** + `Estado` de esta spec a `implemented` con la `Version` sincronizada. Antes de cerrar, **confirmar que no entre basura al commit**: los `__pycache__/*.pyc` del modulo (incluido el huerfano de `migrations/1.3.0/`) estan cubiertos por `__pycache__/` en el `.gitignore` del repo — **verificado con `git check-ignore -v`**; si algun dia dejara de estarlo, se agrega antes del commit | T01..T11 | `README.md`, `static/description/index.html`, `../README.md`, `__manifest__.py`, `specs/website_sale_installation_appointment.md` | — (anti-drift + version sync) |
+| **T01** ✅ | `appointment.type`: campo nuevo `installation_request_address` (Boolean) + los dos gates de camino, `_is_installation_asking_photos()` y `_is_installation_asking_address()`, los dos apoyados en `_is_installation_checkout_source()` (D54). Se aclara el `help` de `installation_request_photos` para que el funcional sepa que en el tipo del checkout no hace falta | — | `models/appointment_type.py`, `views/appointment_type_views.xml` | CA49, CA50 |
+| **T02** ✅ | Formulario de la cita, camino checkout (D57): el bloque de fotos pasa a `_is_installation_asking_photos()`; nombre y correo se colapsan a `input[type=hidden]` + la linea "Reservas como ..." cuando `partner_data` los trae; se conserva el formulario nativo si no los trae | T01 | `views/appointment_templates.xml` | CA49 |
+| **T03** ✅ | **La validacion del controller tiene que espejar la plantilla**: `appointment_form_submit()` exigia las fotos por `installation_request_photos` a secas y rechazaba el turno del checkout por un campo que ya no se pinta (encontrado recorriendo el flujo, no en revision estatica). Pasa a `_is_installation_asking_photos()` | T02 | `controllers/website_sale_installation_appointment.py` | CA49 |
+| **T04** ✅ | Formulario de la cita, camino link (D58): bloque de direccion (calle**, piso/depto, localidad**, CP, entre calles) con `_is_installation_asking_address()`; `_get_installation_address_vals()` valida y trunca server-side; los valores vuelven al formulario si hay error (`installation_address_data` por sesion) | T01 | `views/appointment_templates.xml`, `controllers/website_sale_installation_appointment.py` | CA50, CA51 |
+| **T05** ✅ | Persistencia (D58): `_save_appointment_installation_address()` escribe **solo los campos vacios** del contacto que reserva y deja lo declarado en el chatter de la cita si el contacto ya tenia otra direccion; `calendar.event._installation_task_description()` suma el "entre calles" al cuerpo de la tarea de Field Service y la descripcion se **refresca** despues de escribir el contacto (la tarea la crea el `create()` de la cita, antes) | T04 | `controllers/website_sale_installation_appointment.py`, `models/calendar_event.py` | CA51, CA52 |
+| **T06** ✅ | `i18n/es_419.po`: entradas nuevas del bloque de direccion, de la linea "Reservas como", de los dos mensajes de error y de los `help` de los campos, en voseo (D53). Exportadas con `TranslationModuleReader` contra el arch final y traducidas, para no escribir los `msgid` multilinea a mano | T02, T04 | `i18n/es_419.po` | CA48 |
+| **T07** ✅ | **Dato** (no codigo): en el tipo de cita del **checkout** se quita la pregunta "Notas aclaratorias" (duplica el campo del Paso 1) y en el del **link** se tilda `installation_request_address`. Aplica a la base local, a staging y a produccion (viaja con Plane #68) | T01 | (sin archivos del repo) | CA49, CA50 |
+| **T08** ✅ | **Cierre**: documentacion (README del modulo, `static/description/index.html`, fila del README del repo) + bump `version` `1.10.0` → **`1.11.0`** + `Estado`/`Version` de esta spec sincronizados | T01..T07 | `README.md`, `static/description/index.html`, `../README.md`, `__manifest__.py`, `specs/website_sale_installation_appointment.md` | — (anti-drift + version sync) |
 
 ## Notas de implementacion
 

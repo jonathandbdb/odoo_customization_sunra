@@ -18,7 +18,16 @@ class AppointmentType(models.Model):
     installation_request_photos = fields.Boolean(
         string="Ask for Site Photos",
         help="Show the photo upload in the appointment form: the crew needs to know what they will "
-             "find at the installation site.",
+             "find at the installation site. It is NOT needed for the appointment type used by the "
+             "eCommerce checkout: that path already asks for the photos in its own step, and this "
+             "module hides the upload there so the customer is not asked twice.",
+    )
+    installation_request_address = fields.Boolean(
+        string="Ask for the Installation Address",
+        help="Show the address block in the appointment form. Tick it on the appointment types "
+             "booked WITHOUT going through the eCommerce (the link Nokey shares): there is no "
+             "delivery address behind them, so without this the crew gets a task with no place to "
+             "go. The eCommerce checkout already has the address and never shows this block.",
     )
     installation_min_photos = fields.Integer(
         string="Minimum Site Photos",
@@ -37,6 +46,31 @@ class AppointmentType(models.Model):
              "appointment form of the link shared by Nokey. Leave empty to show the default text of "
              "the module.",
     )
+
+    def _is_installation_asking_photos(self):
+        """ Whether the appointment form itself must ask for the site photos (D57).
+
+        Never on the checkout path: the installation step of the checkout already asks for them
+        (and stores them on the order), so showing the upload again in the appointment form makes
+        the customer load the same photos twice and only the checkout ones count. The gate is in
+        code and not only in the configuration on purpose: the same appointment type can be used by
+        both paths, and then no configuration can tell them apart.
+
+        :rtype: bool
+        """
+        self.ensure_one()
+        return self.installation_request_photos and not self._is_installation_checkout_source()
+
+    def _is_installation_asking_address(self):
+        """ Whether the appointment form must ask for the installation address (D58).
+
+        Same criterion as the photos: on the checkout path the address is the delivery address of
+        the order and is confirmed in Step 1, so the block is never shown there.
+
+        :rtype: bool
+        """
+        self.ensure_one()
+        return self.installation_request_address and not self._is_installation_checkout_source()
 
     def _is_installation_checkout_source(self):
         """ Whether the visitor reached the appointment page FROM the checkout (D54).

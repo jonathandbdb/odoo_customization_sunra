@@ -158,6 +158,7 @@ msgstr "Entre calles"
 
 #. module: website_sale_installation_appointment
 #. odoo-python
+#: code:addons/website_sale_installation_appointment/models/calendar_event.py:0
 #: code:addons/website_sale_installation_appointment/models/sale_order.py:0
 msgid "Between streets:"
 msgstr "Entre calles:"
@@ -919,3 +920,118 @@ msgid ""
 msgstr ""
 "⏳ Duración de la instalación: reservate entre 2 y 4 horas (varía según la "
 "complejidad de la puerta)."
+
+#. module: website_sale_installation_appointment
+#. odoo-python
+#: code:addons/website_sale_installation_appointment/controllers/website_sale_installation_appointment.py:0
+msgid "Address declared by the customer when booking: %(address)s"
+msgstr "Dirección declarada por el cliente al agendar: %(address)s"
+
+#. module: website_sale_installation_appointment
+#: model:ir.model.fields,field_description:website_sale_installation_appointment.field_appointment_type__installation_request_address
+msgid "Ask for the Installation Address"
+msgstr "Pedir la dirección de instalación"
+
+#. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.appointment_form
+msgid "Between streets, e.g. Peru and Chile"
+msgstr "Entre calles, p. ej. Perú y Chile"
+
+#. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.appointment_form
+msgid "Floor / apartment (optional)"
+msgstr "Piso / departamento (opcional)"
+
+#. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.appointment_form
+msgid "Installation address *"
+msgstr "Dirección de instalación *"
+
+#. module: website_sale_installation_appointment
+#. odoo-python
+#: code:addons/website_sale_installation_appointment/controllers/website_sale_installation_appointment.py:0
+msgid "Please enter the street and number of the installation address."
+msgstr "Ingresá la calle y el número de la dirección de instalación."
+
+#. module: website_sale_installation_appointment
+#. odoo-python
+#: code:addons/website_sale_installation_appointment/controllers/website_sale_installation_appointment.py:0
+msgid "Please enter the town of the installation address."
+msgstr "Ingresá la localidad de la dirección de instalación."
+
+#. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.appointment_form
+msgid "Street and number, e.g. Lamadrid 581"
+msgstr "Calle y número, p. ej. Lamadrid 581"
+
+#. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.appointment_form
+msgid "Town, e.g. Tigre"
+msgstr "Localidad, p. ej. Tigre"
+
+#. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.appointment_form
+msgid "ZIP"
+msgstr "Código postal"
+
+#. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.appointment_form
+msgid ""
+"<i class=\"fa fa-user me-2\" role=\"img\"/>\n"
+"                    <span>You are booking as</span>"
+msgstr ""
+"<i class=\"fa fa-user me-2\" role=\"img\"/>\n"
+"                    <span>Reservás como</span>"
+
+#. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.appointment_form
+msgid ""
+"<small class=\"form-text text-muted\">\n"
+"                        This is where the crew goes. The cross streets help in areas where the\n"
+"                        street numbering is hard to follow.\n"
+"                    </small>"
+msgstr ""
+"<small class=\"form-text text-muted\">\n"
+"                        Es el lugar al que va la cuadrilla. Las esquinas ayudan en zonas donde la\n"
+"                        numeración es difícil de seguir.\n"
+"                    </small>"
+
+#. module: website_sale_installation_appointment
+#: model:ir.model.fields,help:website_sale_installation_appointment.field_appointment_type__installation_request_address
+msgid "Show the address block in the appointment form. Tick it on the appointment types booked WITHOUT going through the eCommerce (the link Nokey shares): there is no delivery address behind them, so without this the crew gets a task with no place to go. The eCommerce checkout already has the address and never shows this block."
+msgstr "Muestra el bloque de dirección en el formulario de la cita. Tildalo en los tipos de cita que se agendan SIN pasar por el eCommerce (el link que comparte Nokey): ahí no hay una dirección de entrega detrás, y sin esto la cuadrilla recibe una tarea sin lugar al que ir. El checkout del eCommerce ya tiene la dirección y nunca muestra este bloque."
+
+#. module: website_sale_installation_appointment
+#: model:ir.model.fields,help:website_sale_installation_appointment.field_appointment_type__installation_request_photos
+msgid "Show the photo upload in the appointment form: the crew needs to know what they will find at the installation site. It is NOT needed for the appointment type used by the eCommerce checkout: that path already asks for the photos in its own step, and this module hides the upload there so the customer is not asked twice."
+msgstr "Muestra la carga de fotos en el formulario de la cita: la cuadrilla necesita saber con qué se va a encontrar en el lugar. NO hace falta en el tipo de cita del checkout del eCommerce: ese camino ya pide las fotos en su propio paso, y el módulo esconde la carga ahí para no pedírselas dos veces al cliente."
+
+#. module: website_sale_installation_appointment
+#. odoo-python
+#: code:addons/website_sale_installation_appointment/controllers/website_sale_installation_appointment.py:0
+msgid "Street"
+msgstr "Calle"
+
+#. module: website_sale_installation_appointment
+#. odoo-python
+#: code:addons/website_sale_installation_appointment/controllers/website_sale_installation_appointment.py:0
+msgid "Floor / apartment"
+msgstr "Piso / departamento"
+
+#. module: website_sale_installation_appointment
+#. odoo-python
+#: code:addons/website_sale_installation_appointment/controllers/website_sale_installation_appointment.py:0
+msgid "Town"
+msgstr "Localidad"
+
+#. module: website_sale_installation_appointment
+#. odoo-python
+#: code:addons/website_sale_installation_appointment/controllers/website_sale_installation_appointment.py:0
+msgid "ZIP code"
+msgstr "Código postal"
+
+#. module: website_sale_installation_appointment
+#. odoo-python
+#: code:addons/website_sale_installation_appointment/controllers/website_sale_installation_appointment.py:0
+msgid "Cross streets"
+msgstr "Entre calles"

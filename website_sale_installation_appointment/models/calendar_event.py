@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
 
+from markupsafe import Markup
+
 from odoo import _, api, fields, models
 
 _logger = logging.getLogger(__name__)
@@ -189,13 +191,39 @@ class CalendarEvent(models.Model):
             "partner_id": customer.id or False,
             "planned_date_begin": self.start,
             "date_deadline": self.stop,
-            "description": self.description,
+            "description": self._installation_task_description(customer),
             # Explicito: el create de project.task deja como asignado al uid actual, que aca es el
             # usuario publico que agendo. El despacho lo hace el backoffice.
             "user_ids": [(6, 0, [])],
         })
         self.sudo().installation_task_id = task.id
         return task
+
+    def _installation_task_description(self, customer):
+        """ Body of the Field Service task: the answers of the form plus the cross streets (D58).
+
+        The task shows the address through `partner_id`, but `between_streets` is a field of this
+        module that no standard view of the task prints: it goes into the description so the crew
+        reads it where they read everything else.
+
+        :param customer: contact that booked the appointment
+        :type customer: recordset de `res.partner`
+        :return: HTML body
+        :rtype: Markup
+        """
+        self.ensure_one()
+        description = self.description or Markup()
+        if not customer.between_streets:
+            return description
+        # Reasignar `self` (no una variable nueva): `_()` resuelve el idioma leyendo el `self` del
+        # frame del LLAMADOR. Sin esto la etiqueta sale en el idioma del VISITANTE (este metodo
+        # corre dentro del request publico de la cita) y el que la lee es la cuadrilla. Mismo
+        # molde y mismo motivo que `sale.order._get_installation_task_notes()`.
+        self = self.with_context(lang=self.env.company.partner_id.lang or self.env.lang)
+        # Markup + Markup: concatenar un `str` crudo escaparia el lado derecho.
+        return description + Markup("<p><strong>%s</strong> %s</p>") % (
+            _("Between streets:"), customer.between_streets,
+        )
 
     def _installation_cancel_task(self):
         """Cancelar la tarea del instalador cuando el cliente cancela la cita."""

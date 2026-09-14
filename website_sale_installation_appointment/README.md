@@ -4,7 +4,7 @@ Vender un **envío con instalación incluida** desde el eCommerce y que esa vent
 Cita** (app Citas), con las **fotos del lugar** y los datos que cargó el cliente, y con la **tarea de
 Field Service** del instalador.
 
-- **Versión**: 1.10.0
+- **Versión**: 1.11.0
 - **Licencia**: LGPL-3
 - **Depende de**: `website_sale`, `delivery`, `website_appointment_sale`, `sale_project`
 
@@ -387,11 +387,21 @@ pago y termina en el checkout): se configura un **segundo tipo de cita**.
    instalador, la crea este módulo con la fecha, el cliente, la dirección y las respuestas. La tarea
    nace **sin asignar** (por recursos Odoo no sabe qué persona va) y se sincroniza si la cita se
    reprograma o se cancela.
-3. **Preguntas**: las mismas técnicas del tipo web **más la dirección de la instalación** (acá no hay
-   checkout que la aporte). Las preguntas se reutilizan entre tipos, no hay que duplicarlas.
-4. **Fotos del lugar**: activar *Pedir fotos del lugar*. El mínimo puede quedar en 0 (se muestran
+3. **Preguntas**: las mismas técnicas del tipo web. Las preguntas se reutilizan entre tipos, no hay
+   que duplicarlas — pero la de *Notas aclaratorias* conviene dejarla **solo acá**: en el checkout
+   duplica el campo "Indicaciones para el instalador" del Paso 1.
+4. **Dirección de la instalación**: activar **_Pedir la dirección de instalación_**. Acá no hay
+   checkout que la aporte, así que sin esto la tarea del instalador sale **sin lugar al que ir**. El
+   formulario pide calle y número y localidad (obligatorias), piso/depto, código postal y **entre
+   calles**; los datos se guardan en el contacto que reserva (solo los campos que estén vacíos, para
+   no pisar una dirección ya cargada por el backoffice) y el "entre calles" además se escribe en el
+   cuerpo de la tarea.
+5. **Fotos del lugar**: activar *Pedir fotos del lugar*. El mínimo puede quedar en 0 (se muestran
    pero no bloquean) — bloquear una reserva por una subida desde el celular es arriesgado.
-5. **Link para compartir**: abrir el tipo de cita y apretar **Compartir** (arriba a la izquierda).
+   ⚠️ En el tipo de cita **del eCommerce** esta opción no hace falta: ese camino ya pide las fotos en
+   el Paso 2 del checkout, y el módulo esconde la carga en el formulario de la cita para no pedirlas
+   dos veces (aunque la opción quede activada).
+6. **Link para compartir**: abrir el tipo de cita y apretar **Compartir** (arriba a la izquierda).
    Odoo abre *Crear un enlace para compartir* con la URL ya armada (ej. `/book/instalacion`) y el
    botón *Copiar enlace y cerrar*. Ese es el link que se manda al cliente por WhatsApp o mail; **no**
    requiere que se registre y **es siempre el mismo** (queda guardado en el smart button *Enlaces
@@ -407,10 +417,11 @@ backoffice.
 3. Paso **Instalación**, en 3 bloques:
    - **Paso 1**: revisa la dirección de entrega, agrega "entre calles" e indicaciones para el
      instalador (opcional) y aprieta *Confirmar dirección* → se habilita el Paso 2.
-   - **Paso 2**: *Agendar la instalación* → elige día y hora en la página de la cita y responde las
-     preguntas (incluidas las medidas, con la ayuda de los diagramas) → vuelve al paso → sube las
-     fotos del lugar (según la guía visual) → cuando agendó y subió las mínimas, se habilita el
-     Paso 3.
+   - **Paso 2**: *Agendar la instalación* → elige día y hora en la página de la cita y responde
+     **solo lo que el checkout no le preguntó** (las medidas, con la ayuda de los diagramas): el
+     nombre y el correo viajan ocultos y se muestran como *"Reservás como …"*, y **las fotos no se
+     piden ahí** → vuelve al paso → sube las fotos del lugar (según la guía visual) → cuando agendó
+     y subió las mínimas, se habilita el Paso 3.
    - **Paso 3**: link directo al pago.
 4. Paga. Al confirmarse el pedido: se crea la **Cita**, la **tarea de Field Service** (con "entre
    calles" e indicaciones en la descripción) y las fotos quedan en el chatter de las dos.

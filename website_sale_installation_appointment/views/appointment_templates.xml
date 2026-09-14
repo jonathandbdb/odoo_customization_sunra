@@ -8,6 +8,14 @@
     <template id="appointment_form" inherit_id="appointment.appointment_form">
         <!-- Errores de formato de la validacion del servidor (red de seguridad del pattern). -->
         <xpath expr="//form[hasclass('appointment_submit_form')]" position="before">
+            <!-- D57: en el camino del checkout el cliente ya cargo nombre y mail en el paso de
+                 Direccion; el formulario de la cita solo tiene que confirmar el turno. Se colapsan
+                 los dos campos a inputs ocultos (el submit nativo los sigue necesitando) y se
+                 muestra una linea con quien reserva. La condicion exige ademas que los datos esten
+                 de verdad: si por lo que sea `partner_data` viene vacio, se cae al formulario
+                 nativo en vez de mandar un nombre en blanco. -->
+            <t t-set="installation_known_customer"
+               t-value="appointment_type._is_installation_checkout_source() and partner_data.get('name') and partner_data.get('email')"/>
             <div t-if="installation_answer_errors" class="alert alert-danger" role="alert">
                 <div t-foreach="installation_answer_errors" t-as="answer_error"
                      t-key="answer_error_index" t-out="answer_error"/>
@@ -18,6 +26,25 @@
         <xpath expr="//form[hasclass('appointment_submit_form')]" position="attributes">
             <attribute name="enctype">multipart/form-data</attribute>
         </xpath>
+        <!-- Nombre y correo: ocultos cuando ya los sabemos (D57). -->
+        <xpath expr="//label[@for='name']/.." position="replace">
+            <t t-if="installation_known_customer">
+                <div class="alert alert-light border mb-4 o_not_editable" role="note">
+                    <i class="fa fa-user me-2" role="img"/>
+                    <span>You are booking as</span>
+                    <b class="ms-1" t-out="partner_data['name']"/>
+                    <span class="text-muted ms-1" t-out="partner_data['email']"/>
+                </div>
+                <input type="hidden" name="name" t-att-value="partner_data['name']"/>
+            </t>
+            <t t-else="">$0</t>
+        </xpath>
+        <xpath expr="//label[@for='email']/.." position="replace">
+            <t t-if="installation_known_customer">
+                <input type="hidden" name="email" t-att-value="partner_data['email']"/>
+            </t>
+            <t t-else="">$0</t>
+        </xpath>
         <!-- Guia de medidas: va DENTRO del bucle de preguntas, justo antes de la que la pide
              (marcada con `installation_measure_guide`). Antes iba arriba de todas las preguntas y
              quedaba lejos de la que hay que responder. Sirve para los dos caminos: la pregunta de
@@ -26,8 +53,59 @@
             <t t-if="question.installation_measure_guide"
                t-call="website_sale_installation_appointment.installation_measure_guide"/>
         </xpath>
+        <!-- Direccion de la instalacion (D58). Solo en los tipos de cita agendados FUERA del
+             eCommerce (el link que comparte Nokey): ahi no hay pedido ni direccion de entrega, y
+             sin esto la tarea del instalador queda sin lugar al que ir. Va ANTES del bloque de
+             fotos: primero donde es, despues como es. -->
         <xpath expr="//t[@t-if='appointment_type.allow_guests']" position="before">
-            <div class="row mb-4" t-if="appointment_type.installation_request_photos">
+            <!-- `o_not_editable`: el bloque vive dentro de un `oe_structure` del core, asi que sin
+                 esto sus etiquetas y placeholders se pueden editar desde el editor web — y eso crea
+                 una copia por sitio que deja de recibir las actualizaciones del modulo (D42, ya
+                 paso en produccion con `installation_photo_examples`). -->
+            <div class="row mb-4 o_not_editable" t-if="appointment_type._is_installation_asking_address()">
+                <label class="col-sm-3 col-form-label fw-normal" for="installation_street">
+                    Installation address *
+                </label>
+                <div class="col-sm-9">
+                    <input type="text" class="form-control mb-2" id="installation_street"
+                           name="installation_street" required="1" maxlength="128"
+                           placeholder="Street and number, e.g. Lamadrid 581"
+                           t-att-value="installation_address_data.get('street') or ''"/>
+                    <input type="text" class="form-control mb-2" id="installation_street2"
+                           name="installation_street2" maxlength="128"
+                           placeholder="Floor / apartment (optional)"
+                           t-att-value="installation_address_data.get('street2') or ''"/>
+                    <div class="row g-2">
+                        <div class="col-8">
+                            <input type="text" class="form-control" id="installation_city"
+                                   name="installation_city" required="1" maxlength="64"
+                                   placeholder="Town, e.g. Tigre"
+                                   t-att-value="installation_address_data.get('city') or ''"/>
+                        </div>
+                        <div class="col-4">
+                            <input type="text" class="form-control" id="installation_zip"
+                                   name="installation_zip" maxlength="16"
+                                   placeholder="ZIP"
+                                   t-att-value="installation_address_data.get('zip') or ''"/>
+                        </div>
+                    </div>
+                    <input type="text" class="form-control mt-2" id="installation_between_streets"
+                           name="installation_between_streets" maxlength="100"
+                           placeholder="Between streets, e.g. Peru and Chile"
+                           t-att-value="installation_address_data.get('between_streets') or ''"/>
+                    <small class="form-text text-muted">
+                        This is where the crew goes. The cross streets help in areas where the
+                        street numbering is hard to follow.
+                    </small>
+                </div>
+            </div>
+        </xpath>
+        <xpath expr="//t[@t-if='appointment_type.allow_guests']" position="before">
+            <!-- D57: `_is_installation_asking_photos()` y no `installation_request_photos` a
+                 secas. En el camino del checkout las fotos ya se piden (y se guardan) en el Paso 2
+                 del paso de Instalacion: mostrar el input aca hacia que el cliente subiera las
+                 mismas fotos dos veces y que solo contaran las del checkout. -->
+            <div class="row mb-4" t-if="appointment_type._is_installation_asking_photos()">
                 <label class="col-sm-3 col-form-label fw-normal" for="installation_photos">
                     Photos of the site<t t-if="appointment_type.installation_min_photos"> *</t>
                 </label>
