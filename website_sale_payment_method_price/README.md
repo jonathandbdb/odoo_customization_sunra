@@ -1,12 +1,12 @@
 # website_sale_payment_method_price
 
 Descuento (o recargo) por **medio de pago** en el eCommerce: se publica en un **recuadro propio**
-(precio de lista tachado, pill con el porcentaje y el precio del medio como protagonista) y se
+(un precio por renglón con su pill, el precio del medio como protagonista y la línea "Ahorrás $X" en verde) y se
 aplica de verdad al pedido en el checkout.
 
 | | |
 |---|---|
-| **Versión** | 1.2.0 |
+| **Versión** | 1.3.0 |
 | **Depende de** | `website_sale` |
 | **Repos/entornos** | `odoo_customization_sunra`, rama `develop_19.0` |
 | **Spec SDD** | `specs/website_sale_payment_method_price.md` |
@@ -48,19 +48,32 @@ checkout cobra $ 133.705,00.
 
 ### La vidriera: el recuadro de precio
 
-Desde 1.2.0 el bloque de precio es un **recuadro propio** (maqueta aprobada por la cliente), de
-arriba a abajo:
+Desde 1.3.0 el bloque de precio es un **recuadro propio** (segunda maqueta, la que eligió el
+cliente), con **un precio por renglón** y el pill que lo explica al lado:
 
 1. El precio sin impuestos nacionales de `l10n_ar_website_sale` (si el sitio es AR), **fuera** del
    recuadro — no se toca, no se mueve y no se elimina.
-2. Dentro del recuadro, el precio de lista **tachado** — es el mismo nodo que el core ya renderiza
-   (`oe_price` en la ficha, `price_reduce`/"Sale price" en la grilla): se **mueve** ahí y se tacha
-   por CSS, no se duplica ni se recalcula.
-3. Un **pill** de marca (`#A3EA24`) con el porcentaje (`-15% OFF`), solo si la regla es un
-   descuento; con recargo no hay pill ni tachado.
-4. El precio del medio de pago, **protagonista**, con la etiqueta *pagando con* **`<medio>`**.
-5. Un **slot vacío** (`div[@name='wspmp_installments']`) para que el módulo puente
+2. Dentro del recuadro, el precio de **referencia** tachado con un **pill neutro** (`-22%`): es el
+   precio que el core ya publica arriba cuando hay uno (el de lista, si la lista de precios aplica
+   un descuento visible, o el **Precio comparativo** de la ficha del producto). Si no hay ninguno,
+   este renglón **no se dibuja**.
+3. El precio **actual** del core tachado, con el **pill de marca** (`#A3EA24`) del medio de pago
+   (`-15% OFF`), solo si la regla es un descuento; con recargo no hay pill ni tachado.
+4. El precio del medio de pago, **protagonista**.
+5. **`Ahorrás $X`** en verde: la diferencia contra el precio de referencia (o contra el actual, si
+   no hay referencia).
+6. La etiqueta *pagando con* **`<medio>`**.
+7. Un **slot vacío** (`div[@name='wspmp_installments']`) para que el módulo puente
    `website_sale_installment_plans_ux` publique ahí la línea de cuotas de ADHOC, si está instalado.
+
+Los importes **no se duplican ni se recalculan**: son los mismos nodos que renderiza el core
+(`oe_price` / `oe_default_price` en la ficha, `price_reduce` / `base_price` en la grilla), que la
+herencia **envuelve** en su renglón para poder ponerles el pill al lado, y tacha por CSS.
+
+> **Para que se vea el primer renglón hace falta un dato, no código**: hoy ningún producto de Nokey
+> tiene *Precio comparativo* cargado ni un descuento porcentual visible en la lista de precios, así
+> que el recuadro arranca en el punto 3. Cargando *Precio comparativo* en la ficha del producto
+> aparece el renglón tachado de arriba con su `-XX%`, y `Ahorrás` pasa a contarse contra ese número.
 
 El recuadro entero es `div[@name='wspmp_box']`: **el contrato de cualquier integración es el
 atributo `name`, no la clase** — las clases (`o_wspmp_box_active`, `o_wspmp_discounted`) son
@@ -151,22 +164,29 @@ producto sin impuestos), el descuento sí se parte por grupo: es lo correcto, no
   cuotas incluido): el recuadro lleva clases condicionales por `t-attf-class`
   (`o_wspmp_box_active`, `o_wspmp_discounted`) y `hasclass()` solo lee el atributo estático `class`,
   con lo que un xpath por clase no matchearía y abortaría la combinación de la vista.
-- **El pill vive siempre en el DOM.** Para que el JS de variantes solo tenga que togglear clases y
-  texto (nunca crear/destruir nodos dentro del recuadro), el `span.o_wspmp_badge` se renderiza
-  siempre, oculto con `d-none` cuando no hay pill que mostrar.
+- **Los pills viven siempre en el DOM (en la ficha).** Para que el JS de variantes solo tenga que
+  togglear clases y texto (nunca crear/destruir nodos dentro del recuadro), los tres `span` de pill
+  de la ficha —`.o_wspmp_badge_pm` y los dos `.o_wspmp_badge_ref`, uno por cada precio tachado
+  posible— se renderizan siempre, ocultos con `d-none` cuando no hay nada que mostrar. En la
+  **grilla** el pill de referencia va con `t-if`: esa superficie no se repinta por JS.
 
 ## Validación manual
 
-1. Configurar la regla y abrir `/shop`: cada tarjeta muestra el recuadro con el precio de lista
-   tachado, el pill `-15% OFF` y el precio del medio en grande.
-2. Abrir una ficha y **cambiar de variante**: el recuadro se repinta (precio, pill y decoración).
-3. `/shop/cart`: el total muestra la fila del medio de pago debajo del Total, con su propio pill.
-4. `/shop/payment`: elegir el medio con descuento → aparece la línea *Descuento* con su IVA y el
+1. Configurar la regla y abrir `/shop`: cada tarjeta muestra el recuadro con el precio actual
+   tachado, el pill `-15% OFF`, el precio del medio en grande y `Ahorrás $X` en verde.
+2. Cargar **Precio comparativo** en la ficha de un producto: aparece un renglón más arriba, con ese
+   importe tachado y un pill neutro (`-22%`), y el `Ahorrás` pasa a contarse contra ese número.
+   Sacarlo: el renglón desaparece sin dejar hueco ni pill suelto.
+3. Abrir una ficha y **cambiar de variante**: el recuadro se repinta (precio, ahorro, los dos pills
+   y la decoración).
+4. `/shop/cart`: el total muestra la fila del medio de pago debajo del Total, con su propio pill.
+5. `/shop/payment`: elegir el medio con descuento → aparece la línea *Descuento* con su IVA y el
    Total baja al precio mostrado en la vidriera. Cambiar de medio → el descuento se cae.
-5. Cambiar cantidades en el carrito con el descuento aplicado y volver al pago: el descuento se
+6. Cambiar cantidades en el carrito con el descuento aplicado y volver al pago: el descuento se
    recalcula sobre el nuevo total.
-6. Poner la regla en `Recargo` (surcharge): el recuadro muestra precio y etiqueta, pero **sin**
-   pill ni tachado (CA23).
-7. Con el módulo puente `website_sale_installment_plans_ux` instalado, verificar que la línea de
+7. Poner la regla en `Recargo` (surcharge): el recuadro muestra precio y etiqueta, pero **sin**
+   pill, **sin** tachado y **sin** `Ahorrás` (CA23).
+8. Con el módulo puente `website_sale_installment_plans_ux` instalado, verificar que la línea de
    cuotas queda **dentro** del recuadro, debajo del precio del medio de pago.
-8. A 360 px de ancho, la etiqueta y el pill no se cortan ni desbordan el recuadro.
+9. A 360 px de ancho, la etiqueta y el pill no se cortan ni desbordan el recuadro; en la grilla a
+   390 px (2 columnas) el precio tachado y su pill entran en el **mismo** renglón.

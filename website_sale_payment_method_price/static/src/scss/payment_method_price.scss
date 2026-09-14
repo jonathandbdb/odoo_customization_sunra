@@ -1,5 +1,6 @@
-// Bloque de precio por medio de pago (D17): recuadro fino, con el precio de lista tachado + un
-// pill de porcentaje, el precio del medio de pago como protagonista, la etiqueta "pagando con
+// Bloque de precio por medio de pago (D17/D25): recuadro fino con, de arriba a abajo, el precio
+// de lista tachado + su pill de descuento, el precio actual tachado + el pill del medio de pago,
+// el precio con el medio en grande, la linea "Ahorras $X" en verde, la etiqueta "pagando con
 // <medio>" y un slot para las cuotas de ADHOC (el puente website_sale_installment_plans_ux).
 //
 // El recuadro (`.o_wspmp_box`) es "display: contents" por defecto: cuando no hay ninguna regla
@@ -13,7 +14,8 @@
 .o_wspmp_box.o_wspmp_box_active {
     display: flex;
     flex-direction: column;
-    gap: 0.35rem;
+    align-items: flex-start;
+    gap: 0.3rem;
     position: relative;
     margin-top: 0.35rem;
     padding: 0.6rem 0.85rem;
@@ -31,23 +33,76 @@
 // todo el ancho de la tarjeta sin importar el modo de layout del padre.
 .o_wspmp_box_tile.o_wspmp_box_active {
     flex-basis: 100%;
+    // La tarjeta del listado va centrada (D22, es lo que ya hacia el sitio): los renglones nuevos
+    // se centran con ella para que el bloque se lea como una sola pieza. En la ficha, en cambio,
+    // todo queda alineado a la izquierda (maqueta D25).
+    align-items: center;
+
+    .o_wspmp_line {
+        justify-content: center;
+        gap: 0.25rem;
+    }
+
+    // A 390px la grilla son 2 columnas y la tarjeta queda en ~173px: con los tamanos de la ficha,
+    // precio y pill no entran en el mismo renglon y el pill cae solo abajo. Medido en el navegador
+    // (144px utiles): con 0.85rem el precio ocupa 81px y el pill 65px; bajando los dos quedan
+    // 74px + 59px + 4px de gap = 137px. Se reduce solo en la tarjeta; la ficha no tiene el problema.
+    .o_wspmp_badge {
+        font-size: 0.62rem;
+        padding: 0.15rem 0.38rem;
+    }
+
+    // En la grilla el precio tachado es el `<del>` que el core pinta dentro de
+    // `t[name='product_base_price']` (sin la clase `oe_compare_list_price`, que es de la ficha).
+    .o_wspmp_line_cmp > del,
+    .o_wspmp_line_current > span.fw-bold {
+        font-size: 0.78rem;
+    }
 }
 
-// El precio de lista que el core ya publicaba (`oe_price` en la ficha, `span.fw-bold` en la
-// grilla) pasa a ser secundario: mas chico, alineado a la izquierda y primero en el recuadro
-// (con el `move` a `position="before"` del slot, T02/T03, ya queda antes en el DOM tambien).
-// Selectores de dos componentes: le ganan a las clases sueltas del core (`.h5`, `.fw-bold`) sin
-// necesitar `!important` (excepcion: `justify-content`, ver mas abajo).
+// Los precios que el core ya publicaba (`oe_price` / `oe_default_price` en la ficha,
+// `span.fw-bold` / `del` en la grilla) pasan a ser secundarios: mas chicos, alineados a la
+// izquierda y ARRIBA del precio protagonista, un precio por renglon y con su pill al lado (D25).
+// Cada uno viene envuelto por la herencia en un `div.o_wspmp_line` (ver views/): el envoltorio es
+// lo que permite que precio y pill compartan renglon sin duplicar el importe (D19).
 //
 // OJO: nunca por `aria-label`. Es un atributo TRADUCIBLE (igual que en los xpath, D21/T03): en
 // es_AR el core renderiza `aria-label="Precio de venta"` / `"Precio original"`, no los strings en
 // ingles del arch fuente, asi que un selector CSS por `[aria-label="Sale price"]` no matchea en el
 // sitio real (no tira error, simplemente no aplica). Se usa la clase estatica del core
 // (`product_tile_templates.xml:192-194`, `class="mb-0 fw-bold"`) y, para el precio de lista ya
-// tachado por una lista de precios, el `del` hijo directo del recuadro (unico `del` posible ahi,
-// `product_tile_templates.xml:199-201`).
+// tachado por una lista de precios, el `del` que el core pinta dentro de `product_base_price`.
+// Igual que el recuadro, el envoltorio es `display: contents` por defecto (CA19): los envoltorios
+// son **estructurales** (los crea la herencia de la vista, no el dato), asi que existen tambien en
+// un sitio sin ninguna regla visible — por ejemplo Sunra, `website_id=3`. Sin esto, un `div` de
+// nivel bloque alrededor del `span` del precio del core le cambiaria la posicion a ese sitio, que
+// es exactamente lo que CA19 promete que no pasa. Solo con el recuadro activo el envoltorio genera
+// caja y pone precio y pill en el mismo renglon.
+.o_wspmp_line {
+    display: contents;
+}
+
+.o_wspmp_box_active .o_wspmp_line {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    line-height: 1.2;
+}
+
+// La herencia ANEXA el nodo original al final del envoltorio (`$0`, ver views/), con lo cual el
+// pill queda primero en el DOM. El orden visual (precio y despues pill) lo pone el flex.
+.o_wspmp_box_active .o_wspmp_line > .o_wspmp_badge {
+    order: 1;
+}
+
+// Ficha: el contenedor del core es un `d-flex` en fila; con el recuadro activo pasa a columna para
+// que cada renglon (lista / actual) quede uno debajo del otro, y el tachado arriba.
 .o_wspmp_box_active[name="wspmp_box"] > [name="product_price_container"] {
     order: -1;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.15rem;
     font-size: 0.85rem;
     width: auto;
     // El nodo movido trae `justify-content-end` del core (`templates.xml:2701`), utilidad de
@@ -56,20 +111,42 @@
     justify-content: flex-start !important;
 }
 
-.o_wspmp_box_active[name="wspmp_box"] > span.fw-bold {
+.o_wspmp_box_active[name="wspmp_box"] > [name="product_price_container"] > .o_wspmp_line_ref,
+.o_wspmp_box_active[name="wspmp_box"] > [name="product_price_container"] > .o_wspmp_line_cmp {
     order: -1;
+}
+
+// Grilla: los dos renglones son hijos directos del recuadro (se mueven por separado, T03) y ya
+// quedan en el orden correcto en el DOM; solo hay que subirlos por encima del precio protagonista.
+.o_wspmp_box_active[name="wspmp_box"] > .o_wspmp_line_cmp { order: -2; }
+.o_wspmp_box_active[name="wspmp_box"] > .o_wspmp_line_current { order: -1; }
+
+.o_wspmp_box_active .o_wspmp_line_current > span.fw-bold {
     font-size: 0.85rem;
     font-weight: 400;
 }
 
-.o_wspmp_box_active[name="wspmp_box"] > del {
-    order: -1;
+// Sin precio de lista que tachar no se pinta el renglon: si no quedaria un renglon vacio (o con el
+// pill suelto). Dos condiciones porque cada superficie lo esconde a su manera: la ficha con el
+// `d-none` que el core le pone al span (`has_discounted_price`), la grilla sin el `<del>` (el
+// `t-if` de `t[name='product_base_price']` no rindio nada).
+.o_wspmp_box_active .o_wspmp_line_ref:has(> .oe_default_price.d-none),
+.o_wspmp_box_active .o_wspmp_line_cmp:not(:has(del)),
+.o_wspmp_box_active .o_wspmp_line_cmp:has(> del.d-none) {
+    display: none;
 }
 
-// Tachado del precio del core: solo con descuento (CA23 lo deja afuera con recargo).
-.o_wspmp_discounted[name="wspmp_box"] > [name="product_price_container"] .oe_price,
-.o_wspmp_discounted[name="wspmp_box"] > span.fw-bold {
+// El `<del>` del comparativo trae `ms-1` del core (utilidad Bootstrap, `!important`): dentro del
+// renglon el espacio ya lo da el `gap`.
+.o_wspmp_box_active .o_wspmp_line_cmp > .oe_compare_list_price {
+    margin-left: 0 !important;
+}
+
+// Tachado del precio actual del core: solo con descuento (CA23 lo deja afuera con recargo).
+.o_wspmp_discounted[name="wspmp_box"] .o_wspmp_line_current > .oe_price,
+.o_wspmp_discounted[name="wspmp_box"] .o_wspmp_line_current > span.fw-bold {
     text-decoration: line-through;
+    color: var(--o-gray-600, #6c757d);
 }
 
 // D17(1): el precio sin impuestos nacionales de `l10n_ar_website_sale` (el `<small>` que agrega
@@ -88,20 +165,32 @@
     font-weight: 400;
 }
 
-// El pill de porcentaje siempre esta en el DOM (para que el JS solo tenga que togglear clases y
-// texto, D21/T07): un badge de esquina, independiente del orden de flujo.
+// Los pills viajan SIEMPRE en el DOM (para que el JS solo tenga que togglear clases y texto,
+// D21/T07) y van en linea, al lado del precio que explican (D25): el del medio de pago junto al
+// precio actual tachado, el del descuento que ya publica el core junto al precio de lista.
 .o_wspmp_badge {
-    position: absolute;
-    top: -0.65rem;
-    right: 0.6rem;
-    background-color: #A3EA24;
-    color: #1a1a1a;
+    display: inline-block;
     font-size: 0.7rem;
     font-weight: 700;
     line-height: 1;
     padding: 0.2rem 0.5rem;
     border-radius: 999px;
     white-space: nowrap;
+    vertical-align: middle;
+}
+
+// Pill del medio de pago: el verde de marca (D17, hardcodeado a proposito).
+.o_wspmp_badge_pm {
+    background-color: #A3EA24;
+    color: #1a1a1a;
+}
+
+// Pill del descuento que ya publica el core (lista de precios / comparativo): neutro, para que no
+// compita con el del medio de pago, que es el argumento de venta.
+.o_wspmp_badge_ref {
+    background-color: var(--o-gray-200, #e9ecef);
+    color: var(--o-gray-700, #495057);
+    font-weight: 600;
 }
 
 // En el carrito no hay recuadro (D23): el pill viaja inline, junto a la etiqueta.
@@ -130,6 +219,15 @@
     font-size: 1.35rem;
     font-weight: 700;
     white-space: nowrap;
+}
+
+// "Ahorras $X" (D25): el ahorro contra el precio tachado de arriba, en verde. NO se usa el verde
+// de marca #A3EA24 como color de texto: sobre blanco no llega al contraste minimo. Se usa una
+// version oscurecida del mismo tono (~4,6:1 sobre blanco), que si es legible.
+.o_wspmp_saving {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #3c7300;
 }
 
 // D20: sin text-transform forzado (se saca el uppercase que tenia el segundo precio de 1.1.0).

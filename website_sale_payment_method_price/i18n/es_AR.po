@@ -272,3 +272,15 @@ msgstr ""
 #: code:addons/website_sale_payment_method_price/models/sale_order.py:0
 msgid "paying with"
 msgstr "pagando con"
+
+#. module: website_sale_payment_method_price
+#. odoo-python
+#: code:addons/website_sale_payment_method_price/models/product_template.py:0
+msgid "You save %(amount)s"
+msgstr "Ahorrás %(amount)s"
+
+#. module: website_sale_payment_method_price
+#. odoo-python
+#: code:addons/website_sale_payment_method_price/models/product_template.py:0
+msgid "-%(percentage)s%%"
+msgstr "-%(percentage)s%%"
