@@ -47,6 +47,21 @@ class AppointmentType(models.Model):
              "the module.",
     )
 
+    def _is_installation_link_form(self):
+        """ Whether this is the standalone booking form Nokey shares as a link (D59).
+
+        Marks the form the customer fills WITHOUT going through the eCommerce: the one that asks
+        for everything (contact, door, address, photos) and therefore needs to be organised in
+        sections. The checkout path only confirms the slot and keeps the plain native layout.
+
+        `installation_fsm_project_id` is already the marker of "booked outside the eCommerce" (D8),
+        so it is reused here instead of inventing a second flag.
+
+        :rtype: bool
+        """
+        self.ensure_one()
+        return bool(self.installation_fsm_project_id) and not self._is_installation_checkout_source()
+
     def _is_installation_asking_photos(self):
         """ Whether the appointment form itself must ask for the site photos (D57).
 

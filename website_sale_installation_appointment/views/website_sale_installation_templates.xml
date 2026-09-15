@@ -33,6 +33,20 @@
         </div>
     </template>
 
+    <!-- Encabezado de seccion del formulario del link (D59). Un numero, un titulo y una linea de
+         ayuda: el formulario nativo es una lista plana de campos y, cuando se piden datos de
+         contacto + puerta + direccion + fotos, se lee como un muro. Recibe `sec_num`, `sec_title`
+         y `sec_help` por `t-set` del llamador. -->
+    <template id="installation_form_section" name="Installation Form Section">
+        <div class="o_installation_section o_not_editable">
+            <span class="o_installation_section_num" t-out="sec_num"/>
+            <div class="o_installation_section_text">
+                <h5 class="o_installation_section_title" t-out="sec_title"/>
+                <p t-if="sec_help" class="o_installation_section_help" t-out="sec_help"/>
+            </div>
+        </div>
+    </template>
+
     <!-- Consigna de las fotos: sale del campo `installation_photos_message` del tipo de cita, que
          el funcional edita desde el backend sin tocar plantillas (editar la plantilla desde el
          editor web crea una copia por sitio que deja de recibir las actualizaciones del modulo).

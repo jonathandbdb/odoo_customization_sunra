@@ -4,7 +4,7 @@ Vender un **envío con instalación incluida** desde el eCommerce y que esa vent
 Cita** (app Citas), con las **fotos del lugar** y los datos que cargó el cliente, y con la **tarea de
 Field Service** del instalador.
 
-- **Versión**: 1.11.0
+- **Versión**: 1.12.0
 - **Licencia**: LGPL-3
 - **Depende de**: `website_sale`, `delivery`, `website_appointment_sale`, `sale_project`
 
@@ -401,7 +401,13 @@ pago y termina en el checkout): se configura un **segundo tipo de cita**.
    ⚠️ En el tipo de cita **del eCommerce** esta opción no hace falta: ese camino ya pide las fotos en
    el Paso 2 del checkout, y el módulo esconde la carga en el formulario de la cita para no pedirlas
    dos veces (aunque la opción quede activada).
-6. **Link para compartir**: abrir el tipo de cita y apretar **Compartir** (arriba a la izquierda).
+6. **Orden del formulario**: el formulario de este camino se muestra en **cuatro secciones
+   numeradas** (Tus datos · Sobre tu puerta · Dirección de instalación · Fotos del lugar), con la
+   etiqueta arriba del campo. El **orden de las preguntas** dentro de la sección 2 lo maneja el
+   funcional desde el backend, arrastrando con el tirador de la lista de preguntas del tipo de
+   cita. ⚠️ Esa secuencia es **global**: las preguntas se reutilizan entre tipos de cita, así que
+   reordenar acá reordena en todos los tipos que usen la misma pregunta.
+7. **Link para compartir**: abrir el tipo de cita y apretar **Compartir** (arriba a la izquierda).
    Odoo abre *Crear un enlace para compartir* con la URL ya armada (ej. `/book/instalacion`) y el
    botón *Copiar enlace y cerrar*. Ese es el link que se manda al cliente por WhatsApp o mail; **no**
    requiere que se registre y **es siempre el mismo** (queda guardado en el smart button *Enlaces

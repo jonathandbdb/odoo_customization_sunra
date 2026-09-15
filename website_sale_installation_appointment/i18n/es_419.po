@@ -450,6 +450,7 @@ msgid "Installation Task"
 msgstr "Tarea de instalación"
 
 #. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.appointment_form
 #: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.delivery_address_list
 msgid "Installation address"
 msgstr "Dirección de la instalación"
@@ -1035,3 +1036,44 @@ msgstr "Código postal"
 #: code:addons/website_sale_installation_appointment/controllers/website_sale_installation_appointment.py:0
 msgid "Cross streets"
 msgstr "Entre calles"
+
+#. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.appointment_form
+msgid "Your details"
+msgstr "Tus datos"
+
+#. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.appointment_form
+msgid "So we can get in touch and confirm the visit."
+msgstr "Para que podamos contactarte y coordinar la visita."
+
+#. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.appointment_form
+msgid "About your door"
+msgstr "Sobre tu puerta"
+
+#. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.appointment_form
+msgid "Tell us what the crew is going to find."
+msgstr "Contanos con qué se va a encontrar la cuadrilla."
+
+#. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.appointment_form
+msgid "Enter the address where the installation will take place."
+msgstr "Ingresá la dirección donde se realiza la instalación."
+
+#. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.appointment_form
+msgid "So the crew knows what it will find before going."
+msgstr "Para que la cuadrilla sepa con qué se va a encontrar antes de ir."
+
+#. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.appointment_form
+msgid ""
+"<small class=\"form-text text-muted\">\n"
+"                        The cross streets help in areas where the street numbering is hard to follow.\n"
+"                    </small>"
+msgstr ""
+"<small class=\"form-text text-muted\">\n"
+"                        Las esquinas ayudan en zonas donde la numeración es difícil de seguir.\n"
+"                    </small>"

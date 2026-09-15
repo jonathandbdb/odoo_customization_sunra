@@ -16,6 +16,10 @@
                  nativo en vez de mandar un nombre en blanco. -->
             <t t-set="installation_known_customer"
                t-value="appointment_type._is_installation_checkout_source() and partner_data.get('name') and partner_data.get('email')"/>
+            <!-- D59: el formulario del LINK se organiza en secciones numeradas (pedido de la
+                 clienta el 15-09-2026: "algo mas ordenado"). El del checkout no se toca: ahi solo
+                 se confirma el turno y son dos campos. -->
+            <t t-set="installation_link_form" t-value="appointment_type._is_installation_link_form()"/>
             <div t-if="installation_answer_errors" class="alert alert-danger" role="alert">
                 <div t-foreach="installation_answer_errors" t-as="answer_error"
                      t-key="answer_error_index" t-out="answer_error"/>
@@ -25,6 +29,28 @@
              form, asi que con multipart los archivos viajan igual que en el checkout. -->
         <xpath expr="//form[hasclass('appointment_submit_form')]" position="attributes">
             <attribute name="enctype">multipart/form-data</attribute>
+            <!-- La clase del form es estatica en el nativo; se agrega por `t-attf-class`, que en el
+                 render pisa al `class` (ir_qweb.py:1946), asi que hay que repetir la del core. -->
+            <attribute name="t-attf-class">appointment_submit_form #{'o_installation_sections' if installation_link_form else ''}</attribute>
+        </xpath>
+        <!-- Seccion 1: los datos de contacto (los dos campos nativos). Se ancla en el csrf porque
+             las filas de nombre y correo las reemplaza una operacion anterior (D57). -->
+        <xpath expr="//input[@name='csrf_token']" position="after">
+            <t t-if="installation_link_form"
+               t-call="website_sale_installation_appointment.installation_form_section">
+                <t t-set="sec_num">1</t>
+                <t t-set="sec_title">Your details</t>
+                <t t-set="sec_help">So we can get in touch and confirm the visit.</t>
+            </t>
+        </xpath>
+        <!-- Seccion 2: las preguntas del tipo de cita (material de la puerta y las que agreguen). -->
+        <xpath expr="//t[@t-foreach='appointment_type.question_ids']" position="before">
+            <t t-if="installation_link_form"
+               t-call="website_sale_installation_appointment.installation_form_section">
+                <t t-set="sec_num">2</t>
+                <t t-set="sec_title">About your door</t>
+                <t t-set="sec_help">Tell us what the crew is going to find.</t>
+            </t>
         </xpath>
         <!-- Nombre y correo: ocultos cuando ya los sabemos (D57). -->
         <xpath expr="//label[@for='name']/.." position="replace">
@@ -62,8 +88,15 @@
                  esto sus etiquetas y placeholders se pueden editar desde el editor web — y eso crea
                  una copia por sitio que deja de recibir las actualizaciones del modulo (D42, ya
                  paso en produccion con `installation_photo_examples`). -->
+            <t t-if="installation_link_form and appointment_type._is_installation_asking_address()"
+               t-call="website_sale_installation_appointment.installation_form_section">
+                <t t-set="sec_num">3</t>
+                <t t-set="sec_title">Installation address</t>
+                <t t-set="sec_help">Enter the address where the installation will take place.</t>
+            </t>
             <div class="row mb-4 o_not_editable" t-if="appointment_type._is_installation_asking_address()">
-                <label class="col-sm-3 col-form-label fw-normal" for="installation_street">
+                <label t-attf-class="col-sm-3 col-form-label fw-normal#{' d-none' if installation_link_form else ''}"
+                       for="installation_street">
                     Installation address *
                 </label>
                 <div class="col-sm-9">
@@ -94,8 +127,7 @@
                            placeholder="Between streets, e.g. Peru and Chile"
                            t-att-value="installation_address_data.get('between_streets') or ''"/>
                     <small class="form-text text-muted">
-                        This is where the crew goes. The cross streets help in areas where the
-                        street numbering is hard to follow.
+                        The cross streets help in areas where the street numbering is hard to follow.
                     </small>
                 </div>
             </div>
@@ -105,8 +137,15 @@
                  secas. En el camino del checkout las fotos ya se piden (y se guardan) en el Paso 2
                  del paso de Instalacion: mostrar el input aca hacia que el cliente subiera las
                  mismas fotos dos veces y que solo contaran las del checkout. -->
+            <t t-if="installation_link_form and appointment_type._is_installation_asking_photos()"
+               t-call="website_sale_installation_appointment.installation_form_section">
+                <t t-set="sec_num">4</t>
+                <t t-set="sec_title">Photos of the site</t>
+                <t t-set="sec_help">So the crew knows what it will find before going.</t>
+            </t>
             <div class="row mb-4" t-if="appointment_type._is_installation_asking_photos()">
-                <label class="col-sm-3 col-form-label fw-normal" for="installation_photos">
+                <label t-attf-class="col-sm-3 col-form-label fw-normal#{' d-none' if installation_link_form else ''}"
+                       for="installation_photos">
                     Photos of the site<t t-if="appointment_type.installation_min_photos"> *</t>
                 </label>
                 <div class="col-sm-9">

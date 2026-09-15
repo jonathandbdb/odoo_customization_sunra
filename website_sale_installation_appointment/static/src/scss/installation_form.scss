@@ -1,0 +1,71 @@
+// Formulario del link "Agenda tu instalacion" (D59). Solo aplica cuando el form lleva la clase
+// `o_installation_sections`, que la herencia pone unicamente en el camino del LINK: el formulario
+// del checkout queda con el layout nativo, que ahi es correcto (son dos campos).
+//
+// El nativo arma cada campo como `div.row` con `label.col-sm-3` + `div.col-sm-9`: a dos columnas
+// la etiqueta queda lejos del campo y, con 6 campos seguidos, el formulario se lee como un muro.
+// Aca la etiqueta pasa arriba del campo, a lo ancho, y los campos se agrupan por seccion.
+.o_installation_sections {
+
+    // Encabezado de seccion: numero en circulo + titulo + ayuda.
+    .o_installation_section {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+        margin: 2rem 0 1rem;
+        padding-top: 1.25rem;
+        border-top: 1px solid var(--o-gray-200, #e9ecef);
+
+        &:first-child {
+            margin-top: 0;
+            padding-top: 0;
+            border-top: 0;
+        }
+    }
+
+    .o_installation_section_num {
+        flex: 0 0 auto;
+        width: 1.75rem;
+        height: 1.75rem;
+        border-radius: 50%;
+        background-color: #A3EA24;
+        color: #1a1a1a;
+        font-weight: 700;
+        font-size: 0.9rem;
+        line-height: 1.75rem;
+        text-align: center;
+    }
+
+    .o_installation_section_title {
+        margin: 0;
+        font-size: 1.05rem;
+        font-weight: 700;
+        line-height: 1.75rem;
+    }
+
+    .o_installation_section_help {
+        margin: 0.1rem 0 0;
+        font-size: 0.875rem;
+        color: var(--o-gray-600, #6c757d);
+    }
+
+    // La etiqueta arriba del campo, a lo ancho: se neutralizan las columnas del nativo.
+    .row > .col-sm-3.col-form-label {
+        flex: 0 0 100%;
+        max-width: 100%;
+        width: 100%;
+        padding-bottom: 0.25rem;
+        font-weight: 600;
+    }
+
+    .row > .col-sm-9 {
+        flex: 0 0 100%;
+        max-width: 100%;
+        width: 100%;
+    }
+
+    // Los campos de una misma seccion van mas juntos que las secciones entre si.
+    .row.mb-4 {
+        margin-bottom: 1rem !important;
+    }
+}
