@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     "name": "website_sale_payment_method_price",
-    "version": "1.3.0",
+    "version": "1.3.1",
     "summary": "Descuento o recargo por medio de pago en el eCommerce, con recuadro de precio y ahorro en la vidriera",
     "description": """
 Permite configurar un descuento (o recargo) por **medio de pago** y por **sitio web**, publicarlo en

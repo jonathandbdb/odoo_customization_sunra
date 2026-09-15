@@ -6,7 +6,7 @@ aplica de verdad al pedido en el checkout.
 
 | | |
 |---|---|
-| **Versión** | 1.3.0 |
+| **Versión** | 1.3.1 |
 | **Depende de** | `website_sale` |
 | **Repos/entornos** | `odoo_customization_sunra`, rama `develop_19.0` |
 | **Spec SDD** | `specs/website_sale_payment_method_price.md` |
@@ -51,20 +51,22 @@ checkout cobra $ 133.705,00.
 Desde 1.3.0 el bloque de precio es un **recuadro propio** (segunda maqueta, la que eligió el
 cliente), con **un precio por renglón** y el pill que lo explica al lado:
 
-1. El precio sin impuestos nacionales de `l10n_ar_website_sale` (si el sitio es AR), **fuera** del
-   recuadro — no se toca, no se mueve y no se elimina.
-2. Dentro del recuadro, el precio de **referencia** tachado con un **pill neutro** (`-22%`): es el
-   precio que el core ya publica arriba cuando hay uno (el de lista, si la lista de precios aplica
-   un descuento visible, o el **Precio comparativo** de la ficha del producto). Si no hay ninguno,
+1. Dentro del recuadro, el precio de **referencia** tachado con un **pill neutro** (`-22%`): es el
+   precio que el core ya publica cuando hay uno (el de lista, si la lista de precios aplica un
+   descuento visible, o el **Precio comparativo** de la ficha del producto). Si no hay ninguno,
    este renglón **no se dibuja**.
-3. El precio **actual** del core tachado, con el **pill de marca** (`#A3EA24`) del medio de pago
+2. El precio **actual** del core tachado, con el **pill de marca** (`#A3EA24`) del medio de pago
    (`-15% OFF`), solo si la regla es un descuento; con recargo no hay pill ni tachado.
-4. El precio del medio de pago, **protagonista**.
-5. **`Ahorrás $X`** en verde: la diferencia contra el precio de referencia (o contra el actual, si
+3. El precio del medio de pago, **protagonista**.
+4. **`Ahorrás $X`** en verde: la diferencia contra el precio de referencia (o contra el actual, si
    no hay referencia).
-6. La etiqueta *pagando con* **`<medio>`**.
-7. Un **slot vacío** (`div[@name='wspmp_installments']`) para que el módulo puente
+5. La etiqueta *pagando con* **`<medio>`**.
+6. Un **slot vacío** (`div[@name='wspmp_installments']`) para que el módulo puente
    `website_sale_installment_plans_ux` publique ahí la línea de cuotas de ADHOC, si está instalado.
+7. **Debajo del recuadro** (desde 1.3.1), el precio sin impuestos nacionales de
+   `l10n_ar_website_sale` (si el sitio es AR), en cuerpo chico y gris: es un dato para ARCA, no un
+   argumento de venta. El nodo **no se toca, no se mueve por herencia y no se elimina** — se
+   reordena por CSS.
 
 Los importes **no se duplican ni se recalculan**: son los mismos nodos que renderiza el core
 (`oe_price` / `oe_default_price` en la ficha, `price_reduce` / `base_price` en la grilla), que la

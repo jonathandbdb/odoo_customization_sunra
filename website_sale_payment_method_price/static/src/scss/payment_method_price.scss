@@ -33,6 +33,12 @@
 // todo el ancho de la tarjeta sin importar el modo de layout del padre.
 .o_wspmp_box_tile.o_wspmp_box_active {
     flex-basis: 100%;
+    // La tarjeta util son ~154 px: con el padding de la ficha (0.85rem por lado) quedaban 125 px
+    // de renglon y el precio tachado con su pill necesita ~134. Se recorta el padding lateral para
+    // ganar 11 px. Un precio muy largo igual puede partir en dos renglones: a 2 columnas en un
+    // celular no entra de otra forma, y partido se lee bien.
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
     // La tarjeta del listado va centrada (D22, es lo que ya hacia el sitio): los renglones nuevos
     // se centran con ella para que el bloque se lea como una sola pieza. En la ficha, en cambio,
     // todo queda alineado a la izquierda (maqueta D25).
@@ -149,20 +155,70 @@
     color: var(--o-gray-600, #6c757d);
 }
 
-// D17(1): el precio sin impuestos nacionales de `l10n_ar_website_sale` (el `<small>` que agrega
-// al final del bloque, D18) va fuera del recuadro pero tiene que verse chico y gris, no con el
-// tamano/peso que le da el tema (medido: 16px/700 en la ficha). No se toca el nodo (D18): solo se
-// lo estiliza por CSS. Fix post-review: `[name="product_price"] > small` sin mas matcheaba
-// TAMBIEN el `tax_disclaimer` del core (hermano directo dentro del mismo wrapper,
-// `website_sale/views/templates.xml:2743`) y se aplicaba siempre, incluso sin ninguna regla
-// visible (rompia CA19: con `show_on_website=false` esa linea de impuestos igual cambiaba de
-// 16px/700 a 14px/400). Acotado a: (a) solo con el recuadro activo (`:has(.o_wspmp_box_active)`,
-// mismo criterio que el resto del modulo); (b) solo el `<small>` de la AR, que trae adentro el
-// span propio `.o_l10n_ar_price_tax_excluded` (`l10n_ar_website_sale/views/templates.xml:9`) — el
-// `tax_disclaimer` del core no lo tiene, asi que ya no matchea.
-[name="product_price"]:has(.o_wspmp_box_active) > small:has(.o_l10n_ar_price_tax_excluded) {
-    font-size: 0.875rem;
+// El precio sin impuestos nacionales de `l10n_ar_website_sale` (el `<small>` que agrega al final
+// del bloque, D18) va **debajo** de los precios de venta y bien chico (D27, pedido de la clienta
+// el 15-09-2026: "es solo para ARCA", y estaba entre el nombre del producto y los precios).
+//
+// **No se toca el nodo de la AR** (D18 sigue vigente): no se mueve por herencia —eso obligaria a
+// declarar `l10n_ar_website_sale` en `depends`, y un locator sin destino aborta la vista— sino que
+// el contenedor pasa a columna y el `<small>` se manda al final con `order`. Con el recuadro
+// activo ese contenedor tiene exactamente dos hijos (el `<small>` de la AR y el recuadro), asi que
+// el reordenamiento es el minimo posible.
+//
+// El selector lleva **dos clases**. En la ficha alcanza `.product_price` (viaja en el
+// `t-attf-class` del core, `templates.xml:2697`). En la **tarjeta** no: `l10n_ar_website_sale` le
+// hace `position="attributes"` con `add='o_l10n_ar_product_price'` sobre `t-attf-class`
+// (`l10n_ar_website_sale/views/templates.xml:22`), pero el core la declara como clase **estatica**
+// (`product_tile_templates.xml:191`) — y en el render el atributo dinamico **pisa** al estatico
+// (`ir_qweb.py:1946`). Resultado: en el HTML final ese div queda con `class="o_l10n_ar_product_price"`
+// y **sin** `product_price`, aunque `hasclass('product_price')` siga valiendo para los xpath (que
+// miran el arch, no el render). Medido en el navegador: la regla no aplicaba en la tarjeta y la
+// linea seguia arriba del recuadro.
+//
+// Acotado a: (a) solo con el recuadro activo (`:has(.o_wspmp_box_active)`, mismo criterio que el
+// resto del modulo, CA19); (b) solo el `<small>` de la AR, que trae adentro el span propio
+// `.o_l10n_ar_price_tax_excluded` (`l10n_ar_website_sale/views/templates.xml:9`) — el
+// `tax_disclaimer` del core no lo tiene, asi que no matchea y conserva su lugar.
+.product_price:has(.o_wspmp_box_active),
+.o_l10n_ar_product_price:has(.o_wspmp_box_active) {
+    // `!important` obligado en las DOS superficies, por motivos distintos: la ficha trae
+    // `d-inline-block` como utilidad de Bootstrap (declarada `!important`,
+    // `website_sale/views/templates.xml:2697`) y la tarjeta resuelve su display por custom
+    // property del tema (`display: var(--o-wsale-card-price-display)`, `product_tile.scss:298`).
+    // Sin esto el contenedor no es flex y el `order` del `<small>` no hace nada (medido: la linea
+    // seguia arriba del recuadro aunque el tamano de letra si cambiaba). Mismo criterio que
+    // `justify-content: flex-start !important` de D19.
+    display: flex !important;
+    flex-direction: column;
+    // En la tarjeta el contenedor cuelga de `.o_wsale_product_sub`, que este modulo deja en
+    // columna con `align-items: center` (D22): ahi los hijos se dimensionan por su contenido, y el
+    // contenedor tomaba el ancho del `<small>` (medido: 173 px contra 154 del padre y 172 de la
+    // tarjeta), con lo que el importe salia cortado por la derecha. `align-self: stretch` lo
+    // devuelve al ancho del padre y recien ahi la linea rompe.
+    align-self: stretch;
+    max-width: 100%;
+}
+
+.product_price:has(.o_wspmp_box_active) > small:has(.o_l10n_ar_price_tax_excluded),
+.o_l10n_ar_product_price:has(.o_wspmp_box_active) > small:has(.o_l10n_ar_price_tax_excluded) {
+    order: 1;
+    margin-top: 0.35rem;
+    font-size: 0.75rem;
     font-weight: 400;
+    line-height: 1.3;
+    opacity: 0.75;
+    // Como item flex de una columna, el ancho sale del contenedor; sin esto la linea no rompe y
+    // en la tarjeta (172 px utiles) el importe quedaba cortado por la derecha.
+    max-width: 100%;
+    min-width: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+// En la tarjeta del listado el ancho util es la mitad, asi que baja un punto mas.
+.o_wsale_product_information .product_price:has(.o_wspmp_box_tile.o_wspmp_box_active) > small:has(.o_l10n_ar_price_tax_excluded),
+.o_wsale_product_information .o_l10n_ar_product_price:has(.o_wspmp_box_tile.o_wspmp_box_active) > small:has(.o_l10n_ar_price_tax_excluded) {
+    font-size: 0.7rem;
 }
 
 // Los pills viajan SIEMPRE en el DOM (para que el JS solo tenga que togglear clases y texto,
