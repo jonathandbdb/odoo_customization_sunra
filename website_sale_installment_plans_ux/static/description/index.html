@@ -5,7 +5,7 @@
         <div style="padding: 28px 30px; border: 1px solid ButtonBorder; border-radius: 8px; background: Canvas;">
             <p style="margin: 0 0 8px; color: LinkText; font-size: 13px; font-weight: 700; text-transform: uppercase;">eCommerce - Cuotas</p>
             <h1 style="margin: 0 0 12px; color: CanvasText; font-size: 32px; line-height: 1.2;">website_sale_installment_plans_ux</h1>
-            <p style="margin: 0; max-width: 760px; color: GrayText; font-size: 16px;">Ajusta el texto de cuotas del eCommerce (saca el total entre parentesis y formatea el importe) y, desde 1.1.0, mueve esa leyenda dentro del recuadro de precio del modulo de precios por medio de pago.</p>
+            <p style="margin: 0; max-width: 760px; color: GrayText; font-size: 16px;">Ajusta el texto de cuotas del eCommerce (saca el total entre parentesis y formatea el importe), lo mueve dentro del recuadro de precio del modulo de precios por medio de pago y, desde 1.2.0, lo acota a cada sitio web: solo los planes de la compania del sitio, y con un interruptor para prenderlo o apagarlo por sitio.</p>
         </div>
 
         <div style="margin-top: 30px;">
@@ -23,6 +23,7 @@
                     </tr>
                 </tbody>
             </table>
+            <p style="margin: 14px 0 0;">Desde 1.2.0 se resuelve ademas un problema de alcance: cuando una misma base sirve varios sitios web de companias distintas, el modulo de ADHOC publica todos los planes publicados en todos los sitios, asi que los planes cargados para una compania se filtraban al sitio de la otra. Ahora cada sitio publica solo los planes de su compania, y la leyenda se puede apagar entera por sitio.</p>
         </div>
 
         <div style="margin-top: 30px;">
@@ -42,15 +43,34 @@
                         <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">La cantidad de cuotas sale del campo Divisor, que es el que representa en cuantas cuotas se divide el total. Ya no hace falta duplicar ese numero en el campo Plan de Cuotas.</td>
                     </tr>
                     <tr>
-                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; font-weight: 700; background: ButtonFace; color: ButtonText;">Los dos lugares a la vez</td>
-                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">Un unico override sobre el metodo por el que pasan tanto la ficha de producto como la grilla del shop.</td>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; font-weight: 700; background: ButtonFace; color: ButtonText;">Dentro del recuadro de precio (1.1.0)</td>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">Con <code>website_sale_payment_method_price</code> como dependencia dura, la leyenda de cuotas se mueve (no se duplica) dentro de su recuadro de precio, en un slot pensado para eso, tanto en la ficha como en la grilla.</td>
                     </tr>
                     <tr>
-                        <td style="padding: 14px 16px; font-weight: 700; background: ButtonFace; color: ButtonText;">Dentro del recuadro de precio (1.1.0)</td>
-                        <td style="padding: 14px 16px; color: CanvasText;">Desde 1.1.0, con <code>website_sale_payment_method_price</code> como dependencia dura, la leyenda de cuotas se mueve (no se duplica) dentro de su recuadro de precio, en un slot pensado para eso, tanto en la ficha como en la grilla.</td>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; font-weight: 700; background: ButtonFace; color: ButtonText;">Planes de la compania del sitio (1.2.0)</td>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">Cada sitio web publica unicamente los planes cuyas tarjetas son de su compania (o no tienen compania). En una base con varios sitios, los planes de una compania dejan de verse en el sitio de la otra.</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 14px 16px; font-weight: 700; background: ButtonFace; color: ButtonText;">Interruptor por sitio (1.2.0)</td>
+                        <td style="padding: 14px 16px; color: CanvasText;">La leyenda se prende o se apaga por sitio web desde los ajustes de eCommerce, sin tocar los planes. Viene prendida, asi que actualizar el modulo no cambia lo que hoy se ve.</td>
                     </tr>
                 </tbody>
             </table>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 12px; color: LinkText; font-size: 23px;">Configuracion</h2>
+            <ol style="margin: 0; padding-left: 22px;">
+                <li style="margin-bottom: 8px;">En <b>Sitio Web &rarr; Configuracion &rarr; Ajustes</b>, seccion <b>eCommerce</b>, esta el check <b>Planes de cuotas</b> (despues de "Redireccion del carrito"). Tildado, el sitio publica la leyenda debajo del precio en la grilla y en la ficha; destildado, ese sitio no muestra ninguna leyenda aunque haya planes publicados.</li>
+                <li style="margin-bottom: 8px;">El check es <b>por sitio web</b>: aplica al sitio elegido en el selector que esta arriba del formulario de ajustes. Para configurar el otro sitio hay que cambiarlo ahi y volver a tildar o destildar.</li>
+                <li>Los planes se siguen cargando en <b>Contabilidad &rarr; Pagos &rarr; Tarjetas</b>, con el check <b>Publicado en website</b> por plan. La compania sale de la tarjeta, y es la que define en que sitio se puede ver el plan.</li>
+            </ol>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 10px; color: LinkText; font-size: 23px;">Detalle tecnico</h2>
+            <p style="margin: 0 0 14px;">Son dos overrides, uno por cada cosa. <code>product.template._get_published_installments()</code> decide <b>que planes</b> se publican: aplica el interruptor del sitio y despues el filtro por compania, con el mismo criterio que la record rule multi-compania de <code>card_installment</code>. La busqueda va con <code>sudo()</code> porque esto lo renderiza el visitante anonimo, y por eso mismo el filtro de compania se escribe explicito en el dominio (el <code>sudo()</code> saltea la record rule). <code>account.card.installment.map_installment_values()</code> decide <b>como se escribe</b> la leyenda: llama al <code>super()</code> y solo reemplaza la clave <code>description</code>, formateando el importe con la moneda del sitio. Los dos metodos son el punto por el que pasan tanto la ficha de producto como la grilla del shop, asi que un solo override alcanza para los dos lugares. El reacomodo visual son dos templates QWeb que mueven el <code>div.installment-plans</code> al slot <code>wspmp_installments</code> del recuadro de precio.</p>
+            <p style="margin: 0; padding: 14px 16px; border-left: 4px solid Highlight; background: color-mix(in srgb, Highlight 14%, Canvas); color: CanvasText;">Fuera del frontend (llamadas de backend, sin sitio web en contexto) se delega al modulo base: el filtro y el interruptor solo aplican en el sitio. Y si el producto no tiene precio publicable, la leyenda queda oculta junto con el recuadro de precio, que es el comportamiento buscado.</p>
         </div>
 
         <div style="margin-top: 30px;">
@@ -58,7 +78,8 @@
             <ul style="margin: 0; padding-left: 20px;">
                 <li style="margin-bottom: 6px;">No cambia el texto de la leyenda ni el icono: el campo Mensaje sigue siendo el del modulo de ADHOC.</li>
                 <li style="margin-bottom: 6px;">No toca el calculo: el coeficiente de recargo se aplica igual que antes.</li>
-                <li style="margin-bottom: 6px;">No agrega campos, menus ni configuracion.</li>
+                <li style="margin-bottom: 6px;">No agrega menus ni modelos nuevos: la unica configuracion es el check por sitio web.</li>
+                <li style="margin-bottom: 6px;">No permite elegir plan por plan en que sitio se publica: el recorte es por compania del sitio. Dos sitios de la misma compania ven los mismos planes.</li>
                 <li>No modifica el flujo de pago: la leyenda es informativa y el total del carrito no cambia.</li>
             </ul>
         </div>
@@ -69,7 +90,7 @@
         </div>
 
         <div style="margin-top: 30px; padding-top: 18px; border-top: 1px solid ButtonBorder;">
-            <p style="margin: 0; color: GrayText; font-size: 13px;">Sunra &middot; LGPL-3 &middot; Odoo 19</p>
+            <p style="margin: 0; color: GrayText; font-size: 13px;">Desarrollado por Sunra - https://github.com/sunraargsh &middot; LGPL-3 &middot; Odoo 19</p>
         </div>
     </section>
 </body>
