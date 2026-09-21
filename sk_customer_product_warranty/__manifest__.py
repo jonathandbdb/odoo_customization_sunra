@@ -8,7 +8,7 @@ Product Warranty Module for Customers
     'author': "Salih Kalender",
     'website': "https://github.com/SalihKalender28",
     'category': 'Inventory/Inventory',
-    'version': '19.0.1.0.0',
+    'version': '1.0.1',
     'depends': ['product', 'stock'],
     'data': [
         'views/product_views.xml',

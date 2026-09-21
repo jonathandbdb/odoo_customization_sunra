@@ -3,6 +3,7 @@ from odoo import models, fields, api
 
 
 class ProductTemplate(models.Model):
+    _name = 'product.template'
     _inherit = ['product.template', 'warranty.mixin']
 
     warranty_tracking = fields.Boolean(
@@ -54,6 +55,7 @@ class ProductTemplate(models.Model):
 
 
 class ProductProduct(models.Model):
+    _name = 'product.product'
     _inherit = ['product.product', 'warranty.mixin']
 
     warranty_tracking = fields.Boolean(
