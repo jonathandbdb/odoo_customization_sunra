@@ -6,7 +6,7 @@ aplica de verdad al pedido en el checkout.
 
 | | |
 |---|---|
-| **Versión** | 1.3.1 |
+| **Versión** | 1.3.2 |
 | **Depende de** | `website_sale` |
 | **Repos/entornos** | `odoo_customization_sunra`, rama `develop_19.0` |
 | **Spec SDD** | `specs/website_sale_payment_method_price.md` |

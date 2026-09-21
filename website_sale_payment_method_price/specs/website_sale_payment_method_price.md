@@ -3,10 +3,10 @@
 | Campo | Valor |
 |-------|-------|
 | **Modulo** | `website_sale_payment_method_price` |
-| **Version** | `1.3.1` (== `version` del `__manifest__.py`, formato `x.x.x`) |
+| **Version** | `1.3.2` (== `version` del `__manifest__.py`, formato `x.x.x`) |
 | **Serie Odoo** | `19` (informativa) |
 | **Estado** | `implemented` (1.0.2 quedo `verified`; 1.2.0 = rediseno del bloque de precio, implementado y revisado el 11-09-2026; **1.3.0** = segunda maqueta del bloque de precio, la que eligio el cliente el 14-09-2026: un precio por renglon con su pill y la linea "Ahorras $X" en verde. Implementado el 14-09-2026 (T01..T06) y verificado en el navegador por el orquestador sobre la base local con la paleta real de produccion —ficha y tarjeta, con y sin precio de referencia, y cambio de variante—. Queda `implemented` hasta la pasada de @reviewer. **1.3.1** = ajuste de la clienta del 15-09-2026 sobre el precio sin impuestos nacionales, ver D27) |
-| **Actualizado** | `2026-09-15` |
+| **Actualizado** | `2026-09-21` |
 
 ## Objetivo
 
@@ -25,6 +25,10 @@ no tiene equivalente: los `fees` de `payment.provider` existieron hasta la v15 y
 el precio del carrito se calcula antes de que el cliente elija como pagar.
 
 ## Decisiones vigentes
+- **Los overrides de controller llevan `@route()` desnudo** (sin argumentos): es el patron nativo
+  para pisar un metodo que ya tiene ruta registrada en la clase padre sin redeclarar el path
+  (`odoo/http.py:760-763`). Sin el, Odoo lo auto-decora y avisa `The endpoint ... is not decorated
+  by @route(), decorating it myself.` en cada regeneracion del routing map.
 
 | # | Decision | Valor vigente |
 |---|----------|---------------|

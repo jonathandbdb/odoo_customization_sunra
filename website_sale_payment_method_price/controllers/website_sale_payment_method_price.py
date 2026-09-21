@@ -71,6 +71,7 @@ class PaymentPortal(website_sale_payment.PaymentPortal):
         order._apply_payment_price_rule(rule)
         return super()._get_shop_payment_values(order, **kwargs)
 
+    @route()
     def shop_payment_transaction(self, order_id, access_token, **kwargs):
         """
         Override de `website_sale`: el ajuste del pedido debe corresponder al medio que se usa.

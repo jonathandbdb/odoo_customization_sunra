@@ -3,10 +3,10 @@
 | Campo | Valor |
 |-------|-------|
 | **Modulo** | `website_sale_installation_appointment` |
-| **Version** | `1.12.0` (== `version` del `__manifest__.py`, formato `x.x.x`) |
+| **Version** | `1.12.1` (== `version` del `__manifest__.py`, formato `x.x.x`) |
 | **Serie Odoo** | `19` (informativa) |
 | **Estado** | `implemented` (1.10.0 quedo `verified`; **1.11.0** = se deja de pedir dos veces lo mismo en el camino del checkout y se pide la direccion en el camino del link, a partir de lo que el cliente vio el 14-09-2026. Implementado y recorrido de punta a punta en el navegador por el orquestador —checkout completo hasta el paso de pago, y link hasta la reserva con la tarea de Field Service creada—. Queda `implemented` hasta la pasada de @reviewer. **1.12.0** = el formulario del link se organiza en secciones numeradas, a pedido de la clienta el 15-09-2026, ver D59) |
-| **Actualizado** | `2026-09-15` |
+| **Actualizado** | `2026-09-21` |
 
 > Cliente: **Miluan SRL / Nokey** (eCommerce de cerraduras inteligentes, `nokey.odoo.com`).
 > Repo: `extra-addons/odoo_customization_sunra`. Licencia LGPL-3, autor Sunra.
@@ -45,6 +45,10 @@ que el producto necesita, generando automaticamente la linea de pedido en $0 (el
 integrado en el servicio de instalacion).
 
 ## Decisiones vigentes
+- **Los overrides de controller llevan `@route()` desnudo** (sin argumentos): es el patron nativo
+  para pisar un metodo que ya tiene ruta registrada en la clase padre sin redeclarar el path
+  (`odoo/http.py:760-763`). Sin el, Odoo lo auto-decora y avisa `The endpoint ... is not decorated
+  by @route(), decorating it myself.` en cada regeneracion del routing map.
 
 > Decisiones de diseño que rigen HOY. Si una decision nueva pisa una vieja, se **edita la fila**.
 > Lo asumido sin confirmacion del usuario va marcado `[ASUNCION]`.

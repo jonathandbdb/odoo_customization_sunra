@@ -180,6 +180,7 @@ class WebsiteSaleInstallation(WebsiteSale):
 
     # === OVERRIDES === #
 
+    @route()
     def shop_payment(self, **post):
         """ Override of `website_sale`: send the customer to the installation step if it is still
             incomplete.
@@ -306,6 +307,7 @@ class WebsiteSaleInstallation(WebsiteSale):
 
 class AppointmentInstallation(WebsiteAppointmentSale):
 
+    @route()
     def appointment_type_id_form(self, appointment_type_id, date_time, duration, **kwargs):
         """ Override of `appointment`: surface the answer format errors of the previous attempt. """
         response = super().appointment_type_id_form(appointment_type_id, date_time, duration, **kwargs)
@@ -320,6 +322,7 @@ class AppointmentInstallation(WebsiteAppointmentSale):
             )
         return response
 
+    @route()
     def appointment_form_submit(self, appointment_type_id, datetime_str, duration_str, name, email,
                                 staff_user_id=None, available_resource_ids=None, asked_capacity=1,
                                 guest_emails_str=None, **kwargs):
