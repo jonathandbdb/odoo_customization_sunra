@@ -21,6 +21,40 @@
         </xpath>
     </template>
 
+    <!-- Al destildar "Same as delivery address" la lista de facturacion no debe repetir el
+         partner que ya se usa como direccion de entrega: es el MISMO res.partner pintado dos
+         veces y editar la tarjeta de abajo termina editando tambien la direccion de entrega/
+         instalacion (reporte del cliente, 22/09/2026, D60). Se resta ese partner de
+         billing_addresses SIEMPRE que hay productos entregables (has_delivery), sin mirar el
+         switch: `use_delivery_as_billing` se calcula al RENDERIZAR como
+         partner_invoice_id == partner_shipping_id (website_sale/controllers/main.py:1093-1095),
+         asi que en cuanto el cliente carga otra direccion de facturacion y la pagina se vuelve a
+         dibujar (bfcache al volver del pago, checkout.js:49-53; o el redirect tras Agregar
+         direccion) esa igualdad ya no se cumple y el gate viejo volvia a repetir la tarjeta de
+         entrega. Con has_delivery a secas esa tarjeta NUNCA se ofrece como opcion de
+         facturacion; para facturar a esa misma direccion se usa el switch (verificado: con el
+         switch destildado partner_invoice_id != partner_shipping_id, asi que la tarjeta
+         seleccionada de facturacion sigue en la lista). En only_services (has_delivery=False)
+         el contenedor no se oculta y la lista sigue completa. Este override NO esta gateado por
+         instalacion (a diferencia de delivery_address_list, que usa _is_installation_required()):
+         aplica a todo checkout con productos entregables, mismo criterio que el override de
+         address_form_fields de arriba. La mecanica del switch (mostrar/ocultar
+         #billing_container) sigue siendo UI del core, pero la persistencia no es simetrica:
+         destildar no escribe nada, tildar SI persiste (toggleBillingAddressRow ->
+         _selectMatchingBillingAddress() -> updateAddress('billing', id) -> RPC
+         /shop/update_address, website_sale/static/src/interactions/checkout.js:106-135,
+         :436-455); esto solo cambia QUE direcciones se listan adentro. Residuo conocido y
+         acotado (omision deliberada, D60): sin recargar la pagina, cambiar la direccion de
+         entrega a un partner que ademas figura en billing_addresses puede resaltar esa tarjeta
+         (_selectMatchingBillingAddress, checkout.js:436-455), y solo pasa con la direccion propia
+         del contacto (la unica que aparece en las dos listas, portal/controllers/portal.py:
+         253-262); corregirlo pide JS propio y se considero desproporcionado. -->
+    <template id="billing_address_list" inherit_id="website_sale.billing_address_list">
+        <xpath expr="//div[@id='billing_container']//t[@t-set='addresses']" position="attributes">
+            <attribute name="t-value">billing_addresses - order.partner_shipping_id if has_delivery else billing_addresses</attribute>
+        </xpath>
+    </template>
+
     <!-- Carrito: la linea de pilas gratis se ve pero no se puede tocar (D20). El selector de
          cantidad y el link al producto ya quedan cubiertos por el override de _is_sellable()
          (sin xpath); esto solo saca el boton Eliminar, en los dos nodos (desktop y mobile). NO

@@ -3,10 +3,10 @@
 | Campo | Valor |
 |-------|-------|
 | **Modulo** | `website_sale_installation_appointment` |
-| **Version** | `1.12.1` (== `version` del `__manifest__.py`, formato `x.x.x`) |
+| **Version** | `1.13.0` (== `version` del `__manifest__.py`, formato `x.x.x`) |
 | **Serie Odoo** | `19` (informativa) |
-| **Estado** | `implemented` (1.10.0 quedo `verified`; **1.11.0** = se deja de pedir dos veces lo mismo en el camino del checkout y se pide la direccion en el camino del link, a partir de lo que el cliente vio el 14-09-2026. Implementado y recorrido de punta a punta en el navegador por el orquestador —checkout completo hasta el paso de pago, y link hasta la reserva con la tarea de Field Service creada—. Queda `implemented` hasta la pasada de @reviewer. **1.12.0** = el formulario del link se organiza en secciones numeradas, a pedido de la clienta el 15-09-2026, ver D59) |
-| **Actualizado** | `2026-09-21` |
+| **Estado** | `implemented`: el checkout de instalacion en 3 bloques y la agenda por link con direccion propia (D57/D58) estan implementados y recorridos de punta a punta en el navegador. La lista de facturacion sin repetir la direccion de entrega (D60, 22-09-2026) esta implementada y revisada por @reviewer (0 criticos), pero **todavia no se corrio en un Odoo real**: falta el `-u` del modulo y el recorrido del checkout en el navegador (CA55). Queda `implemented` hasta esa validacion y la pasada de @reviewer que lo deje `verified` |
+| **Actualizado** | `2026-09-22` |
 
 > Cliente: **Miluan SRL / Nokey** (eCommerce de cerraduras inteligentes, `nokey.odoo.com`).
 > Repo: `extra-addons/odoo_customization_sunra`. Licencia LGPL-3, autor Sunra.
@@ -122,6 +122,7 @@ elemento nuevo agregado adentro sin su clase propia queda igual **protegido** po
 | D57 | ¿Que pide el formulario de la cita cuando el cliente **viene del checkout**? | **Solo lo que no le preguntamos todavia.** El cliente reporto el 14-09-2026 que al elegir dia y hora "me hace completar de nuevo todos los datos y me pide de nuevo las fotos de la puerta": el formulario nativo de la cita volvia a pedir nombre, correo, las notas para el instalador y **las 3 fotos**, todo ya cargado en el checkout — y las fotos subidas ahi **no contaban** para el gate del Paso 2 (se guardan en la cita, no en el pedido), asi que habia que subirlas dos veces. Se corrige en **tres niveles**: (a) **codigo**, `appointment.type._is_installation_asking_photos()` —la condicion del bloque de fotos pasa de `installation_request_photos` a secas a "y ademas no venir del checkout" (`_is_installation_checkout_source()`, D54), **tanto en la plantilla como en la validacion del controller**, que si no rechazaba el turno por un campo que el cliente no tiene delante—; (b) **codigo**, nombre y correo se colapsan a `input[type=hidden]` + una linea "Reservas como `<nombre>` `<mail>`" cuando ya los sabemos (el submit nativo los sigue necesitando; si `partner_data` viniera vacio se cae al formulario nativo); (c) **dato**, la pregunta "Notas aclaratorias" se saca del tipo de cita del checkout —duplica el campo "Indicaciones para el instalador" del Paso 1— y queda solo en el tipo del link (las preguntas son reutilizables y las compartian los dos tipos). El gate va en codigo y no solo en configuracion porque **el mismo tipo de cita puede usarse en los dos caminos**, y ahi ninguna configuracion los distingue. |
 | D58 | ¿De donde sale la direccion cuando la cita se agenda **por el link**? | **Se la pide el formulario de la cita**, con un bloque propio: calle y numero (obligatorio), piso/depto, localidad (obligatorio), codigo postal y **entre calles**. Hasta 1.10.0 ese camino no pedia ninguna direccion: el formulario crea un contacto nuevo con nombre y mail, y la tarea de Field Service salia **sin lugar al que ir** (lo marco el cliente el 14-09-2026 mirando "Instalacion > Agenda tu instalacion"). Se activa con el campo nuevo `appointment.type.installation_request_address`, y nunca se muestra en el camino del checkout (ahi la direccion es la de entrega del pedido y se confirma en el Paso 1, mismo criterio que D57). Los valores se escriben en el **contacto** que reserva —que es de donde la tarea toma la direccion— con criterio **todo o nada sobre la calle**: si el contacto todavia no tiene domicilio se escribe la direccion completa; si ya lo tiene (cliente conocido, alta del backoffice) **no se le pisa nada** y lo declarado se postea en la cita **y en la tarea de Field Service**, que es donde mira la cuadrilla. Escribir campo por campo ("solo los vacios") era peor que cualquiera de las dos opciones: un contacto con calle cargada pero sin localidad terminaba con la calle vieja y la localidad nueva, una direccion que no existe. El "entre calles" ademas se **agrega al cuerpo de la tarea**, porque ninguna vista estandar de `project.task` imprime ese campo; como la tarea la crea el `create()` de la cita (antes de que el controller escriba la direccion), se **refresca** la descripcion — y ese refresco va **fuera** de la condicion de escritura, para que el entre calles llegue igual cuando no se escribio el contacto. Todo el bloque corre dentro de un **savepoint**: la reserva ya esta hecha y un fallo escribiendo el contacto no puede costarle el turno al cliente. |
 | D59 | ¿Como se ordena el formulario del link? | **En cuatro secciones numeradas**, con titulo y una linea de ayuda: **1 Tus datos** (nombre y correo), **2 Sobre tu puerta** (las preguntas del tipo de cita), **3 Direccion de instalacion** (el bloque de D58) y **4 Fotos del lugar**. Lo pidio la clienta el 15-09-2026 con una maqueta: *"la parte del link, le reordenaria las preguntas... algo mas ordenado"*. Ademas, en ese formulario la **etiqueta pasa arriba del campo** y a lo ancho: el nativo la pone en `col-sm-3` contra un `col-sm-9`, y con seis campos seguidos se lee como un muro. **Solo el camino del link**: el del checkout se deja tal cual (ahi son dos campos y la clienta lo dio por bueno — *"la parte del checkout esta joya"*). El gate es `appointment.type._is_installation_link_form()`, que reusa `installation_fsm_project_id` (ya es el marcador de "agendado fuera del eCommerce", D8) y excluye el checkout. La clase marcadora del form va por `t-attf-class` **repitiendo la del core**: el nativo la declara estatica y en el render el atributo dinamico pisa al estatico (`ir_qweb.py:1946`). **Fuera de alcance por ahora** (se le contesta a la clienta): el material como tarjetas con foto (necesita imagenes por respuesta, que hoy `appointment.answer` no tiene), la zona de arrastrar y soltar para las fotos, y el panel lateral de resumen con links "Editar" (el nativo ya trae uno propio, con fecha, tipo y duracion). |
+| D60 | ¿Que direcciones se ofrecen para facturar cuando se destilda "Same as delivery address"? | **Todas las de facturacion del cliente, menos la que ya se esta usando como direccion de entrega, siempre que el pedido tenga productos entregables (`has_delivery`).** El cliente probo el checkout el 22-09-2026 y reporto que al destildar el switch la lista de abajo repite la MISMA tarjeta de arriba (`order.partner_shipping_id` == `order.partner_invoice_id` en ese momento): es el mismo `res.partner`, asi que editar "la de facturacion" edita tambien la de entrega/instalacion sin que el cliente se de cuenta ("deberia ser simplemente Agregar direccion... si no, estas editando ambas"). El pedido del usuario sumo que, ademas del boton *Agregar direccion*, se sigan viendo las **otras** direcciones de facturacion que el cliente ya tenga cargadas, si tiene. Se resuelve en la **plantilla** (`website_sale.billing_address_list`, override en `views/website_sale_templates.xml`): la lista pasa a ser `billing_addresses - order.partner_shipping_id` en vez de `billing_addresses`, gateada **solo** por `has_delivery` — con `has_delivery` en `False` (pedido `only_services`) el contenedor no se oculta y la lista sigue completa, sin excepciones. **Por que no `use_delivery_as_billing and has_delivery`** (gate original, corregido tras la pasada de @reviewer del 22-09-2026): `use_delivery_as_billing` se calcula al **renderizar** como `partner_invoice_id == partner_shipping_id` (`website_sale/controllers/main.py:1093-1095`), asi que en cuanto el cliente carga una direccion de facturacion distinta y la pagina se vuelve a dibujar (el reload de bfcache al volver del pago, `checkout.js:49-53`; o el redirect tras *Agregar direccion*) esa igualdad deja de darse y el gate viejo volvia a mostrar la tarjeta de entrega en la lista de facturacion. Con `has_delivery` a secas esa tarjeta **nunca** se ofrece como opcion de facturacion; para facturar a esa misma direccion se usa el switch, que es el mecanismo previsto del core (verificado: con el switch destildado `partner_invoice_id != partner_shipping_id`, asi que la tarjeta seleccionada de facturacion sigue en la lista — el cambio no deja al cliente sin seleccion ni con el boton de pago trabado). **No** se toca la mecanica del switch en si: mostrar/ocultar `#billing_container` sigue siendo UI del core, pero la persistencia no es simetrica — **destildar** no escribe nada; **tildar** SI persiste, via `toggleBillingAddressRow` → `_selectMatchingBillingAddress()` → `updateAddress('billing', id)` → `rpc('/shop/update_address')` (`website_sale/static/src/interactions/checkout.js:106-135`, `:436-455`), que escribe `partner_invoice_id` en el pedido. **Alcance, sin gate de instalacion**: a diferencia de `delivery_address_list` (que si usa `_is_installation_required()`), este override aplica a **todo** checkout con productos entregables, incluido el envio normal sin instalacion — mismo criterio que el override de `address_form_fields` de este mismo archivo, que tampoco esta gateado por instalacion. **Residuo conocido, acotado y verificado** (omision deliberada): si **sin recargar la pagina** el cliente cambia la direccion de **entrega** a un partner que ademas figura en `billing_addresses`, el core puede resaltar esa tarjeta en la lista de facturacion (`_selectMatchingBillingAddress`, `checkout.js:436-455`) — en la practica solo puede pasar con la **direccion propia del contacto**, la unica que aparece en las dos listas (`portal/controllers/portal.py:253-262`: las direcciones hijas tipo `delivery` no entran en `billing_addresses`). Taparlo pide JS propio y se considero desproporcionado para un caso tan acotado. **Fuera de alcance** (descartado explicitamente): retraducir la etiqueta "Entrega" a "Entrega / Instalacion", y cualquier cambio de i18n mas alla de este ajuste (no agrega strings nuevos). |
 
 ## Alcance
 
@@ -140,6 +141,10 @@ elemento nuevo agregado adentro sin su clase propia queda igual **protegido** po
 - **Marca correcta del correo de recordatorio de la cita** (D43): el layout de notificacion
   (logo/colores) usa la compañia del pedido que origino la cita y, en su defecto, la del
   organizador o de quien la creo — no la del usuario que corre el cron de alarmas.
+- **Lista de facturacion del checkout sin repetir la direccion de entrega** (D60): con productos
+  entregables (`has_delivery`), la tarjeta que ya se usa como direccion de entrega **nunca** se
+  ofrece como opcion de facturacion (queda *Agregar direccion* + las otras direcciones de
+  facturacion que el cliente ya tenga); para facturar a esa misma direccion se usa el switch.
 
 **Pilas incluidas sin costo (feature del *Plan del cambio en curso*)**
 - Configuracion por producto (`free_battery_product_id`, `free_battery_qty` en la UoM del producto de pila) y opt-in por metodo de envio (`includes_free_batteries`).
@@ -899,6 +904,24 @@ ambiguedad de la UoM es el riesgo #1 de esta feature):
   que se agrega arriba sigue yendo **fuera** de `o_appointment_info_main` (que es `o_not_editable`)
   para que el `t-field` siga siendo editable en linea.
 - `address_form_fields` / `delivery_address_list`: sin "Nombre de la empresa"; titulo "Installation address" cuando el pedido requiere instalacion.
+- `billing_address_list` (hereda `website_sale.billing_address_list`) — **nuevo en
+  `views/website_sale_templates.xml`** (D60). Un solo xpath `position="attributes"` sobre el
+  `<t t-set="addresses">` que esta dentro de `//div[@id='billing_container']`: cambia su
+  `t-value` de `billing_addresses` a `billing_addresses - order.partner_shipping_id if
+  has_delivery else billing_addresses` (resta de recordsets, patron nativo del ORM). Efecto: con
+  productos entregables (`has_delivery`), la direccion que ya se usa como entrega **nunca
+  aparece** como tarjeta de facturacion — solo *Agregar direccion* + el resto de direcciones de
+  facturacion del cliente (`portal.address_list`, `odoo/addons/portal/views/address_templates.xml:L67-89`,
+  ya soporta una lista vacia sin crash); para facturar a esa misma direccion se usa el switch. Con
+  `has_delivery` en `False` (pedido `only_services`) la lista queda **sin tocar**. **No gateado por
+  instalacion** (a diferencia de `delivery_address_list`, que si usa `_is_installation_required()`):
+  aplica a todo checkout con productos entregables, mismo criterio que `address_form_fields`. **No**
+  se toca `portal.py:238-279` (`_prepare_address_data()` sigue devolviendo el partner propio dentro
+  de `billing_addresses`; la exclusion es de presentacion, en la plantilla). La mecanica del switch
+  (`checkout.js:106-135`) sigue siendo UI del core: destildar no persiste nada, pero tildar SI
+  escribe `partner_invoice_id` (`_selectMatchingBillingAddress()` → `updateAddress('billing', id)`
+  → RPC `/shop/update_address`, `:436-455`). Detalle completo, incluido el residuo de UI conocido,
+  en D60.
 - **Nuevo en `views/website_sale_templates.xml`**: heredar `website_sale.cart_lines` para ocultar el **boton Eliminar** de la linea gratis, en los dos nodos (los dos tienen `name=` estable, y la variable del bucle es `line` — `odoo/addons/website_sale/views/templates.xml:L2880`):
   - desktop: `//div[@name='o_wsale_cart_line_button_container']//a[hasclass('js_delete_product')]` → `t-if="not line.is_free_battery_line"` (`:L2954`)
   - mobile: `//div[@name='o_wsale_cart_line_button_container_mobile']//button[hasclass('js_delete_product')]` → `t-if="not line.is_free_battery_line"` (`:L2974`)
@@ -1248,6 +1271,7 @@ ambiguedad de la UoM es el riesgo #1 de esta feature):
 | **CA52** | Si el contacto que reserva **ya tenia** calle cargada, no se le pisa **ningun** campo de la direccion: lo declarado queda como mensaje en la cita **y en la tarea de Field Service** | OK |
 | **CA53** | El formulario del **link** se ve en 4 secciones numeradas (Tus datos · Sobre tu puerta · Direccion de instalacion · Fotos del lugar), con la etiqueta arriba del campo | OK |
 | **CA54** | El formulario del **checkout** no cambia: sin secciones, sin bloque de direccion y sin input de fotos | OK |
+| **CA55** | Con productos entregables (`has_delivery = True`), la lista de facturacion **nunca** muestra la tarjeta de la direccion de entrega: al destildar "Same as delivery address" quedan solo *Add Address* y las otras direcciones de facturacion del cliente (si tiene). Con un pedido `only_services` (`has_delivery = False`) la lista queda completa, sin cambios (D60) | OK |
 
 ## Referencias al core
 
@@ -1376,27 +1400,21 @@ ambiguedad de la UoM es el riesgo #1 de esta feature):
 
 | Archivo | Que se actualiza |
 |---------|------------------|
-| `README.md` del modulo | Version `1.11.0`; el camino del **link** suma el punto de la direccion de instalacion y la advertencia de que en el tipo del checkout no hace falta pedir fotos; el *Flujo del cliente* aclara que el formulario del turno no vuelve a pedir nombre, correo ni fotos |
-| `static/description/index.html` | Bloque nuevo "Agenda por link con direccion (v1.11.0)" y la fila de fotos aclara que no se piden dos veces |
-| `README.md` del repo | Fila del modulo: "sin volver a pedir lo que ya cargo" + la direccion en el camino del link |
-| `__manifest__.py` | `version` `1.11.0`; `description` con los dos puntos nuevos |
-| Esta spec | D57/D58, CA49–CA52, Campos, Metodos (controllers, `calendar.event`, `AppointmentType`), Vistas, Seguridad y el plan T01–T08 |
+| `README.md` del modulo | Gotcha de la lista de facturacion (v1.13.0): condicion real (`has_delivery`), ruta correcta (`/shop/checkout`, no `/shop/address`) y que tildar el switch **si** persiste (RPC `/shop/update_address`) |
+| `static/description/index.html` | Bloque "Facturacion sin repetir la direccion de entrega (v1.13.0)": misma correccion de condicion |
+| `README.md` del repo | Sin cambios de contenido: la fila del modulo ya referencia `v1.13.0` |
+| `__manifest__.py` | Sin bump: esta es la pasada de cierre del mismo cambio, `version` se queda en `1.13.0` |
+| Esta spec | D60 (gate real, correccion de persistencia, alcance sin gate de instalacion, residuo documentado, anclaje `checkout.js:106-135`), CA55, entrada de Vistas de `billing_address_list`, *Plan del cambio* y *Estado* condensados |
 
 ## Plan del cambio
 
-> **Plan en curso (15/09/2026, 1.11.0 -> 1.12.0)**: ordenar el formulario del link en secciones
-> (D59). El plan de 1.11.0 (T01..T08) esta cerrado. **T11 del plan de 1.10.0 sigue pendiente**
+> **Sin plan en curso.** El ultimo plan activo (T01..T06, 15/09/2026, formulario del link en
+> secciones, D59) cerro en `1.12.0`. El ajuste de la lista de facturacion del checkout (D60,
+> `1.13.0`) fue un cambio puntual —una condicion en el `t-value` de `billing_address_list`— sin
+> task breakdown propio, cerrado en esta misma pasada tras la revision de @reviewer (0 criticos,
+> 6 warnings y 4 nits, todos incorporados en sitio). **T11 del plan de 1.10.0 sigue pendiente**
 > (dato en produccion: `installation_photos_message` y `message_intro` del tipo de cita del
 > checkout) y viaja con la configuracion de Plane #68.
-
-| Tarea | Descripcion | Depende de | Archivos | Cubre |
-|-------|-------------|------------|----------|-------|
-| **T01** ✅ | `appointment.type._is_installation_link_form()`: marcador del formulario del link (tipo con proyecto de FSM y no venir del checkout) | — | `models/appointment_type.py` | CA53, CA54 |
-| **T02** ✅ | Template `installation_form_section` (numero + titulo + ayuda) y las cuatro llamadas en `appointment_form`, todas condicionadas al formulario del link. La seccion 1 se ancla en el `csrf_token` porque las filas de nombre y correo las reemplaza la operacion de D57 | T01 | `views/website_sale_installation_templates.xml`, `views/appointment_templates.xml` | CA53 |
-| **T03** ✅ | Clase marcadora `o_installation_sections` en el form (por `t-attf-class`, repitiendo la clase del core) y SCSS nuevo: encabezados de seccion y etiqueta arriba del campo a lo ancho | T02 | `views/appointment_templates.xml`, `static/src/scss/installation_form.scss`, `__manifest__.py` | CA53 |
-| **T04** ✅ | Traducciones `es_419` de los titulos y ayudas nuevos. **Ojo**: "Installation address" ya existia como termino de OTRA vista; los `model_terms` se guardan por registro, asi que hubo que sumar la referencia de `appointment_form` a esa entrada | T02 | `i18n/es_419.po` | CA48, CA53 |
-| **T05** ✅ | **Dato**: en el tipo de cita del link, "De que material es tu puerta?" antes que "Notas aclaratorias" (la secuencia de `appointment.question` es global y se arrastra desde el backend con el tirador) | — | (sin archivos del repo) | CA53 |
-| **T06** ✅ | **Cierre**: doc (README + index.html + README del repo), bump a `1.12.0` y sync de la `Version` de la spec | T01..T05 | `README.md`, `static/description/index.html`, `../README.md`, `__manifest__.py`, `specs/...md` | — |
 
 ## Notas de implementacion
 

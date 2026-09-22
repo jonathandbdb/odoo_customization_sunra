@@ -4,7 +4,7 @@ Vender un **envío con instalación incluida** desde el eCommerce y que esa vent
 Cita** (app Citas), con las **fotos del lugar** y los datos que cargó el cliente, y con la **tarea de
 Field Service** del instalador.
 
-- **Versión**: 1.12.1
+- **Versión**: 1.13.0
 - **Licencia**: LGPL-3
 - **Depende de**: `website_sale`, `delivery`, `website_appointment_sale`, `sale_project`
 
@@ -446,6 +446,16 @@ backoffice.
   verificador y prefijo de CUIT). Este módulo no duplica esa validación: solo la reusa en las
   preguntas de cita que se configuren con formato *Documento*.
 - **El `sequence` de las preguntas es global**: se comparten entre tipos de cita.
+- **La lista de facturación nunca repite la dirección de entrega** (v1.13.0): en el checkout
+  (`/shop/checkout`, no `/shop/address`, que es el formulario de alta/edición) se hereda
+  `website_sale.billing_address_list` para sacar de la lista el `res.partner` que ya se está
+  usando como dirección de entrega (mismo contacto pintado dos veces = editar "la de
+  facturación" también editaba la de entrega/instalación). Aplica siempre que el pedido tenga
+  productos entregables (`has_delivery`), sin mirar el estado del switch "Same as delivery
+  address": para facturar a esa misma dirección se usa el switch, que sigue mostrando esa
+  tarjeta (destildarlo no persiste nada; **tildarlo sí** — escribe `partner_invoice_id` vía RPC,
+  `checkout.js:106-135`). Con pedidos solo de servicios (`has_delivery = False`) la lista sigue
+  completa.
 
 - **La confirmación de la dirección (Paso 1) se cae si se edita la dirección después**: elegir otro
   contacto de envío **o** editar el mismo contacto (calle, ciudad, entre calles, etc.) resetea
