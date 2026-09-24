@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     "name": "sunra_mrp_component_serials",
-    "version": "1.2.0",
+    "version": "1.2.1",
     "summary": "Trazabilidad de numeros de serie de motor/bateria/controlador/cargador contra el chasis",
     "description": """
 Trazabilidad de piezas de bicicleta electrica contra el numero de serie del chasis.

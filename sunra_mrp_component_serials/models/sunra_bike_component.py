@@ -44,10 +44,13 @@ class SunraBikeComponent(models.Model):
         "This serial number already exists for that component type.",
     )
 
+    @api.depends_context("lang")
     @api.depends("name", "component_type")
     def _compute_display_name(self):
-        # Etiqueta legible en desplegables y busquedas: "<Tipo> / <numero>".
-        type_labels = dict(self._fields["component_type"].selection)
+        # Etiqueta legible en desplegables, busquedas y chatter: "<Tipo> / <numero>", con el
+        # tipo en el idioma del usuario (selection traducida via ir.model.fields.selection,
+        # no la lista cruda de la clase).
+        type_labels = dict(self._fields["component_type"]._description_selection(self.env))
         for component in self:
             component.display_name = "%s / %s" % (
                 type_labels.get(component.component_type, ""), component.name or "",
@@ -64,7 +67,7 @@ class SunraBikeComponent(models.Model):
                 ("component_type", "=", component.component_type),
             ])
             if same_type_count > 1:
-                type_labels = dict(self._fields["component_type"].selection)
+                type_labels = dict(self._fields["component_type"]._description_selection(self.env))
                 raise ValidationError(_(
                     "Chassis %(chassis)s already has a %(type)s assigned.",
                     chassis=component.lot_id.display_name,

@@ -4,7 +4,7 @@ Trazabilidad de motor, batería(s), controlador y cargador contra el número de 
 bicicletas eléctricas Sunra, con traslado automático a la orden de fabricación, visualización de los
 números en el albarán al momento de entregar e impresión sin intervención manual en remito y factura.
 
-- **Versión**: 1.2.0
+- **Versión**: 1.2.1
 - **Licencia**: LGPL-3
 - **Depende de**: `mail`, `mrp`, `sale_stock`, `stock_account`
 

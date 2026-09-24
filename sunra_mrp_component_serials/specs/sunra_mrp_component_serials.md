@@ -3,10 +3,11 @@
 | Campo | Valor |
 |-------|-------|
 | **Modulo** | `sunra_mrp_component_serials` |
-| **Version** | `1.2.0` (== `version` del `__manifest__.py`, formato `x.x.x`) |
+| **Version** | `1.2.1` (== `version` del `__manifest__.py`, formato `x.x.x`) |
 | **Serie Odoo** | `19` (informativa) |
 | **Estado** | `approved` |
-| **Actualizado** | `2026-09-02` |
+| **Actualizado** | `2026-09-23` |
+| **Depurado** | `2026-09-23` |
 
 ## Objetivo
 
@@ -30,7 +31,7 @@ salgan **solos** en remito y factura, sin intervencion manual.
 | # | Decision | Valor vigente |
 |---|----------|---------------|
 | D1 | ¿Motor, bateria y controlador son productos de inventario? | **No**: se registran contra la serie del chasis. El kit viene cerrado en una caja; serializar los componentes obligaria a recepciones fantasma. |
-| D2 | ¿BoM con la bateria como producto serializado (propuesta de Luis)? | **Descartada por ahora**. Es el camino de escalada si algun dia compran baterias sueltas. |
+| D2 | ¿BoM con la bateria como producto serializado (propuesta de Luis)? | **Descartada por ahora**. Es el camino de escalada si algun dia compran baterias sueltas: convertir la bateria en producto serializado dentro de la LdM (este modulo no lo impide; las piezas seguirian siendo el padron documental, o se retiraria el tipo `battery`). |
 | D3 | ¿Como se modela el padron de piezas? | **UN** modelo `sunra.bike.component` con `component_type` (motor/battery/controller/charger). NO tres modelos gemelos ni campos Char. Unicidad por `(component_type, name)`. |
 | D4 | ¿Donde vive la asignacion pieza→chasis? | En `sunra.bike.component.lot_id` (M2o a `stock.lot`) como **unico origen de verdad** → una pieza en dos chasis es imposible por construccion. **No hace falta constraint extra** para eso (la unicidad de motor/controlador por chasis si la exige D18/RB12, que es otra cosa). |
 | D5 | Domain de seleccion de piezas | `[('component_type','=','<tipo>'), ('faulty','=',False), '|', ('lot_id','=',False), ('lot_id','=',id)]`. La rama `lot_id = id` NO es excepcion a la regla: solo re-ofrece la pieza al chasis que **ya la tiene** (sin ella el M2o queda sin opcion al reabrir la ficha). Otro chasis nunca la ve, y una pieza fallada no la ve **nadie** (D18). |
@@ -41,7 +42,7 @@ salgan **solos** en remito y factura, sin intervencion manual.
 | D10 | ¿Como se reasigna una pieza existente y libre? | **Desde la pieza** (abrir el componente y setear `lot_id`). `battery_ids` es One2many → "Agregar linea" crea un numero nuevo, que es el caso del 95% (la bateria llega en la caja del kit). |
 | D11 | ¿La bici de dos baterias es otro producto? | `[ASUNCION]` **No**: es el MISMO producto con dos fajas cargadas. |
 | D12 | ¿Como se cargan los numeros la primera vez? | `[ASUNCION]` **Carga manual** al recibir cada kit (quick-create desde el desplegable). No se construye importador: la planilla del proveedor todavia no llego. |
-| D13 | ¿`sunra.bike.component` es multi-compañia? | `[ASUNCION]` **No lleva `company_id`**: el padron es global. Los numeros de serie fisicos son unicos en el mundo, asi que la unicidad global es lo conservador. Si aparece multi-compañia, se agrega `company_id` + `check_company` sobre `lot_id` (cambio menor, ver Notas). |
+| D13 | ¿`sunra.bike.component` es multi-compañia? | `[ASUNCION]` **No lleva `company_id`**: el padron es global. Los numeros de serie fisicos son unicos en el mundo, asi que la unicidad global es lo conservador. Si aparece multi-compañia, el cambio es acotado: `company_id` en `sunra.bike.component`, `check_company=True` en `lot_id`, unicidad `UNIQUE(company_id, component_type, name)` y la record rule estandar. |
 | D14 | ¿El modulo fuerza los grupos nativos de impresion de series? | `[ASUNCION]` **No.** `stock.group_lot_on_delivery_slip` y `stock_account.group_lot_on_invoice` son **prerequisito de configuracion**: sin ellos el core no imprime la tabla de series y nuestras columnas tampoco. Se documenta en el README en vez de tocar grupos de usuarios. |
 | D15 | ¿Que pasa si la OF ya tiene otra serie en `lot_producing_ids`? | `[ASUNCION]` Se **reemplaza** por el lote del chasis (D9 manda: no hay numero nuevo) y el hecho se asienta con `message_post` en la OF. El lote huerfano no se borra. |
 | D16 | ¿Como se imprimen las piezas en remito y factura? | `[ASUNCION]` **Cuatro columnas** (Motor / Batteries / Controller / Charger) a continuacion de la columna de serie que ya imprime el core. Varias fajas se listan separadas por coma en una sola celda. Una columna sin pieza sale vacia. |
@@ -105,7 +106,7 @@ Atributos: `_order = 'component_type, name'`, `_rec_names_search = ['name']`.
 | `sunra.bike.component` | `display_name` | Char (compute) | - | - | - | `_compute_display_name`: `"<Tipo> / <name>"`. No almacenado. |
 | `stock.lot` | `component_ids` | One2many (`sunra.bike.component`, `lot_id`) | Bike Components | No | - | Tecnico (todas las piezas montadas, sin filtrar por tipo). Es la dependencia de los computes y evita tres One2many gemelos. Sin `tracking` (lo cubren los cuatro campos de abajo). No se muestra en la vista. |
 | `stock.lot` | `battery_ids` | One2many (`sunra.bike.component`, `lot_id`) | Batteries | No | - | `domain=[('component_type','=','battery')]`, `context={'default_component_type': 'battery'}`, `tracking=True`. Admite N fajas (D11). |
-| `stock.lot` | `motor_id` | Many2one `sunra.bike.component` | Motor | No | - | `compute='_compute_motor_id'`, **`store=False`** (ver M2 en Notas), `inverse='_inverse_motor_id'`, `tracking=True`, `@api.depends('component_ids.component_type')`. Domain D5 + `context={'default_component_type': 'motor'}`. |
+| `stock.lot` | `motor_id` | Many2one `sunra.bike.component` | Motor | No | - | `compute='_compute_motor_id'`, **`store=False`**: ningun CA pide buscar/agrupar lotes por motor (la busqueda inversa se hace desde el padron) y un compute `store=True` sobre `stock.lot` forzaria recalcular toda la tabla al instalar; `tracking=True` sigue funcionando sin store porque `_track_get_fields()` no filtra por `store`. `inverse='_inverse_motor_id'`, `@api.depends('component_ids.component_type')`. Domain D5 + `context={'default_component_type': 'motor'}`. |
 | `stock.lot` | `controller_id` | Many2one `sunra.bike.component` | Controller | No | - | Idem `motor_id` con `component_type='controller'`. **Opcional** (D21). |
 | `stock.lot` | `charger_id` | Many2one `sunra.bike.component` | Charger | No | - | Idem `motor_id` con `component_type='charger'` (D22). **Opcional** (D21). |
 | `stock.move.line` | `sunra_motor_name` | Char (compute) | Motor | No | - | `compute='_compute_sunra_component_names'`, **no almacenado**, solo lectura. Sale de `lot_id` via el helper de reporte (D23). |
@@ -123,9 +124,14 @@ Atributos: `_order = 'component_type, name'`, `_rec_names_search = ['name']`.
 ## Metodos
 
 ### `SunraBikeComponent._compute_display_name()`
-- **Proposito**: mostrar tipo + numero en desplegables y busquedas.
-- **Decoradores**: `@api.depends('name', 'component_type')`
-- **Logica**: `rec.display_name = "%s / %s" % (label_del_selection, rec.name)`.
+- **Proposito**: mostrar tipo + numero en desplegables, busquedas y chatter, con la etiqueta de
+  tipo en el idioma del usuario.
+- **Decoradores**: `@api.depends_context('lang')`, `@api.depends('name', 'component_type')`.
+- **Logica**: `rec.display_name = "%s / %s" % (label_del_selection, rec.name)`, donde
+  `label_del_selection` sale de `self._fields['component_type']._description_selection(self.env)`
+  (traduce contra `ir.model.fields.selection`, mismo patron que
+  `/home/leandro/projects/nexit/19.0/odoo/odoo/addons/base/models/res_partner.py:382`), nunca del
+  `selection` crudo de la clase.
 - **Retorna**: `None` (campo computado, no almacenado).
 
 ### `SunraBikeComponent.write()` (override) + `_onchange_faulty()`
@@ -161,7 +167,7 @@ Atributos: `_order = 'component_type, name'`, `_rec_names_search = ['name']`.
 - **Decoradores**: `@api.depends('component_ids.component_type')`
 - **Logica**: `lot.motor_id = lot.component_ids.filtered(lambda c: c.component_type == 'motor')[:1]`.
   **Sin filtro de `faulty`**: por D18 una pieza fallada ya no tiene `lot_id`, asi que nunca esta en `component_ids`.
-- **Store**: `False` (ver M2 en Notas de implementacion).
+- **Store**: `False` (ver rationale en el campo `motor_id`, seccion Campos).
 - **Retorna**: `None`
 
 ### `StockLot._inverse_motor_id()` / `_inverse_controller_id()` / `_inverse_charger_id()`
@@ -256,10 +262,10 @@ Atributos: `_order = 'component_type, name'`, `_rec_names_search = ['name']`.
 
 ## Vistas
 
-> Convenciones que @code-dev debe respetar (v18/v19): las listas se declaran con `<list>` (**nunca**
-> `<tree>`), `editable` solo acepta `top` o `bottom`, y las search views **no** llevan
-> `<group expand="0" string="Group By">` (eliminado en v18+): los `<filter context="{'group_by': ...}">`
-> van sueltos. Las vistas **heredadas** reusan el XML ID de la original (AGENTS.md § *Herencia de vistas*)
+> Convenciones que @code-dev debe respetar: las listas se declaran con `<list>` (**nunca**
+> `<tree>`), `editable` solo acepta `top` o `bottom`, y las search views no llevan
+> `<group expand="0" string="Group By">`: los `<filter context="{'group_by': ...}">` van sueltos.
+> Las vistas **heredadas** reusan el XML ID de la original (AGENTS.md § *Herencia de vistas*)
 > y el `name` agrega `.inherit.sunra_mrp_component_serials`.
 
 ### `sunra_bike_component_view_list`
@@ -373,7 +379,7 @@ declara: `invisible="not lots_visible"` en la detallada, `invisible="tracking ==
 - **Factura con lineas de Punto de Venta o de alquiler**: esos dicts no traen `lot_id` (POS trae `pos_lot_id`); el override los normaliza con `''` y el QWeb usa `.get()` → la factura imprime igual.
 - **Usuario sin permisos de Inventario imprimiendo factura/remito**: resuelto con `sudo()` en el helper de reporte.
 - **Borrar un lote**: `lot_id` de la pieza pasa a `False` (`ondelete='set null'`) → la pieza vuelve al padron como libre, no se pierde el numero.
-- **Multi-compañia**: fuera de alcance por D13; si aparece, hay que agregar `company_id` + `check_company` (ver Notas de implementacion).
+- **Multi-compañia**: fuera de alcance por D13 (ver el cambio acotado descrito en esa fila).
 - **Reasignacion deliberada de una pieza montada** (D8): permitida; **traslada**, no duplica — el chasis anterior queda sin ella y el chatter de la pieza lo registra.
 
 ## Criterios de aceptacion
@@ -413,6 +419,7 @@ declara: `invisible="not lots_visible"` en la detallada, `invisible="tracking ==
 | El lote producido viaja al movimiento terminado | `/home/leandro/projects/nexit/19.0/odoo/addons/mrp/models/mrp_production.py:1930` | `move.lot_ids = order.lot_producing_ids.ids` en `_post_inventory` → alcanza con setear `lot_producing_ids`. |
 | Reusar el numero del kit no choca con el chequeo nativo | `/home/leandro/projects/nexit/19.0/odoo/addons/mrp/models/mrp_production.py:2783` | `_check_sn_uniqueness` compara **registros** de lote (y excluye los consumidos), no nombres → D9 es seguro. |
 | BoM tipo `phantom` = Kit — **NO usar** | `/home/leandro/projects/nexit/19.0/odoo/addons/mrp/models/mrp_bom.py:29` | Una LdM `phantom` no genera OF: rompe todo el circuito. La LdM es `normal`. |
+| Patron para traducir una etiqueta de Selection en codigo | `/home/leandro/projects/nexit/19.0/odoo/odoo/addons/base/models/res_partner.py:382` | `dict(self._fields['type']._description_selection(self.env))` — labels traducidas segun `self.env.lang` contra `ir.model.fields.selection`; `_description_selection` esta en `/home/leandro/projects/nexit/19.0/odoo/odoo/orm/fields_selection.py:199`. |
 | Hook a overridear para la factura | `/home/leandro/projects/nexit/19.0/odoo/addons/sale_stock/models/account_move.py:31` | `_get_invoiced_lot_values()` — se hace `super()` y se enriquece; su base vacia esta en `/home/leandro/projects/nexit/19.0/odoo/addons/stock_account/models/account_move.py:175`. |
 | El core YA devuelve `lot_id` en el dict **para esto** | `/home/leandro/projects/nexit/19.0/odoo/addons/sale_stock/models/account_move.py:111` | `'lot_id': lot.id`, precedido del comentario que dice que esta ahi para que las localizaciones hereden y agreguen campos (`:110`). |
 | ⚠️ Hay dicts **sin** `lot_id` en la lista | `/home/leandro/projects/nexit/19.0/odoo/addons/point_of_sale/models/account_move.py:55` | POS agrega entradas con `pos_lot_id` y sin `lot_id` (y `enterprise/sale_stock_renting` tambien extiende el metodo) → hay que **normalizar las cuatro claves en todos los dicts** y usar `.get()` en el QWeb. |
@@ -440,57 +447,14 @@ declara: `invisible="not lots_visible"` en la detallada, `invisible="tracking ==
 
 ## Plan del cambio en curso
 
-> Cambio **1.1.0 -> 1.2.0**: los numeros de las piezas se ven **en pantalla** al operar el albaran
-> (Plane #34). El padron, el traslado kit->bici y la impresion en remito/factura no se tocan.
-> **Sin tarea de tests**: el repo no declara politica (`.swarm.conf` ausente).
+> Cambio **1.2.0 -> 1.2.1**: `SunraBikeComponent._compute_display_name()` muestra el tipo de
+> componente en el idioma del usuario (la seleccion traducida via `ir.model.fields.selection`),
+> en vez de la etiqueta cruda en ingles. Afecta el `display_name` de la pieza en los desplegables
+> Many2one del chasis y en el chatter. El padron, el traslado kit->bici y la impresion en
+> remito/factura no se tocan. **Sin tarea de tests**: el repo no declara politica
+> (`.swarm.conf` ausente).
 
 | Tarea | Descripcion | Depende de | Archivos | Cubre |
 |-------|-------------|------------|----------|-------|
-| **T01** | Extension `stock.move.line`: cuatro Char computados no almacenados alimentados por `_sunra_component_report_values()` (D23) | — | `models/stock_move_line.py`, `models/__init__.py` | CA11 |
-| **T02** | Herencia de las dos listas de lineas de operacion con las cuatro columnas, **sin** copiar el `column_invisible` del `lot_id` del core (D23) | T01 | `views/stock_move_line_views.xml`, `__manifest__.py` | CA11 |
-| **T03** | Traduccion `i18n/es_419.po`: referencias de los campos nuevos a las etiquetas que ya existen (Motor / Batteries / Controller / Charger) + los cuatro `help` nuevos | T01, T02 | `i18n/es_419.po` | — |
-| **T04** | Doc y cierre: README + `static/description/index.html`; `version` del manifest == `Version` de la spec (`1.2.0`) | T01, T02, T03 | `README.md`, `static/description/index.html`, `__manifest__.py`, `specs/sunra_mrp_component_serials.md` | — |
-
-## Notas de implementacion
-
-- **v19 — `_sql_constraints` eliminado**: la unicidad se declara como atributo de clase
-  (`models.Constraint`). El hook `check_breaking_changes.sh` bloquea el patron viejo.
-- **v19 — `lot_producing_ids` es Many2many** (era `lot_producing_id` en v17/v18): se escribe con
-  `Command.set([...])` y se lee con `[:1]`. Es el error mas probable al portar codigo viejo.
-- **`store=False` en `motor_id`/`controller_id`**: ningun criterio de aceptacion pide buscar ni
-  agrupar lotes por motor/controlador —la busqueda inversa ("¿en que chasis esta esta pieza?") se
-  hace desde el padron, que es donde el usuario tiene el numero en la mano—, y un computed **stored**
-  sobre `stock.lot` forzaria el recalculo de toda la tabla al instalar. El `tracking=True` sigue
-  funcionando sin store: `_track_get_fields()` no filtra por `store` y el tracking se dispara sobre
-  los campos presentes en el `write` (que es exactamente la edicion desde la ficha del chasis).
-  `readonly=False` es redundante habiendo `inverse` (el ORM ya lo hace escribible): no se declara.
-  Contrapartida aceptada: no se puede filtrar/agrupar lotes por motor en la vista de lotes.
-- **Por que `component_ids` (One2many "tecnico")**: los computes de `motor_id`/`controller_id`
-  necesitan un `@api.depends` sobre la relacion inversa completa. Con un solo One2many sin domain
-  alcanza para los tres tipos; declarar tres One2many gemelos seria mas ruido (D3 en espiritu).
-- **D18 no obliga a filtrar `faulty` en ningun lado**: como marcar fallada limpia `lot_id`, ni
-  `_compute_motor_id`/`_compute_controller_id`, ni `_sunra_component_report_values()`, ni el guard de
-  completitud, ni `_sunra_pull_kit_components()` necesitan `filtered(lambda c: not c.faulty)`. El
-  unico lugar donde `faulty` aparece explicito es el **domain** de seleccion (D5), para que una pieza
-  fallada que quedo libre no vuelva a ofrecerse. Si alguna vez se agrega una lectura nueva sobre
-  `component_ids`, hereda la garantia sin acordarse de nada.
-- **Por que un helper de reporte y no logica en QWeb**: el join de las fajas y el `sudo()` se
-  escriben una sola vez; los dos QWeb quedan tontos.
-- **Alternativa descartada — constraint anti-reasignacion entre chasis**: se evaluo prohibir mover
-  una pieza directamente de un chasis a otro. Se descarto porque **D4** dice que no hace falta
-  constraint extra para la unicidad de asignacion y **D8** exige que siga siendo editable. La
-  duplicacion sigue siendo imposible por construccion.
-- **Alternativa descartada — `battery_ids` con `delete="1"`**: quitar una linea del One2many
-  **borraria** la pieza del padron (y para un usuario de stock, sin permiso de unlink, fallaria con
-  AccessError). Por eso se desmonta desde la pieza (D10) o marcandola fallada (D18).
-- **Validacion del modulo (sin tests automatizados)**: el repo no tiene `.swarm.conf` y el usuario
-  decidio no formalizar politica de tests. El cierre del proyecto entrega una **guia de pruebas
-  manual** (recorriendo CA01..CA10) **+ un video** de la corrida. Si mas adelante se agrega
-  `.swarm.conf` con `TESTS=required`, los candidatos naturales a automatizar son el traslado
-  kit→bici (idempotencia incluida), el guard de completitud y la unicidad del padron.
-- **Multi-compañia (D13)**: si algun dia hace falta, el cambio es acotado: `company_id` en
-  `sunra.bike.component`, `check_company=True` en `lot_id`, la unicidad pasa a
-  `UNIQUE(company_id, component_type, name)` y se agrega la record rule estandar.
-- **Escalada a D2**: si Sunra empieza a comprar baterias sueltas, el camino es convertir la bateria
-  en producto serializado dentro de la LdM; este modulo no lo impide (las piezas seguirian siendo el
-  padron documental, o se retiraria el tipo `battery`).
+| **T01** | `_compute_display_name()`: reemplazar `dict(selection)` crudo por `_description_selection(self.env)` + `@api.depends_context('lang')` | — | `models/sunra_bike_component.py` | — |
+| **T02** | Doc y cierre: `version` del manifest == `Version` de la spec (`1.2.1`) | T01 | `__manifest__.py`, `specs/sunra_mrp_component_serials.md` | — |
