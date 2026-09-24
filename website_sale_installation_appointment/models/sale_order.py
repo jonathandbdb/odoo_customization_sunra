@@ -231,6 +231,7 @@ class SaleOrder(models.Model):
         # sale_project genera la tarea: recien despues de super() existen ambas para copiarles las fotos.
         res = super()._action_confirm()
         self._sync_installation_photos()
+        self._sync_installation_location()
         self._grant_portal_access_after_installation_sale()
         return res
 
@@ -269,6 +270,16 @@ class SaleOrder(models.Model):
             ),
             attachment_ids=attachment_ids,
         )
+
+    def _sync_installation_location(self):
+        """ Leave the delivery address of the order as the appointment's `location` (D45/D62).
+
+        The Field Service crew reads the appointment's `location`; for orders coming from the
+        checkout that address is the delivery address (`partner_shipping_id`), never a separate
+        one. No savepoint: it is a `write` of a `Char` on a record this same request just created.
+        """
+        for order in self.filtered(lambda so: so.installation_event_id and so.partner_shipping_id):
+            order.installation_event_id.sudo()._installation_fill_location(order.partner_shipping_id)
 
     def _grant_portal_access_after_installation_sale(self):
         """ Auto-invite the customer to the portal after an installation sale is confirmed.
@@ -504,8 +515,7 @@ class SaleOrder(models.Model):
         # del super(), con el state todavia draft/sent (altas y bajas de lineas son legales
         # aca). El write(_prepare_confirmation_values()) del super() pasa el state a 'sale'
         # ANTES de _action_confirm(), asi que ahi el unlink() chocaria con
-        # _unlink_except_confirmed. El override existente de _action_confirm() (fotos + portal)
-        # no se toca.
+        # _unlink_except_confirmed.
         self._sync_free_battery_lines()
         return super().action_confirm()
 

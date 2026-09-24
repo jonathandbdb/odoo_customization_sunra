@@ -245,7 +245,7 @@ class TestFreeBatteries(TransactionCase):
         `test_set_delivery_line_adds_free_battery_line`), asi que `Form` no lo precarga en el
         snapshot del onchange (`web/models/models.py`: `cache_values` solo copia los campos de
         `fields_spec`, i.e. los de la vista). Se ejercita el onchange directo sobre un registro
-        `.new()` (self es `NewId`), que es exactamente el escenario que D26/T05 describe.
+        `.new()` (self es `NewId`), que es exactamente el escenario que D26 describe.
         """
         order_new = self.env["sale.order"].new({
             "partner_id": self.partner.id,
@@ -262,15 +262,14 @@ class TestFreeBatteries(TransactionCase):
         self.assertEqual(free_lines.product_uom_qty, 2.0)
 
     def test_onchange_removes_free_battery_line_via_form(self):
-        """ CA23(a) complementario: la rama `Command.delete` del onchange -la que la spec marca
-        como "el codigo mas riesgoso"- no tenia cobertura, y el test anterior no probaba el
-        trigger real (`@api.onchange("order_line", "carrier_id")`) porque llamaba al metodo
-        directo. Acá se arma un pedido que YA tiene `carrier_id` en base y la linea de pilas ya
+        """ CA23(a) complementario: ejercita la rama `Command.delete` del onchange disparando el
+        trigger real (`@api.onchange("order_line", "carrier_id")`), no la llamada directa al
+        metodo. Se arma un pedido que YA tiene `carrier_id` en base y la linea de pilas ya
         materializada (`_sync_free_battery_lines`), se abre un `Form` sobre ese pedido -en
         `models.onchange()` el registro se construye con `origin=self`, asi que `carrier_id`
         (fuera del `fields_spec` de la vista) se sigue leyendo del registro real- y se saca la
         cerradura del o2m: la linea de pilas fantasma tiene que desaparecer sola. Si alguien
-        borra el decorador `@api.onchange`, este test cae en rojo (el anterior no lo detectaria).
+        borra el decorador `@api.onchange`, este test cae en rojo.
         """
         order = self._create_order(carrier=self.carrier_free, qty=1)
         order._sync_free_battery_lines()

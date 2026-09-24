@@ -3,15 +3,9 @@ import { Interaction } from "@web/public/interaction";
 import { _t } from "@web/core/l10n/translation";
 
 /**
- * Sube las fotos del lugar apenas el cliente las elige.
- *
- * Antes habia que elegir los archivos y ADEMAS apretar "Continuar" para que se subieran: si el
- * cliente iba directo al pago, el paso lo rebotaba diciendo que faltaban fotos aunque las tuviera
- * seleccionadas en pantalla. Sin JS el formulario sigue funcionando con el boton de siempre.
- *
- * Con el rediseño en 3 bloques (D44), el `<form>` de fotos ya lleva el input oculto
- * `stay_on_step` en la propia plantilla (T07): este script deja de inyectarlo y solo se ocupa
- * del feedback visual y de deshabilitar el boton mientras sube.
+ * Sube las fotos del lugar apenas el cliente las elige, para que ya cuenten en el gate de fotos
+ * minimas antes de llegar al pago. Sin JS el formulario sigue funcionando con el boton de siempre
+ * (el `<form>` lleva el input oculto `stay_on_step` en la propia plantilla, D44).
  */
 export class InstallationPhotos extends Interaction {
     static selector = "#shop_installation form[data-installation-photos]";
@@ -35,7 +29,7 @@ export class InstallationPhotos extends Interaction {
             button.disabled = true;
         }
         // El cliente solo eligio los archivos: se suben y se vuelve al paso para que los revise
-        // (el `<form>` ya lleva `stay_on_step` como input oculto, ver T07).
+        // (el `<form>` ya lleva `stay_on_step` como input oculto).
         this.el.submit();
     }
 }

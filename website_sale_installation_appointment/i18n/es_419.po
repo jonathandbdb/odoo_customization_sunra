@@ -1077,3 +1077,24 @@ msgstr ""
 "<small class=\"form-text text-muted\">\n"
 "                        Las esquinas ayudan en zonas donde la numeración es difícil de seguir.\n"
 "                    </small>"
+
+#. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.appointment_form
+msgid "<i class=\"fa fa-exclamation-circle me-1\" role=\"img\"/>Required: street and number, and town."
+msgstr "<i class=\"fa fa-exclamation-circle me-1\" role=\"img\"/>Obligatorio: calle y número, y localidad."
+
+#. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.appointment_form
+msgid "<i class=\"fa fa-exclamation-circle me-1\" role=\"img\"/>Required: upload at least"
+msgstr "<i class=\"fa fa-exclamation-circle me-1\" role=\"img\"/>Obligatorio: subí al menos"
+
+#. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.appointment_form
+msgid "photo(s) to confirm the appointment."
+msgstr "foto(s) para poder confirmar la cita."
+
+#. module: website_sale_installation_appointment
+#. odoo-python
+#: code:addons/website_sale_installation_appointment/models/calendar_event.py:0
+msgid "between streets: %s"
+msgstr "entre calles: %s"

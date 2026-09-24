@@ -443,6 +443,10 @@ class AppointmentInstallation(WebsiteAppointmentSale):
         :param event: the appointment just created (sudo)
         :param address_vals: values returned by `_get_installation_address_vals`
         """
+        # Primero y siempre: la ubicacion de la cita es la direccion DECLARADA en este formulario
+        # (D62), aunque el contacto ya tenga otra calle y no se le escriba nada mas abajo, y
+        # aunque no haya `appointment_booker_id` — la visita es a este lugar.
+        event.sudo()._installation_fill_location(address_vals)
         # `appointment_booker_id` es el contacto que acaba de reservar (lo setea el create() nativo
         # de la cita). NO se cae a `partner_ids[:1]`: ese recordset arranca por el partner del
         # EMPLEADO, y escribir ahi la direccion del cliente ensuciaria una ficha ajena.

@@ -4,7 +4,7 @@ Vender un **envío con instalación incluida** desde el eCommerce y que esa vent
 Cita** (app Citas), con las **fotos del lugar** y los datos que cargó el cliente, y con la **tarea de
 Field Service** del instalador.
 
-- **Versión**: 1.13.0
+- **Versión**: 1.14.0
 - **Licencia**: LGPL-3
 - **Depende de**: `website_sale`, `delivery`, `website_appointment_sale`, `sale_project`
 
@@ -25,10 +25,8 @@ del formulario de la cita y las fotos en el chatter.
 
 Si elige el envío normal, el paso **no aparece**: no molesta al flujo de compra habitual.
 
-Este paso **reemplaza la guía de instalaciones que antes se pedía por un formulario externo
-(JotForm)**: el checklist previo, la guía de fotos y las imágenes de referencia para medir la puerta
-que estaban en ese formulario ahora viven en `/shop/installation` (ver "Contenido del paso
-Instalación" más abajo).
+El paso `/shop/installation` concentra el checklist previo a la instalación, la guía de fotos y las
+imágenes de referencia para medir la puerta (ver "Contenido del paso Instalación" más abajo).
 
 ## Cómo funciona (qué es nativo y qué agrega el módulo)
 
@@ -47,7 +45,7 @@ Casi todo el mecanismo es nativo de Odoo Enterprise; el módulo sólo lo enganch
 
 ## Contenido del paso Instalación
 
-El paso `/shop/installation` se reorganizó (v1.10.0) en **3 bloques tipo acordeón que se habilitan
+El paso `/shop/installation` se organiza en **3 bloques tipo acordeón que se habilitan
 de a uno** (Bootstrap `collapse`, sin JS nuevo): los tres títulos se ven **desde el inicio**, el
 completado muestra tilde + resumen, el pendiente muestra su número y el bloqueado muestra candado +
 la razón ("Completá el paso N primero"). **El bloque bloqueado no renderiza su cuerpo**: no hay
@@ -67,13 +65,13 @@ controles deshabilitados que igual se puedan postear a mano. El estado de cada b
      editar el mismo): el Paso 2 se bloquea de nuevo. Las indicaciones ya cargadas no se pierden.
 2. **Paso 2 · Turno y fotos** — bloqueado hasta confirmar el Paso 1. Adentro: el checklist
    `message_intro` del tipo de cita **si está cargado** (si no, no se pinta ningún checklist por
-   defecto — los avisos genéricos ahora están repartidos por bloque), la duración estimada (2 a 4
+   defecto — los avisos genéricos van repartidos por bloque), la duración estimada (2 a 4
    horas), el turno (agendar/cambiar, delega en la página nativa de Citas) y la guía de fotos.
 3. **Paso 3 · (rótulo del paso siguiente del core, normalmente "Pago")** — bloqueado mientras falte
-   turno, fotos o la confirmación de la dirección (los mismos mensajes que antes estaban arriba
-   ahora se leen acá, en el bloque que los resuelve). Habilitado, es un link directo al paso
-   siguiente real del checkout (`next_website_checkout_step_href`): el candado es **presentacional**,
-   `/shop/payment` sigue validando todo del lado del servidor.
+   turno, fotos o la confirmación de la dirección, con el detalle de lo que falta en el propio
+   bloque. Habilitado, es un link directo al paso siguiente real del checkout
+   (`next_website_checkout_step_href`): el candado es **presentacional**, `/shop/payment` sigue
+   validando todo del lado del servidor.
 
 Debajo del acordeón, un renglón corto con la garantía (1 año) y las pilas (incluidas o a cargo del
 cliente, según el método de envío — una sola línea con las dos versiones mutuamente excluyentes) y
@@ -88,9 +86,8 @@ marco), junto al input de subida, **con un ejemplo visual de cada toma** (templa
 cruz y su motivo: borrosa/oscura, cortada, tapada por una mano).
 
 - Las fotos **se suben apenas se eligen** (`static/src/js/installation_photos.js`) y el paso
-  muestra una barra de progreso "N de `installation_min_photos`". Antes había que elegirlas **y
-  además** apretar el botón: si el cliente iba directo al pago, el paso lo rebotaba pidiendo fotos
-  que él veía seleccionadas en pantalla. Sin JS el botón *Subir fotos* sigue funcionando igual.
+  muestra una barra de progreso "N de `installation_min_photos`". Sin JS el botón *Subir fotos*
+  sigue funcionando igual.
 - Si un archivo se rechaza se avisa **con el nombre del archivo** (caso típico: fotos HEIC de
   iPhone, que no se pueden leer como imagen — hay que mandarlas en JPG).
 
@@ -107,12 +104,8 @@ cruz y su motivo: borrosa/oscura, cortada, tapada por una mano).
 | `static/src/img/photo_bad_cropped.jpg` | Guía de fotos, "así no": cortada, falta parte de la puerta |
 | `static/src/img/photo_bad_obstructed.jpg` | Guía de fotos, "así no": tapada por una mano |
 
-> **Baja (v1.10.0)**: `installation_example_lock.jpg` e `installation_example_door_edge.jpg` (las dos
-> fotos de ejemplo viejas, apaisadas y sin ejemplos de "así no") se dieron de baja junto con sus
-> `msgid` de `alt`/pie en `i18n/es_419.po`. Las 6 fotos nuevas son **verticales (~3:4)** y salen de
-> tomas reales entregadas por el cliente (convertidas a JPEG, calidad ~82, ancho máx. 600 px).
-
-Se sirven directo desde `static/` (URL `/website_sale_installation_appointment/static/src/img/...`),
+Las 6 fotos de la guía son **verticales (~3:4)**, tomas reales entregadas por el cliente
+(convertidas a JPEG, calidad ~82, ancho máx. 600 px). Se sirven directo desde `static/` (URL `/website_sale_installation_appointment/static/src/img/...`),
 sin bundle de assets: son `<img>` del template, no JS/CSS.
 
 ### Guía de medidas (dónde aparece)
@@ -146,7 +139,7 @@ línea sobre la propia página, con el editor del sitio).
 | Checklist "antes de agendar" (condiciones extra que el funcional quiera agregar) | `message_intro` (**nativo**) | **Dentro del Paso 2** del checkout **y** arriba del calendario en la página del link |
 | Consigna de las fotos del lugar | `installation_photos_message` | Arriba del input de fotos, en el checkout **y** en el formulario de la cita |
 
-Vacío el `message_intro` → **no se pinta ningún checklist por defecto** (v1.10.0): los avisos
+Vacío el `message_intro` → **no se pinta ningún checklist por defecto**: los avisos
 genéricos (duración, condición de pago, garantía, pilas) ahora están **repartidos por bloque** del
 acordeón, no todos juntos en un checklist. `installation_photos_message` sí conserva su texto por
 defecto propio (3 fotos: frente con la manija, canto, marco).
@@ -187,9 +180,9 @@ Para bloques libres (banners, promos) están las zonas de snippets que ya trae c
 | `sale.order` | `installation_event_id` | Cita creada (después de confirmar). |
 | `sale.order` | `installation_photo_ids` | Fotos del lugar que subió el cliente. |
 | `sale.order` | `installation_photo_count` | Cantidad de fotos (para el gate). |
-| `res.partner` | **`between_streets`** *(v1.10.0)* | "Entre calles" del domicilio (Char, opcional). Se edita en el Paso 1 del checkout y en la ficha del contacto (backend). |
-| `sale.order` | **`installation_notes`** *(v1.10.0)* | Indicaciones para el instalador de **esta** venta (Text, `copy=False`). Se editan en el Paso 1 y se propagan a la descripción de la tarea de FSM. |
-| `sale.order` | **`installation_address_confirmed`** *(v1.10.0)* | Lo marca el botón *Confirmar dirección* del Paso 1 (Boolean, `copy=False`, default `False`). Se resetea si se edita la dirección de envío después. |
+| `res.partner` | **`between_streets`** | "Entre calles" del domicilio (Char, opcional). Se edita en el Paso 1 del checkout y en la ficha del contacto (backend). |
+| `sale.order` | **`installation_notes`** | Indicaciones para el instalador de **esta** venta (Text, `copy=False`). Se editan en el Paso 1 y se propagan a la descripción de la tarea de FSM. |
+| `sale.order` | **`installation_address_confirmed`** | Lo marca el botón *Confirmar dirección* del Paso 1 (Boolean, `copy=False`, default `False`). Se resetea si se edita la dirección de envío después. |
 | `appointment.type` | `installation_fsm_project_id` | Proyecto de Field Service donde crear la tarea cuando la cita se agenda **sin** pasar por el eCommerce (link compartido). Vacío = la tarea la genera el pedido. |
 | `appointment.type` | `installation_request_photos` | Pedir fotos del lugar en el formulario de la cita. |
 | `appointment.type` | `installation_min_photos` | Fotos necesarias para reservar (0 = opcionales pero visibles). |
@@ -207,12 +200,15 @@ Para bloques libres (banners, promos) están las zonas de snippets que ya trae c
 
 ### Puntos de extensión usados
 
-- `sale.order._get_installation_block_states()` *(v1.10.0)* — único lugar que decide qué bloque del
+- `sale.order._get_installation_block_states()` — único lugar que decide qué bloque del
   acordeón está hecho, cuál está abierto y cuál bloqueado; la plantilla solo pinta.
-- `ResPartner.write()` y `SaleOrder.write()` *(v1.10.0)* — resetean `installation_address_confirmed`
+- `ResPartner.write()` y `SaleOrder.write()` — resetean `installation_address_confirmed`
   si se edita el domicilio del contacto de envío o si se elige otro contacto de envío.
-- `AppointmentType._is_installation_checkout_source()` *(v1.10.0)* — evita repetir el checklist
+- `AppointmentType._is_installation_checkout_source()` — evita repetir el checklist
   (`message_intro`) en la página del turno cuando el visitante viene del Paso 2 del checkout.
+- `calendar.event._installation_fill_location()` — completa el campo nativo **Ubicación**
+  (`location`) de la Cita con la dirección de instalación (la declarada en el formulario del link o
+  la de entrega del pedido), solo si la Cita todavía no tiene ubicación cargada.
 - `website._get_allowed_steps_domain()` — saca el paso del checkout cuando el envío no lleva
   instalación (así el core calcula solo el paso siguiente/anterior y el wizard no lo dibuja).
 - `sale.order._check_cart_is_ready_to_be_paid()` y `WebsiteSale._get_shop_payment_errors()` — gate de
@@ -282,6 +278,28 @@ nativo—: `_mail_get_companies()` (afecta a quién responde el reply-to del cor
 compañía tiene su propio dominio de alias) y `_notify_by_email_prepare_rendering_context()` (el que
 realmente pinta el logo/colores del layout).
 
+## Dirección de instalación en la Cita
+
+La Cita de instalación muestra la dirección en su campo nativo **Ubicación** (`calendar.event.location`),
+visible en la ficha de la Cita, en la lista, en el popover del Gantt de Citas y en el `.ics` que
+se descarga desde la Cita. El módulo la completa **solo si la Cita todavía no tiene ubicación**:
+nunca pisa una ubicación que ya venga cargada por el tipo de cita.
+
+- **Formato**: una sola línea — calle, piso/depto, código postal y localidad, y "(entre calles: …)"
+  si hay dato; por ejemplo `Lamadrid 581, 2B, 1648 Tigre (entre calles: Peru y Chile)`.
+- **Fuente según el camino**: si la cita se agendó **por el link compartido**, la dirección es la
+  que el cliente declaró en el propio formulario de la cita; si se agendó **desde el checkout**, es
+  la dirección de entrega del pedido (`partner_shipping_id`).
+- **Citas ya existentes**: quedan completadas por un backfill que corre una sola vez al actualizar
+  el módulo (`migrations/1.14.0/post-migrate.py`).
+- Completar la ubicación **no reenvía la invitación** de la Cita a los asistentes: el correo solo se
+  reenvía cuando cambia la fecha/hora. El alta de la ubicación queda anotada como nota de
+  seguimiento en el chatter de la Cita.
+
+⚠️ **El mail de confirmación de la cita no incluye la dirección**: ese correo sale al crear la Cita,
+antes de que el módulo escriba la ubicación. La dirección sí se ve en la ficha de la Cita, en el
+`.ics` que se descarga desde ella y en la tarea de Field Service.
+
 ## Pilas incluidas sin costo
 
 Cuando un método de envío incluye las pilas (instalación con cuadrilla propia, por ejemplo), el
@@ -305,7 +323,7 @@ ya está integrado en el servicio de instalación.
   pero no tiene selector de cantidad ni botón *Eliminar*; si el cliente la manipula por el endpoint
   público del carrito, se re-sincroniza en el mismo request.
 - **Aparece en la factura, a $0**: es la constancia de que las pilas fueron entregadas.
-- **Renglón del pie del acordeón (v1.10.0)** — una sola línea con `t-if`/`t-else` sobre
+- **Renglón del pie del acordeón** — una sola línea con `t-if`/`t-else` sobre
   `includes_free_batteries`: si el método de envío incluye las pilas, se lee que van incluidas sin
   cargo; si no, se lee que hay que tenerlas el día de la instalación. Las dos versiones son
   mutuamente excluyentes por construcción (nunca conviven).
@@ -393,11 +411,17 @@ pago y termina en el checkout): se configura un **segundo tipo de cita**.
 4. **Dirección de la instalación**: activar **_Pedir la dirección de instalación_**. Acá no hay
    checkout que la aporte, así que sin esto la tarea del instalador sale **sin lugar al que ir**. El
    formulario pide calle y número y localidad (obligatorias), piso/depto, código postal y **entre
-   calles**; los datos se guardan en el contacto que reserva (solo los campos que estén vacíos, para
-   no pisar una dirección ya cargada por el backoffice) y el "entre calles" además se escribe en el
-   cuerpo de la tarea.
+   calles**, con un aviso visible arriba de esos campos ("Obligatorio: calle y número, y
+   localidad.") que aclara qué es obligatorio. Los datos se guardan en el contacto que reserva con
+   criterio **todo o nada sobre la calle**: si el contacto no tiene domicilio se le escribe la
+   dirección completa; si ya tiene uno cargado (cliente conocido, alta del backoffice) no se le
+   pisa nada, y lo declarado en el formulario queda igual en la Cita (ver "Dirección de instalación
+   en la Cita") y en la tarea de Field Service. El "entre calles" además se escribe en el cuerpo de
+   la tarea.
 5. **Fotos del lugar**: activar *Pedir fotos del lugar*. El mínimo puede quedar en 0 (se muestran
-   pero no bloquean) — bloquear una reserva por una subida desde el celular es arriesgado.
+   pero no bloquean) — bloquear una reserva por una subida desde el celular es arriesgado. Con el
+   mínimo en más de 0, el formulario muestra, justo arriba del input de archivos, un aviso visible
+   ("Obligatorio: subí al menos N foto(s) para poder confirmar la cita.") con la cantidad exacta.
    ⚠️ En el tipo de cita **del eCommerce** esta opción no hace falta: ese camino ya pide las fotos en
    el Paso 2 del checkout, y el módulo esconde la carga en el formulario de la cita para no pedirlas
    dos veces (aunque la opción quede activada).
@@ -430,7 +454,8 @@ backoffice.
      y subió las mínimas, se habilita el Paso 3.
    - **Paso 3**: link directo al pago.
 4. Paga. Al confirmarse el pedido: se crea la **Cita**, la **tarea de Field Service** (con "entre
-   calles" e indicaciones en la descripción) y las fotos quedan en el chatter de las dos.
+   calles" e indicaciones en la descripción) y las fotos quedan en el chatter de las dos. La
+   dirección de entrega queda además como la **Ubicación** de la Cita.
 
 ## Gotchas
 
@@ -446,7 +471,7 @@ backoffice.
   verificador y prefijo de CUIT). Este módulo no duplica esa validación: solo la reusa en las
   preguntas de cita que se configuren con formato *Documento*.
 - **El `sequence` de las preguntas es global**: se comparten entre tipos de cita.
-- **La lista de facturación nunca repite la dirección de entrega** (v1.13.0): en el checkout
+- **La lista de facturación nunca repite la dirección de entrega**: en el checkout
   (`/shop/checkout`, no `/shop/address`, que es el formulario de alta/edición) se hereda
   `website_sale.billing_address_list` para sacar de la lista el `res.partner` que ya se está
   usando como dirección de entrega (mismo contacto pintado dos veces = editar "la de
@@ -529,7 +554,7 @@ backoffice.
 16. En el carrito: la línea gratis se ve pero sin selector de cantidad ni botón Eliminar.
 17. En el renglón corto al pie del acordeón: con el flag activo se lee que las pilas **van
     incluidas**; sin el flag, se lee que hay que tenerlas el día de la instalación — nunca las dos
-    (es una sola línea con `t-if`/`t-else`, v1.10.0).
+    (es una sola línea con `t-if`/`t-else`).
 18. Agregar la misma pila como producto suelto → se agrega una segunda línea, **pagada**.
 19. Pagar y revisar la **factura**: la línea de pilas aparece a $0.
 20. Duplicar el pedido (Acciones → Duplicar) → el duplicado trae **una** línea de pilas a $0.
@@ -542,3 +567,17 @@ backoffice.
     Manualmente*) o esperar la ventana del recordatorio → el correo de recordatorio sale con el
     logo/colores de la compañía **del pedido**, no la del usuario del cron. El de confirmación no
     cambia (ya salía bien).
+
+### Agenda por link compartido y dirección en la Cita
+
+22. Abrir el link compartido de un tipo de cita con **_Pedir la dirección de instalación_** y
+    **_Pedir fotos del lugar_** (mínimo mayor a 0) activados → el formulario muestra, arriba de los
+    campos de dirección, "Obligatorio: calle y número, y localidad." y, arriba del input de fotos,
+    "Obligatorio: subí al menos N foto(s) para poder confirmar la cita.".
+23. Completar el formulario y confirmar el turno → la Cita creada muestra la dirección declarada en
+    su campo **Ubicación**, visible también en la lista de Citas, en el Gantt y en el `.ics` que se descarga desde la Cita.
+24. Confirmar un pedido con instalación desde el checkout → la Cita creada por el pedido también
+    queda con la dirección de entrega en **Ubicación**.
+25. Tras actualizar el módulo, revisar Citas de instalación creadas **antes** de la actualización →
+    quedan con **Ubicación** completada por el backfill, sin duplicar ni pisar una ubicación que ya
+    tuvieran.

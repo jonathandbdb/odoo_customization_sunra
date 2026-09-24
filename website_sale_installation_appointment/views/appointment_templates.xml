@@ -16,9 +16,9 @@
                  nativo en vez de mandar un nombre en blanco. -->
             <t t-set="installation_known_customer"
                t-value="appointment_type._is_installation_checkout_source() and partner_data.get('name') and partner_data.get('email')"/>
-            <!-- D59: el formulario del LINK se organiza en secciones numeradas (pedido de la
-                 clienta el 15-09-2026: "algo mas ordenado"). El del checkout no se toca: ahi solo
-                 se confirma el turno y son dos campos. -->
+            <!-- D59: el formulario del LINK se organiza en secciones numeradas para no leerse
+                 como un muro de campos. El del checkout no se toca: ahi solo se confirma el
+                 turno y son dos campos. -->
             <t t-set="installation_link_form" t-value="appointment_type._is_installation_link_form()"/>
             <div t-if="installation_answer_errors" class="alert alert-danger" role="alert">
                 <div t-foreach="installation_answer_errors" t-as="answer_error"
@@ -72,9 +72,9 @@
             <t t-else="">$0</t>
         </xpath>
         <!-- Guia de medidas: va DENTRO del bucle de preguntas, justo antes de la que la pide
-             (marcada con `installation_measure_guide`). Antes iba arriba de todas las preguntas y
-             quedaba lejos de la que hay que responder. Sirve para los dos caminos: la pregunta de
-             la medida es reutilizable y la comparten el tipo de cita del checkout y el del link. -->
+             (marcada con `installation_measure_guide`), para que se lea justo donde hay que
+             responder. Sirve para los dos caminos: la pregunta de la medida es reutilizable y la
+             comparten el tipo de cita del checkout y el del link. -->
         <xpath expr="//t[@t-foreach='appointment_type.question_ids']/div[hasclass('row')]" position="before">
             <t t-if="question.installation_measure_guide"
                t-call="website_sale_installation_appointment.installation_measure_guide"/>
@@ -86,14 +86,17 @@
         <xpath expr="//t[@t-if='appointment_type.allow_guests']" position="before">
             <!-- `o_not_editable`: el bloque vive dentro de un `oe_structure` del core, asi que sin
                  esto sus etiquetas y placeholders se pueden editar desde el editor web — y eso crea
-                 una copia por sitio que deja de recibir las actualizaciones del modulo (D42, ya
-                 paso en produccion con `installation_photo_examples`). -->
+                 una copia por sitio que deja de recibir las actualizaciones del modulo (D42). -->
             <t t-if="installation_link_form and appointment_type._is_installation_asking_address()"
                t-call="website_sale_installation_appointment.installation_form_section">
                 <t t-set="sec_num">3</t>
                 <t t-set="sec_title">Installation address</t>
                 <t t-set="sec_help">Enter the address where the installation will take place.</t>
             </t>
+            <!-- D61: primera linea del bloque, siempre que el bloque exista (calle y localidad son
+                 siempre obligatorias) — se lee con y sin secciones numeradas. -->
+            <p t-if="appointment_type._is_installation_asking_address()"
+               class="text-danger mb-2 o_not_editable"><i class="fa fa-exclamation-circle me-1" role="img"/>Required: street and number, and town.</p>
             <div class="row mb-4 o_not_editable" t-if="appointment_type._is_installation_asking_address()">
                 <label t-attf-class="col-sm-3 col-form-label fw-normal#{' d-none' if installation_link_form else ''}"
                        for="installation_street">
@@ -153,6 +156,12 @@
                          texto para los dos caminos, editable sin tocar la plantilla. -->
                     <t t-call="website_sale_installation_appointment.installation_photos_message"/>
                     <t t-call="website_sale_installation_appointment.installation_photo_examples"/>
+                    <!-- D61: inmediatamente arriba del input, solo si el minimo es > 0 (con 0
+                         las fotos son opcionales). El numero va en un `t-out` propio: el
+                         catalogo lleva los dos terminos de texto por separado, alrededor de el. -->
+                    <p t-if="appointment_type.installation_min_photos"
+                       class="text-danger mb-2 o_not_editable"><i class="fa fa-exclamation-circle me-1" role="img"/>Required: upload at least
+                        <span t-out="appointment_type.installation_min_photos"/> photo(s) to confirm the appointment.</p>
                     <input type="file" id="installation_photos" name="installation_photos"
                            class="form-control" multiple="multiple" accept="image/*"
                            t-att-required="appointment_type.installation_min_photos and '1' or None"/>

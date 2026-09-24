@@ -8,7 +8,7 @@ from odoo.tests import tagged
 
 @tagged("post_install", "-at_install")
 class TestCalendarEventMailBranding(MailCommon):
-    """ Marca del correo de una cita de instalacion (D43, Plane #38).
+    """ Marca del correo de una cita de instalacion (D43).
 
     `MailCommon` ya deja armadas dos compañias (`company_admin`, la del usuario que corre el
     test/cron, y `company_2`, con su propio usuario `user_employee_c2`), ideales para probar el

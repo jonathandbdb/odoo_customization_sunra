@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     "name": "website_sale_installation_appointment",
-    "version": "1.13.0",
+    "version": "1.14.0",
     "summary": "Envio con instalacion en el eCommerce: agenda la cita y pide fotos del lugar en el checkout",
     "description": """
 Permite vender un envio "con instalacion incluida" desde el eCommerce y que esa venta quede agendada
@@ -27,6 +27,8 @@ como Cita (app Citas), con las fotos del lugar y los datos que cargo el cliente.
 - El metodo de envio tambien puede incluir sin cargo las pilas que necesitan los productos del
   carrito (configurables en la ficha del producto): se agrega automaticamente la linea a $0,
   sincronizada en el carrito web, en el backend y al confirmar.
+- La direccion de instalacion queda como ubicacion (location) de la Cita, tanto si se agendo por el
+  link compartido como desde el checkout.
     """,
     "category": "Website/Website",
     "author": "Sunra",

@@ -244,6 +244,45 @@ class CalendarEvent(models.Model):
                 "date_deadline": self.stop,
             })
 
+    # === UBICACION DE LA CITA (D62) === #
+
+    def _installation_fill_location(self, address):
+        """Completar `location` con la direccion de instalacion, si la cita no la tiene (D62).
+
+        Unico lugar que formatea esa linea: lo usan el formulario del link, la confirmacion del
+        checkout y el backfill de migracion.
+
+        :param address: mapping con las claves `street`, `street2`, `zip`, `city` y
+            `between_streets` — un `dict` o un registro `res.partner` (los dos responden
+            ``address["street"]``)
+        :type address: dict | res.partner
+        :return: None
+        """
+        targets = self.filtered(lambda event: not (event.location or "").strip())
+        if not targets:
+            return
+        # Reasignar `self` (no una variable nueva): `_()` resuelve el idioma leyendo el `self`
+        # del frame del LLAMADOR, mismo molde que `_installation_task_description()` — la
+        # etiqueta la lee la cuadrilla, no el visitante que declaro la direccion.
+        self = self.with_context(lang=self.env.company.partner_id.lang or self.env.lang)
+        fragments = [
+            value.strip() for value in (address["street"], address["street2"])
+            if (value or "").strip()
+        ]
+        tail = " ".join(
+            value.strip() for value in (address["zip"], address["city"]) if (value or "").strip()
+        )
+        if tail:
+            fragments.append(tail)
+        line = ", ".join(fragments)
+        if not line:
+            # Sin calle, piso, CP ni localidad: un "entre calles" solo no es una ubicacion.
+            return
+        between_streets = (address["between_streets"] or "").strip()
+        if between_streets:
+            line = "%s (%s)" % (line, _("between streets: %s", between_streets))
+        targets.write({"location": line})
+
     def _installation_post_photos(self, attachments):
         """Dejar las fotos del lugar en la cita y en la tarea del instalador.
 
