@@ -1,10 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <!-- Los inputs de las preguntas salen del nativo con type="phone" / type="char", que NO existen
-         en HTML: el navegador los trata como texto libre y el cliente puede escribir cualquier cosa
-         (era el reclamo de "acepta cualquier numero de telefono o DNI"). Se emiten con el tipo real
+         en HTML: el navegador los trata como texto libre y el cliente puede escribir cualquier cosa.
+         Se emiten con el tipo real
          y con inputmode/pattern segun el formato configurado en la pregunta; el formulario nativo
          llama a reportValidity() antes de enviar, asi que el error se ve en el campo. -->
+    <template id="installation_phone_input" name="Installation Phone Question Input">
+        <t t-set="input_attrs" t-value="question._answer_input_attrs()"/>
+        <input class="form-control" t-att="input_attrs"
+               t-attf-name="question_#{question.id}"
+               t-att-value="partner_data['phone'] if isMainPhoneQuestion and 'phone' in partner_data else ''"
+               t-att-required="question.question_required or None"
+               t-att-placeholder="question.placeholder"
+               t-att-data-is-main-phone-question="isMainPhoneQuestion"/>
+    </template>
+
+    <!-- Fila de "Tus datos" para la pregunta principal de telefono (D59): mismo markup de fila que
+         el bucle nativo (label.col-sm-3 + input.col-sm-9), para que el estilo de "etiqueta arriba
+         del campo" del link (o_installation_sections, installation_form.scss) se le aplique igual
+         que a cualquier otra fila del form. Recibe `question`/`isMainPhoneQuestion` del llamador. -->
+    <template id="installation_main_phone_row" name="Installation Main Phone Question Row">
+        <div class="row mb-4">
+            <label class="col-sm-3 col-form-label fw-normal" t-attf-for="question_#{question.id}"
+                   t-out="' '.join([question.name, '*' if question.question_required else ''])"/>
+            <div class="col-sm-9">
+                <t t-call="website_sale_installation_appointment.installation_phone_input"/>
+                <div t-if="not is_html_empty(question.extra_comment)" class="mt-1">
+                    <div class="form-text" t-field="question.extra_comment"/>
+                </div>
+            </div>
+        </div>
+    </template>
+
     <template id="appointment_form" inherit_id="appointment.appointment_form">
         <!-- Errores de formato de la validacion del servidor (red de seguridad del pattern). -->
         <xpath expr="//form[hasclass('appointment_submit_form')]" position="before">
@@ -43,9 +70,11 @@
                 <t t-set="sec_help">So we can get in touch and confirm the visit.</t>
             </t>
         </xpath>
-        <!-- Seccion 2: las preguntas del tipo de cita (material de la puerta y las que agreguen). -->
+        <!-- Seccion 2: las preguntas del tipo de cita (material de la puerta y las que agreguen),
+             sin la principal de telefono (D59): esa va en la Seccion 1, junto al correo. El
+             encabezado solo se pinta si le queda alguna pregunta. -->
         <xpath expr="//t[@t-foreach='appointment_type.question_ids']" position="before">
-            <t t-if="installation_link_form"
+            <t t-if="installation_link_form and (appointment_type.question_ids - main_phone_question)"
                t-call="website_sale_installation_appointment.installation_form_section">
                 <t t-set="sec_num">2</t>
                 <t t-set="sec_title">About your door</t>
@@ -70,6 +99,16 @@
                 <input type="hidden" name="email" t-att-value="partner_data['email']"/>
             </t>
             <t t-else="">$0</t>
+            <!-- D59: la pregunta principal de telefono (la primera de tipo Telefono del tipo de
+                 cita, la misma que el core vuelca en el `phone` del contacto) se lee en "Tus
+                 datos", debajo del correo, y no en el bucle de preguntas: es un dato de contacto,
+                 no una pregunta sobre la puerta. `question`/`isMainPhoneQuestion` viajan solo
+                 dentro de este `t-call`, igual que el bucle nativo se los pasa a su propio input. -->
+            <t t-if="installation_link_form and main_phone_question"
+               t-call="website_sale_installation_appointment.installation_main_phone_row">
+                <t t-set="question" t-value="main_phone_question"/>
+                <t t-set="isMainPhoneQuestion" t-value="True"/>
+            </t>
         </xpath>
         <!-- Guia de medidas: va DENTRO del bucle de preguntas, justo antes de la que la pide
              (marcada con `installation_measure_guide`), para que se lea justo donde hay que
@@ -78,6 +117,12 @@
         <xpath expr="//t[@t-foreach='appointment_type.question_ids']/div[hasclass('row')]" position="before">
             <t t-if="question.installation_measure_guide"
                t-call="website_sale_installation_appointment.installation_measure_guide"/>
+        </xpath>
+        <!-- La principal de telefono ya se pinto en la Seccion 1 (D59): se saltea aca solo en el
+             link, para no repetirla en el bucle de preguntas. El checkout no se toca: ahi sigue
+             en su lugar nativo, entre las preguntas. -->
+        <xpath expr="//t[@t-foreach='appointment_type.question_ids']/div[hasclass('row')]" position="attributes">
+            <attribute name="t-if">question.question_type != 'text' and not (installation_link_form and question == main_phone_question)</attribute>
         </xpath>
         <!-- Direccion de la instalacion (D58). Solo en los tipos de cita agendados FUERA del
              eCommerce (el link que comparte Nokey): ahi no hay pedido ni direccion de entrega, y
@@ -168,14 +213,10 @@
                 </div>
             </div>
         </xpath>
+        <!-- El input queda en un template aparte (`installation_phone_input`) para que la fila de
+             "Tus datos" (D59) pueda llamarlo sin duplicar el markup. -->
         <xpath expr="//input[@type='phone']" position="replace">
-            <t t-set="input_attrs" t-value="question._answer_input_attrs()"/>
-            <input class="form-control" t-att="input_attrs"
-                   t-attf-name="question_#{question.id}"
-                   t-att-value="partner_data['phone'] if isMainPhoneQuestion and 'phone' in partner_data else ''"
-                   t-att-required="question.question_required or None"
-                   t-att-placeholder="question.placeholder"
-                   t-att-data-is-main-phone-question="isMainPhoneQuestion"/>
+            <t t-call="website_sale_installation_appointment.installation_phone_input"/>
         </xpath>
         <xpath expr="//input[@type='char' and @t-attf-name]" position="replace">
             <t t-set="input_attrs" t-value="question._answer_input_attrs()"/>

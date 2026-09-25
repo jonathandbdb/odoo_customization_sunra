@@ -4,7 +4,7 @@ Vender un **envío con instalación incluida** desde el eCommerce y que esa vent
 Cita** (app Citas), con las **fotos del lugar** y los datos que cargó el cliente, y con la **tarea de
 Field Service** del instalador.
 
-- **Versión**: 1.14.0
+- **Versión**: 1.14.1
 - **Licencia**: LGPL-3
 - **Depende de**: `website_sale`, `delivery`, `website_appointment_sale`, `sale_project`
 
@@ -407,7 +407,9 @@ pago y termina en el checkout): se configura un **segundo tipo de cita**.
    reprograma o se cancela.
 3. **Preguntas**: las mismas técnicas del tipo web. Las preguntas se reutilizan entre tipos, no hay
    que duplicarlas — pero la de *Notas aclaratorias* conviene dejarla **solo acá**: en el checkout
-   duplica el campo "Indicaciones para el instalador" del Paso 1.
+   duplica el campo "Indicaciones para el instalador" del Paso 1. Sumar también la pregunta
+   **Teléfono de contacto** (la misma de tipo *Teléfono* del tipo de cita del eCommerce, reutilizada
+   por M2M): sin ella, la sección "Tus datos" del formulario del link queda solo con nombre y correo.
 4. **Dirección de la instalación**: activar **_Pedir la dirección de instalación_**. Acá no hay
    checkout que la aporte, así que sin esto la tarea del instalador sale **sin lugar al que ir**. El
    formulario pide calle y número y localidad (obligatorias), piso/depto, código postal y **entre
@@ -427,10 +429,13 @@ pago y termina en el checkout): se configura un **segundo tipo de cita**.
    dos veces (aunque la opción quede activada).
 6. **Orden del formulario**: el formulario de este camino se muestra en **cuatro secciones
    numeradas** (Tus datos · Sobre tu puerta · Dirección de instalación · Fotos del lugar), con la
-   etiqueta arriba del campo. El **orden de las preguntas** dentro de la sección 2 lo maneja el
-   funcional desde el backend, arrastrando con el tirador de la lista de preguntas del tipo de
-   cita. ⚠️ Esa secuencia es **global**: las preguntas se reutilizan entre tipos de cita, así que
-   reordenar acá reordena en todos los tipos que usen la misma pregunta.
+   etiqueta arriba del campo. La pregunta principal de teléfono (la primera de tipo *Teléfono* del
+   tipo de cita, la misma que Odoo vuelca en el teléfono del contacto) se pinta en **"Tus datos"**,
+   debajo del correo, y no se repite en "Sobre tu puerta"; sin ninguna pregunta de tipo *Teléfono*,
+   "Tus datos" queda solo con nombre y correo. El **orden de las demás preguntas** dentro de la
+   sección 2 lo maneja el funcional desde el backend, arrastrando con el tirador de la lista de
+   preguntas del tipo de cita. ⚠️ Esa secuencia es **global**: las preguntas se reutilizan entre
+   tipos de cita, así que reordenar acá reordena en todos los tipos que usen la misma pregunta.
 7. **Link para compartir**: abrir el tipo de cita y apretar **Compartir** (arriba a la izquierda).
    Odoo abre *Crear un enlace para compartir* con la URL ya armada (ej. `/book/instalacion`) y el
    botón *Copiar enlace y cerrar*. Ese es el link que se manda al cliente por WhatsApp o mail; **no**
@@ -581,3 +586,13 @@ backoffice.
 25. Tras actualizar el módulo, revisar Citas de instalación creadas **antes** de la actualización →
     quedan con **Ubicación** completada por el backfill, sin duplicar ni pisar una ubicación que ya
     tuvieran.
+26. Con la pregunta **Teléfono de contacto** (obligatoria) cargada en el tipo de cita del link → en
+    "Tus datos" aparece nombre, correo y el teléfono debajo del correo, y esa misma pregunta no se
+    repite en "Sobre tu puerta". Enviar el formulario sin completarlo → el navegador frena en el
+    campo. Forzar un valor sin formato de teléfono (menos de 8 dígitos, saltando la validación del
+    navegador) → el servidor devuelve el formulario con el detalle del error. Completar
+    `11 5555-1234` y confirmar → la cita se crea y el contacto que reserva queda con ese teléfono.
+27. Repetir sin ninguna pregunta de tipo *Teléfono* en el tipo de cita → "Tus datos" queda solo con
+    nombre y correo.
+28. Entrar al formulario **desde el checkout** → el teléfono sigue en su lugar nativo, entre las
+    preguntas (no cambia).
