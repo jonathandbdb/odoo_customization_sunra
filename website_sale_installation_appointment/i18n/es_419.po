@@ -394,6 +394,7 @@ msgstr ""
 #. module: website_sale_installation_appointment
 #: model:website.checkout.step,name:website_sale_installation_appointment.checkout_step_installation
 #: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.view_order_form
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.view_task_form2_inherit
 msgid "Installation"
 msgstr "Instalación"
 
@@ -425,6 +426,7 @@ msgid "Installation Booking"
 msgstr "Reserva de instalación"
 
 #. module: website_sale_installation_appointment
+#: model:ir.model.fields,field_description:website_sale_installation_appointment.field_project_task__installation_photo_ids
 #: model:ir.model.fields,field_description:website_sale_installation_appointment.field_sale_order__installation_photo_ids
 msgid "Installation Photos"
 msgstr "Fotos de la instalación"
@@ -1098,3 +1100,85 @@ msgstr "foto(s) para poder confirmar la cita."
 #: code:addons/website_sale_installation_appointment/models/calendar_event.py:0
 msgid "between streets: %s"
 msgstr "entre calles: %s"
+
+#. module: website_sale_installation_appointment
+#: model:ir.model.fields,field_description:website_sale_installation_appointment.field_project_task__installation_product_ids
+msgid "Installed Models"
+msgstr "Modelos instalados"
+
+#. module: website_sale_installation_appointment
+#: model:ir.model.fields,help:website_sale_installation_appointment.field_project_task__installation_product_ids
+msgid ""
+"Lock models the crew installed during this visit. No quantity: a single "
+"visit can install more than one lock."
+msgstr ""
+"Modelos de cerradura que instaló la cuadrilla en esta visita. Sin "
+"cantidad: una misma visita puede instalar más de una cerradura."
+
+#. module: website_sale_installation_appointment
+#: model:ir.model.fields,field_description:website_sale_installation_appointment.field_project_task__installation_amount
+msgid "Amount to Charge"
+msgstr "Importe a cobrar"
+
+#. module: website_sale_installation_appointment
+#: model:ir.model.fields,help:website_sale_installation_appointment.field_project_task__installation_amount
+msgid ""
+"Amount to collect for this visit, one per task. Loaded by the back office"
+" before the visit; the installer sees it read-only."
+msgstr ""
+"Importe a cobrar en esta visita, uno por tarea. Lo carga el backoffice"
+" antes de la visita; el instalador lo ve sin poder editarlo."
+
+#. module: website_sale_installation_appointment
+#: model:ir.model.fields,field_description:website_sale_installation_appointment.field_project_task__installation_currency_id
+msgid "Installation Currency"
+msgstr "Moneda de la instalación"
+
+#. module: website_sale_installation_appointment
+#: model:ir.model.fields,help:website_sale_installation_appointment.field_project_task__installation_photo_ids
+msgid ""
+"Photos of the installed lock, uploaded by the installer. The customer's "
+"site photos are kept on the order and appointment chatter instead."
+msgstr ""
+"Fotos de la cerradura instalada, subidas por el instalador. Las fotos del"
+" lugar que subió el cliente siguen en el chatter del pedido y de la cita."
+
+#. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.view_task_form2_inherit
+msgid "Photos of the installed lock"
+msgstr "Fotos de la cerradura instalada"
+
+#. module: website_sale_installation_appointment
+#. odoo-python
+#: code:addons/website_sale_installation_appointment/models/project_task.py:0
+msgid ""
+"Upload at least one photo of the installed lock before marking the task as "
+"done."
+msgstr ""
+"Subí al menos una foto de la cerradura instalada antes de marcar la tarea "
+"como hecha."
+
+#. module: website_sale_installation_appointment
+#: model:ir.model.fields,field_description:website_sale_installation_appointment.field_project_project__installation_require_photos
+msgid "Require Installation Photos"
+msgstr "Exigir fotos de la instalación"
+
+#. module: website_sale_installation_appointment
+#: model:ir.model.fields,help:website_sale_installation_appointment.field_project_project__installation_require_photos
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.project_view_form_inherit
+msgid ""
+"Tasks of this project cannot be marked as done without at least one photo "
+"of the installed lock."
+msgstr ""
+"Las tareas de este proyecto no se pueden marcar como hechas sin al menos "
+"una foto de la cerradura instalada."
+
+#. module: website_sale_installation_appointment
+#. odoo-python
+#: code:addons/website_sale_installation_appointment/models/ir_attachment.py:0
+msgid ""
+"You cannot delete the last photo of the installed lock of a task that is "
+"already done."
+msgstr ""
+"No podés borrar la última foto de la cerradura instalada de una tarea que "
+"ya está hecha."

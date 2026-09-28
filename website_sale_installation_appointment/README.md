@@ -1,12 +1,13 @@
 # website_sale_installation_appointment
 
 Vender un **envío con instalación incluida** desde el eCommerce y que esa venta quede **agendada como
-Cita** (app Citas), con las **fotos del lugar** y los datos que cargó el cliente, y con la **tarea de
-Field Service** del instalador.
+Cita** (app Citas), con las **fotos del lugar** y los datos que cargó el cliente, con la **tarea de
+Field Service** del instalador, y con el **resultado de la instalación** que el instalador registra en
+esa misma tarea.
 
-- **Versión**: 1.14.1
+- **Versión**: 1.15.0
 - **Licencia**: LGPL-3
-- **Depende de**: `website_sale`, `delivery`, `website_appointment_sale`, `sale_project`
+- **Depende de**: `website_sale`, `delivery`, `website_appointment_sale`, `sale_project`, `industry_fsm`
 
 ## Para qué sirve
 
@@ -189,6 +190,10 @@ Para bloques libres (banners, promos) están las zonas de snippets que ya trae c
 | `appointment.type` | `installation_photos_message` | Consigna de las fotos del lugar (Html, traducible). Vacío = texto por defecto del módulo. |
 | `appointment.question` | `answer_format` | Formato esperado de la respuesta: texto libre, número entero, número, teléfono o documento (DNI/CUIT). |
 | `calendar.event` | `installation_task_id` | Tarea de Field Service generada por una cita agendada fuera del eCommerce. |
+| `project.task` | `installation_product_ids` | Modelos instalados en la visita (sin cantidad: una visita puede instalar varias cerraduras). |
+| `project.task` | `installation_amount` | Importe a cobrar de esta visita. Solo lectura para el instalador; lo edita `project.group_project_manager`. |
+| `project.task` | `installation_photo_ids` | Fotos de la cerradura instalada, subidas por el instalador (distintas de las fotos del lugar que sube el cliente, que quedan en el chatter). |
+| `project.project` | `installation_require_photos` | Si está tildado, la tarea no pasa a Hecho sin al menos una foto de la cerradura instalada. |
 
 ### Rutas
 
@@ -220,7 +225,12 @@ Para bloques libres (banners, promos) están las zonas de snippets que ya trae c
   portal (después de `super()`, que es donde el core crea la Cita y la tarea).
 - `sale.order.line._timesheet_create_task_prepare_values()` — título estable para la tarea del
   instalador (`<pedido> - <tipo de cita>`). Sin esto, cuando el producto de la cita se llama igual
-  que el tipo de cita, `sale_project` descarta esa línea y la tarea queda titulada con la fecha.
+  que el tipo de cita, `sale_project` descarta esa línea y la tarea queda titulada con la fecha; el
+  mismo override precarga `installation_product_ids` con los productos físicos (`consu`) del pedido,
+  sin la línea de envío, sin las pilas gratis y sin el servicio de la reserva.
+- `project.task.write()` — gate de cierre: en proyectos con `installation_require_photos`, bloquea
+  pasar la tarea a Hecho (`1_done`) sin `installation_photo_ids`. Corre después del `super()`, así un
+  mismo guardado que trae la foto y el estado juntos pasa.
 - `WebsiteAppointmentSale._redirect_to_payment()` — al volver de agendar, vuelve al paso Instalación
   (el nativo vuelve al paso de dirección) y descarta la reserva anterior si el cliente reagenda.
 - `calendar.event._notify_by_email_prepare_rendering_context()` — compañía correcta (logo/colores)
@@ -299,6 +309,41 @@ nunca pisa una ubicación que ya venga cargada por el tipo de cita.
 ⚠️ **El mail de confirmación de la cita no incluye la dirección**: ese correo sale al crear la Cita,
 antes de que el módulo escriba la ubicación. La dirección sí se ve en la ficha de la Cita, en el
 `.ics` que se descarga desde ella y en la tarea de Field Service.
+
+## Resultado de la instalación (tarea de Field Service)
+
+El instalador registra el resultado de la visita en la propia **tarea de Field Service**, en una
+página del formulario llamada **Installation** (solo se ve en tareas de proyectos FSM). Ahí carga:
+
+- **Modelos instalados** (`installation_product_ids`): lista de productos, **sin cantidad** — una
+  visita puede instalar varias cerraduras.
+- **Importe a cobrar** (`installation_amount`): un importe por visita, en la moneda de la compañía de
+  la tarea. El instalador lo **ve pero no lo edita**; solo `project.group_project_manager` puede
+  cambiarlo.
+- **Fotos de la cerradura instalada** (`installation_photo_ids`): distintas de las fotos del lugar
+  que sube el cliente en el checkout, que siguen en el chatter del pedido/Cita/tarea.
+
+En el camino eCommerce, la tarea nace con los **modelos precargados**: los productos físicos
+(`consu`) del pedido, sin la línea de envío ni las pilas gratis. En una instalación agendada por el
+link compartido no hay pedido, así que el backoffice carga los modelos a mano.
+
+**Fotos obligatorias para cerrar**: en los proyectos FSM con el tilde **Require Installation
+Photos** (`project.project.installation_require_photos`), la tarea no pasa a Hecho sin al menos una
+foto en `installation_photo_ids` — tanto con el botón *Mark as done* como con el widget de estado del
+formulario. Cancelar la tarea (`1_canceled`) no exige fotos: el motivo de la cancelación se deja en
+el chatter. En un proyecto sin el tilde, la tarea cierra sin fotos.
+
+Las fotos del instalador se suben como adjuntos de la tarea, así que también aparecen en la caja de
+adjuntos de su chatter. Con la tarea ya **hecha** en un proyecto con el tilde, **no se puede borrar
+la última foto**, ni desde la página **Installation** ni desde el chatter
+(`ir.attachment.unlink()`). Borrar una foto cuando quedan otras, o en una tarea no hecha o
+cancelada, está permitido.
+
+El **botón nativo "Productos"** de `industry_fsm_sale` sigue disponible en la tarea (crea/modifica
+líneas del pedido asociado); la página **Installation** es independiente de él y es donde el
+instalador registra el resultado de la visita.
+
+Duplicar una tarea **no** copia los modelos instalados, el importe ni las fotos.
 
 ## Pilas incluidas sin costo
 
@@ -388,6 +433,12 @@ ya está integrado en el servicio de instalación.
      disponible, y mientras esté agotada se **apaga el mail de carrito abandonado** de ese carrito.
    - Si el `message_intro` del tipo de cita menciona "vas a necesitar pilas", **sacar ese punto**
      cuando el método de envío las incluye (si no, el cliente lee dos mensajes contradictorios).
+9. **Resultado de la instalación** — en el **proyecto** de Field Service donde caen las tareas de
+   instalación: tildar **Require Installation Photos** si esas tareas no deben poder cerrarse sin
+   foto de la cerradura instalada (el tilde solo se ve en proyectos FSM). Al **instalador**, asignarle
+   el **grupo usuario de Field Service** (`industry_fsm.group_fsm_user`), no el de manager: así ve y
+   completa la página **Installation** (modelos, fotos) pero no puede editar el importe a cobrar, que
+   queda reservado a `project.group_project_manager` (`industry_fsm.group_fsm_manager` lo implica).
 
 ### Agenda compartida sin cobrar online (el cliente paga por fuera)
 
@@ -524,6 +575,13 @@ backoffice.
   "vas a necesitar pilas" y el método de envío las incluye, el cliente lee dos cosas contradictorias
   (el checklist pidiéndolas y el aviso diciendo que van incluidas).
 
+- **El gate de fotos corre en `write()`, no en el botón *Mark as done***: el widget de estado del
+  formulario también puede dejar la tarea en Hecho sin pasar por ese botón, así que el chequeo va en
+  el embudo común de todo guardado de la tarea.
+- **El importe a cobrar es de solo lectura en la vista**, no una restricción de ACL: un usuario de
+  FSM sigue teniendo permiso de escritura sobre la tarea; lo que se le oculta es el control en el
+  formulario.
+
 ## Validación manual
 
 1. Carrito con un producto etiquetado como instalable → el método *Envío con instalación* aparece.
@@ -596,3 +654,22 @@ backoffice.
     nombre y correo.
 28. Entrar al formulario **desde el checkout** → el teléfono sigue en su lugar nativo, entre las
     preguntas (no cambia).
+
+### Resultado de la instalación
+
+29. En un proyecto FSM con **Require Installation Photos** tildado, marcar una tarea como hecha sin
+    fotos (botón *Mark as done* y widget de estado del formulario) → error indicando que hace falta
+    subir al menos una foto de la cerradura instalada; la tarea queda en su estado anterior.
+30. Subir al menos una foto en la página **Installation** (en el mismo guardado o antes) → la tarea
+    pasa a Hecho.
+31. Cancelar la tarea sin fotos → se cancela sin error.
+32. Repetir en un proyecto FSM **sin** el tilde → la tarea se marca como hecha sin fotos.
+33. Pagar un pedido eCommerce con instalación → la tarea de Field Service nace con **Installed
+    Models** cargado con los productos del pedido, sin la línea de envío ni las pilas gratis.
+34. Con un usuario que tiene el **grupo usuario de Field Service** (no manager): ve la página
+    **Installation**, edita los modelos y sube fotos, y ve el importe a cobrar **sin poder
+    editarlo**. Con un usuario `project.group_project_manager`, el importe sí se puede editar.
+35. Duplicar una tarea con modelos, importe y fotos cargados → el duplicado nace sin ninguno de los
+    tres.
+36. En una tarea hecha de un proyecto con el tilde y una sola foto, borrarla desde la caja de
+    adjuntos del chatter → error, la foto sigue. Con dos fotos, borrar una → se borra.

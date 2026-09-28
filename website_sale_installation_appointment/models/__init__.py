@@ -4,7 +4,10 @@ from . import appointment_type
 from . import calendar_booking
 from . import calendar_event
 from . import delivery_carrier
+from . import ir_attachment
 from . import product_template
+from . import project_project
+from . import project_task
 from . import res_partner
 from . import sale_order
 from . import sale_order_line

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Tarea de FSM: pagina donde el instalador registra el resultado de la visita (D63). -->
+    <record id="view_task_form2_inherit" model="ir.ui.view">
+        <field name="name">project.task.view.form.inherit.website_sale_installation_appointment</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="industry_fsm.view_task_form2_inherit"/>
+        <field name="arch" type="xml">
+            <page name="description_page" position="after">
+                <page name="installation_page" string="Installation" invisible="not is_fsm">
+                    <group>
+                        <field name="installation_product_ids" widget="many2many_tags"/>
+                        <field name="installation_currency_id" invisible="1"/>
+                        <!-- installation_amount va dos veces (molde: alias_email/alias_name,
+                             odoo/addons/project/views/project_project_views.xml:L95-96): una vista
+                             heredada sin mode="primary" no acepta group_ids en el registro
+                             (_check_groups, odoo/odoo/addons/base/models/ir_ui_view.py:L537-543),
+                             asi que la restriccion por grupo va en el atributo de cada nodo. -->
+                        <field name="installation_amount" widget="monetary" readonly="1"
+                               groups="!project.group_project_manager"/>
+                        <field name="installation_amount" widget="monetary"
+                               groups="project.group_project_manager"/>
+                    </group>
+                    <separator string="Photos of the installed lock"/>
+                    <field name="installation_photo_ids" widget="many2many_binary" nolabel="1"/>
+                </page>
+            </page>
+        </field>
+    </record>
+</odoo>
+<!-- vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4-->

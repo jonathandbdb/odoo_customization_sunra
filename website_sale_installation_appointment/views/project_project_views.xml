@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Proyecto FSM: tilde que exige fotos de la cerradura instalada para cerrar sus tareas (D63). -->
+    <record id="project_view_form_inherit" model="ir.ui.view">
+        <field name="name">project.project.view.form.inherit.website_sale_installation_appointment</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="industry_fsm.project_view_form_inherit"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='allow_geolocation']/.." position="after">
+                <setting class="col-lg-12" invisible="not is_fsm"
+                         help="Tasks of this project cannot be marked as done without at least one photo of the installed lock.">
+                    <field name="installation_require_photos"/>
+                </setting>
+            </xpath>
+        </field>
+    </record>
+</odoo>
+<!-- vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4-->

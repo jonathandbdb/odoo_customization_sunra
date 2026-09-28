@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     "name": "website_sale_installation_appointment",
-    "version": "1.14.1",
+    "version": "1.15.0",
     "summary": "Envio con instalacion en el eCommerce: agenda la cita y pide fotos del lugar en el checkout",
     "description": """
 Permite vender un envio "con instalacion incluida" desde el eCommerce y que esa venta quede agendada
@@ -31,6 +31,9 @@ como Cita (app Citas), con las fotos del lugar y los datos que cargo el cliente.
   link compartido como desde el checkout.
 - En el formulario del link compartido, la pregunta principal de telefono se muestra en "Tus datos",
   debajo del correo, y no se repite entre las preguntas del tipo de cita. El checkout no cambia.
+- En la tarea de Field Service, el instalador registra el resultado de la visita (pagina
+  Installation): modelos instalados, importe a cobrar (solo lectura para el instalador) y fotos de
+  la cerradura instalada, obligatorias para cerrar la tarea en los proyectos con ese requisito.
     """,
     "category": "Website/Website",
     "author": "Sunra",
@@ -41,6 +44,7 @@ como Cita (app Citas), con las fotos del lugar y los datos que cargo el cliente.
         "delivery",
         "website_appointment_sale",
         "sale_project",
+        "industry_fsm",
     ],
     "data": [
         "data/website_checkout_step_data.xml",
@@ -53,6 +57,8 @@ como Cita (app Citas), con las fotos del lugar y los datos que cargo el cliente.
         "views/appointment_type_views.xml",
         "views/appointment_question_views.xml",
         "views/appointment_templates.xml",
+        "views/project_task_views.xml",
+        "views/project_project_views.xml",
     ],
     "assets": {
         "web.assets_frontend": [

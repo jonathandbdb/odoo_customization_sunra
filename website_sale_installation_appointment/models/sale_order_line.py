@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from markupsafe import Markup
 
-from odoo import fields, models
+from odoo import Command, fields, models
 
 
 class SaleOrderLine(models.Model):
@@ -55,6 +55,16 @@ class SaleOrderLine(models.Model):
                 values["description"] = (
                     notes + Markup("<br/>") + Markup(description) if description else notes
                 )
+            # El filtro por type ya excluye el servicio de la reserva (su producto no es
+            # 'consu'), sin necesitar una condicion aparte.
+            installed_products = self.order_id.order_line.filtered(
+                lambda line: line.product_id.type == "consu"
+                and not line.is_delivery
+                and not line.is_free_battery_line
+                and not line.display_type
+            ).product_id
+            if installed_products:
+                values["installation_product_ids"] = [Command.set(installed_products.ids)]
         return values
 
     # === FREE BATTERIES: PRICE / EDITION DEFENSES === #
