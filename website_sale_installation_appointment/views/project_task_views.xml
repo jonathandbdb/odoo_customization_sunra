@@ -21,6 +21,10 @@
                         <field name="installation_amount" widget="monetary"
                                groups="project.group_project_manager"/>
                     </group>
+                    <!-- Imagenes del chatter (D65): solo lectura, se oculta si no hay. -->
+                    <separator string="Site photos" invisible="not installation_site_photo_ids"/>
+                    <field name="installation_site_photo_ids" widget="many2many_binary" nolabel="1"
+                           readonly="1" invisible="not installation_site_photo_ids"/>
                     <separator string="Photos of the installed lock"/>
                     <field name="installation_photo_ids" widget="many2many_binary" nolabel="1"/>
                 </page>

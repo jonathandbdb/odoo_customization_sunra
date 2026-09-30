@@ -185,6 +185,7 @@ Para bloques libres (banners, promos) están las zonas de snippets que ya trae c
 | `sale.order` | **`installation_notes`** | Indicaciones para el instalador de **esta** venta (Text, `copy=False`). Se editan en el Paso 1 y se propagan a la descripción de la tarea de FSM. |
 | `sale.order` | **`installation_address_confirmed`** | Lo marca el botón *Confirmar dirección* del Paso 1 (Boolean, `copy=False`, default `False`). Se resetea si se edita la dirección de envío después. |
 | `appointment.type` | `installation_fsm_project_id` | Proyecto de Field Service donde crear la tarea cuando la cita se agenda **sin** pasar por el eCommerce (link compartido). Vacío = la tarea la genera el pedido. |
+| `appointment.type` | **`installation_default_user_id`** | Instalador predeterminado: usuario interno activo al que nace asignada la tarea de instalación (eCommerce y link). Reemplaza al staff de la reserva; vacío = la asignación que arma el core (sin asignar en el link). |
 | `appointment.type` | `installation_request_photos` | Pedir fotos del lugar en el formulario de la cita. |
 | `appointment.type` | `installation_min_photos` | Fotos necesarias para reservar (0 = opcionales pero visibles). |
 | `appointment.type` | `installation_photos_message` | Consigna de las fotos del lugar (Html, traducible). Vacío = texto por defecto del módulo. |
@@ -193,6 +194,7 @@ Para bloques libres (banners, promos) están las zonas de snippets que ya trae c
 | `project.task` | `installation_product_ids` | Modelos instalados en la visita (sin cantidad: una visita puede instalar varias cerraduras). |
 | `project.task` | `installation_amount` | Importe a cobrar de esta visita. Solo lectura para el instalador; lo edita `project.group_project_manager`. |
 | `project.task` | `installation_photo_ids` | Fotos de la cerradura instalada, subidas por el instalador (distintas de las fotos del lugar que sube el cliente, que quedan en el chatter). |
+| `project.task` | **`installation_site_photo_ids`** | Fotos del lugar: imágenes del chatter de la tarea (menos las del instalador). Compute no almacenado, solo lectura; no cuentan para cerrar. |
 | `project.project` | `installation_require_photos` | Si está tildado, la tarea no pasa a Hecho sin al menos una foto de la cerradura instalada. |
 
 ### Rutas
@@ -320,8 +322,18 @@ página del formulario llamada **Installation** (solo se ve en tareas de proyect
 - **Importe a cobrar** (`installation_amount`): un importe por visita, en la moneda de la compañía de
   la tarea. El instalador lo **ve pero no lo edita**; solo `project.group_project_manager` puede
   cambiarlo.
+- **Fotos del lugar** (`installation_site_photo_ids`): sección de solo lectura, arriba de las del
+  instalador, con las imágenes del chatter de la tarea (las que subió el cliente y cualquier imagen
+  agregada después). Se oculta si no hay. No cuentan para cerrar la tarea.
 - **Fotos de la cerradura instalada** (`installation_photo_ids`): distintas de las fotos del lugar
   que sube el cliente en el checkout, que siguen en el chatter del pedido/Cita/tarea.
+
+**Instalador predeterminado**: en el tipo de cita, el campo **Default Installer** asigna la tarea de
+instalación a ese usuario al crearse (eCommerce y link compartido). Vacío, la tarea toma la asignación que
+arma el core (sin asignar en el link). Las tareas existentes no cambian.
+
+**Calendario como vista inicial**: *Field Service → My Tasks → Tasks* y *All Tasks → All Tasks* abren
+en el calendario para todos los usuarios, en escritorio y en móvil.
 
 En el camino eCommerce, la tarea nace con los **modelos precargados**: los productos físicos
 (`consu`) del pedido, sin la línea de envío ni las pilas gratis. En una instalación agendada por el
@@ -673,3 +685,9 @@ backoffice.
     tres.
 36. En una tarea hecha de un proyecto con el tilde y una sola foto, borrarla desde la caja de
     adjuntos del chatter → error, la foto sigue. Con dos fotos, borrar una → se borra.
+37. Tarea de instalación con fotos del cliente en el chatter → la página **Installation** muestra
+    **Site photos** arriba de las del instalador, sin botón de adjuntar; sin imágenes, la sección no se ve.
+38. En el tipo de cita cargar **Default Installer** y pagar un pedido / agendar por el link → la tarea
+    nace asignada a ese usuario; con el campo vacío, como siempre.
+39. *Field Service → My Tasks → Tasks* y *All Tasks → All Tasks* abren en el calendario (también en
+    pantalla chica); *Map* y *To Schedule* no cambian.

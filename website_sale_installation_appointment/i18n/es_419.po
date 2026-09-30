@@ -1137,11 +1137,13 @@ msgstr "Moneda de la instalación"
 #. module: website_sale_installation_appointment
 #: model:ir.model.fields,help:website_sale_installation_appointment.field_project_task__installation_photo_ids
 msgid ""
-"Photos of the installed lock, uploaded by the installer. The customer's "
-"site photos are kept on the order and appointment chatter instead."
+"Photos of the installed lock, uploaded by the installer. The only ones that "
+"count to close the task; the customer's site photos are shown in Site "
+"photos."
 msgstr ""
-"Fotos de la cerradura instalada, subidas por el instalador. Las fotos del"
-" lugar que subió el cliente siguen en el chatter del pedido y de la cita."
+"Fotos de la cerradura instalada, subidas por el instalador. Son las únicas "
+"que cuentan para cerrar la tarea; las fotos del lugar del cliente se ven en "
+"Fotos del lugar."
 
 #. module: website_sale_installation_appointment
 #: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.view_task_form2_inherit
@@ -1182,3 +1184,40 @@ msgid ""
 msgstr ""
 "No podés borrar la última foto de la cerradura instalada de una tarea que "
 "ya está hecha."
+
+#. module: website_sale_installation_appointment
+#: model:ir.model.fields,field_description:website_sale_installation_appointment.field_appointment_type__installation_default_user_id
+msgid "Default Installer"
+msgstr "Instalador predeterminado"
+
+#. module: website_sale_installation_appointment
+#: model:ir.model.fields,help:website_sale_installation_appointment.field_appointment_type__installation_default_user_id
+msgid ""
+"The installation task created for this appointment type is assigned to this "
+"user (it replaces the staff user of the booking). Leave empty to keep the "
+"usual assignment: unassigned for bookings made through the shared link."
+msgstr ""
+"La tarea de instalación creada para este tipo de cita se asigna a este "
+"usuario (reemplaza al usuario de la reserva). Dejalo vacío para mantener la "
+"asignación de siempre: sin asignar en las reservas hechas por el link "
+"compartido."
+
+#. module: website_sale_installation_appointment
+#: model:ir.model.fields,field_description:website_sale_installation_appointment.field_project_task__installation_site_photo_ids
+msgid "Site Photos"
+msgstr "Fotos del lugar"
+
+#. module: website_sale_installation_appointment
+#: model:ir.model.fields,help:website_sale_installation_appointment.field_project_task__installation_site_photo_ids
+msgid ""
+"Images of the task chatter: the photos of the place the customer uploaded "
+"and any image added later. Read-only; they do not count to close the task."
+msgstr ""
+"Imágenes del chatter de la tarea: las fotos del lugar que subió el cliente "
+"y cualquier imagen agregada después. Solo lectura; no cuentan para cerrar "
+"la tarea."
+
+#. module: website_sale_installation_appointment
+#: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.view_task_form2_inherit
+msgid "Site photos"
+msgstr "Fotos del lugar"

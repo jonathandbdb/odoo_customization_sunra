@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     "name": "website_sale_installation_appointment",
-    "version": "1.15.0",
+    "version": "1.16.0",
     "summary": "Envio con instalacion en el eCommerce: agenda la cita y pide fotos del lugar en el checkout",
     "description": """
 Permite vender un envio "con instalacion incluida" desde el eCommerce y que esa venta quede agendada
@@ -33,7 +33,10 @@ como Cita (app Citas), con las fotos del lugar y los datos que cargo el cliente.
   debajo del correo, y no se repite entre las preguntas del tipo de cita. El checkout no cambia.
 - En la tarea de Field Service, el instalador registra el resultado de la visita (pagina
   Installation): modelos instalados, importe a cobrar (solo lectura para el instalador) y fotos de
-  la cerradura instalada, obligatorias para cerrar la tarea en los proyectos con ese requisito.
+  la cerradura instalada, obligatorias para cerrar la tarea en los proyectos con ese requisito. La misma pagina muestra las
+  fotos del lugar (imagenes del chatter) de solo lectura.
+- El tipo de cita puede tener un instalador predeterminado al que nace asignada la tarea, y las
+  tareas de Field Service (My Tasks / All Tasks) abren en la vista calendario.
     """,
     "category": "Website/Website",
     "author": "Sunra",

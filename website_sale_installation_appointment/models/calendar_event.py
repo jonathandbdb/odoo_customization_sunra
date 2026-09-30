@@ -3,7 +3,7 @@ import logging
 
 from markupsafe import Markup
 
-from odoo import _, api, fields, models
+from odoo import Command, _, api, fields, models
 
 _logger = logging.getLogger(__name__)
 
@@ -185,6 +185,7 @@ class CalendarEvent(models.Model):
         if not project or self.installation_task_id:
             return None
         customer = self.appointment_booker_id or self.partner_ids[:1]
+        installer = self.appointment_type_id.installation_default_user_id
         task = self.env["project.task"].sudo().create({
             "name": _("Installation - %(customer)s", customer=customer.display_name or self.name),
             "project_id": project.id,
@@ -193,8 +194,9 @@ class CalendarEvent(models.Model):
             "date_deadline": self.stop,
             "description": self._installation_task_description(customer),
             # Explicito: el create de project.task deja como asignado al uid actual, que aca es el
-            # usuario publico que agendo. El despacho lo hace el backoffice.
-            "user_ids": [(6, 0, [])],
+            # usuario publico que agendo. Sin instalador predeterminado (o archivado) el despacho
+            # lo hace el backoffice.
+            "user_ids": [Command.set(installer.ids if installer.active else [])],
         })
         self.sudo().installation_task_id = task.id
         return task

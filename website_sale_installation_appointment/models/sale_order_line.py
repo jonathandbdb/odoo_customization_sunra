@@ -42,6 +42,9 @@ class SaleOrderLine(models.Model):
         if self._is_installation_booking_line():
             appointment_type = self.order_id.carrier_id.installation_appointment_type_id
             values["name"] = "%s - %s" % (self.order_id.name or "", appointment_type.name)
+            installer = appointment_type.installation_default_user_id
+            if installer.active:
+                values["user_ids"] = [Command.set(installer.ids)]
             # Entre calles + notas para el instalador (D47): la direccion ya la pone el nativo
             # (partner_shipping_id) cuando el proyecto es FSM, asi que solo se antepone el texto.
             notes = self.order_id._get_installation_task_notes()

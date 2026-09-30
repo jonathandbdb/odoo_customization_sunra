@@ -15,6 +15,14 @@ class AppointmentType(models.Model):
              "task in this Field Service project, so the crew has the job on their planning. Leave "
              "empty for appointment types that already create the task through a sales order.",
     )
+    installation_default_user_id = fields.Many2one(
+        comodel_name="res.users",
+        string="Default Installer",
+        domain="[('share', '=', False), ('active', '=', True)]",
+        help="The installation task created for this appointment type is assigned to this user "
+             "(it replaces the staff user of the booking). Leave empty to keep the usual "
+             "assignment: unassigned for bookings made through the shared link.",
+    )
     installation_request_photos = fields.Boolean(
         string="Ask for Site Photos",
         help="Show the photo upload in the appointment form: the crew needs to know what they will "

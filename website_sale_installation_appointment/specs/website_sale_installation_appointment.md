@@ -3,11 +3,11 @@
 | Campo | Valor |
 |-------|-------|
 | **Modulo** | `website_sale_installation_appointment` |
-| **Version** | `1.15.0` (== `version` del `__manifest__.py`, formato `x.x.x`) |
+| **Version** | `1.16.0` (== `version` del `__manifest__.py`, formato `x.x.x`) |
 | **Serie Odoo** | `19` (informativa) |
-| **Estado** | `verified` |
-| **Actualizado** | `2026-09-28` |
-| **Depurado** | `2026-09-28` |
+| **Estado** | `implemented` |
+| **Actualizado** | `2026-09-30` |
+| **Depurado** | `2026-09-30` |
 
 > Cliente: **Miluan SRL / Nokey** (eCommerce de cerraduras inteligentes, `nokey.odoo.com`).
 > Repo: `extra-addons/odoo_customization_sunra`. Licencia LGPL-3, autor Sunra.
@@ -22,7 +22,9 @@ Service** del instalador y el cliente **invitado al portal**; permitir agendar l
 **incluir sin cargo las pilas** que el producto necesita, generando automaticamente la linea de pedido
 en $0 (el costo ya esta integrado en el servicio de instalacion); y que el instalador **registre el
 resultado de la visita en la tarea de Field Service** (fotos de la cerradura instalada, modelos
-instalados e importe a cobrar), con las fotos como requisito para cerrarla.
+instalados e importe a cobrar), con las fotos como requisito para cerrarla, viendo en la misma tarea las
+fotos del lugar; con la tarea asignada desde el alta al **instalador predeterminado** del tipo de
+cita y el tablero de Field Service abriendo en el **calendario**.
 
 ## Decisiones vigentes
 
@@ -36,7 +38,7 @@ instalados e importe a cobrar), con las fotos como requisito para cerrarla.
 | D3 | ¿Como aparece/desaparece el paso "Instalacion" del checkout? | Filtrando el dominio de pasos (`website._get_allowed_steps_domain()`), no con vistas condicionales: el core calcula solo el paso siguiente/anterior. Es **un solo paso del core** (`/shop/installation`, `sequence 400`, entre Direccion 250 y Pago 999): los 3 bloques (D44) viven **adentro** de ese paso — sin pasos extra en el wizard ni rutas nuevas, asi el calculo de siguiente/anterior y el wizard visual del core quedan intactos. |
 | D4 | ¿Que valida el upload publico de fotos? | Mimetype **real del contenido** (no el declarado), 10 MB por archivo, 10 fotos por pedido. Minimo configurable por carrier (`installation_min_photos`; 0 = opcional). |
 | D5 | ¿Se puede pagar sin agendar / sin fotos? | No: gate en `_check_cart_is_ready_to_be_paid()` + `_get_shop_payment_errors()`, y `shop_payment()` redirige al paso en vez de mostrar el error. |
-| D6 | ¿Donde ve la cuadrilla las fotos? | Se copian al chatter de la **Cita** y de la **tarea de FSM** despues de `super()._action_confirm()`. |
+| D6 | ¿Donde ve la cuadrilla las fotos? | Se copian al chatter de la **Cita** y de la **tarea de FSM** despues de `super()._action_confirm()`. En la tarea se ven ademas en la pagina **Installation**, seccion de solo lectura **Site photos** (D65). |
 | D7 | ¿El cliente de una instalacion recibe portal? | Si, **incondicional** para pedidos con `installation_required`, via el `portal.wizard` nativo. Idempotente (usuario activo o archivado → no-op con nota en el chatter). Nunca rompe la confirmacion (savepoint + log). |
 | D8 | ¿Y las citas agendadas FUERA del eCommerce (link compartido)? | `appointment.type.installation_fsm_project_id` → la tarea de FSM la crea este modulo en `calendar.event.create()`, y se sincroniza al reprogramar/cancelar/desarchivar. |
 | D9 | ¿Como se evita que el cliente escriba cualquier cosa en el formulario de la cita? | Campo propio `appointment.question.answer_format` (libre/entero/numero/telefono/documento): emite `type`/`inputmode`/`pattern` reales y **revalida en el servidor**. |
@@ -93,8 +95,11 @@ instalados e importe a cobrar), con las fotos como requisito para cerrarla.
 | D60 | ¿Que direcciones se ofrecen para facturar cuando se destilda "Same as delivery address"? | **Todas las de facturacion del cliente, menos la que se usa como direccion de entrega, siempre que el pedido tenga productos entregables (`has_delivery`).** Es el mismo `res.partner`: ofrecerlo en las dos listas hace que editar "la de facturacion" edite tambien la de entrega/instalacion sin que el cliente se de cuenta. Se resuelve en la **plantilla** (`website_sale.billing_address_list`, override en `views/website_sale_templates.xml`): la lista es `billing_addresses - order.partner_shipping_id` si `has_delivery`, y `billing_addresses` completa si no (pedido `only_services`). **Por que la condicion no usa `use_delivery_as_billing`**: el core lo calcula al **renderizar** como `partner_invoice_id == partner_shipping_id` (`website_sale/controllers/main.py:1093-1095`), asi que apenas el cliente carga otra direccion de facturacion y la pagina se vuelve a dibujar (reload de bfcache al volver del pago, `checkout.js:49-53`; o el redirect tras *Agregar direccion*) esa igualdad no se da y la tarjeta de entrega reapareceria en la lista. Con `has_delivery` esa tarjeta **nunca** se ofrece como opcion de facturacion; para facturar a esa misma direccion se usa el switch, que es el mecanismo del core. La mecanica del switch es del core y **no es simetrica**: destildar no escribe nada; tildar **persiste** via `toggleBillingAddressRow` → `_selectMatchingBillingAddress()` → `updateAddress('billing', id)` → `rpc('/shop/update_address')` (`website_sale/static/src/interactions/checkout.js:106-135`, `:436-455`), que escribe `partner_invoice_id`. **Alcance sin gate de instalacion**: aplica a **todo** checkout con productos entregables (mismo criterio que el override de `address_form_fields`, a diferencia de `delivery_address_list`, que usa `_is_installation_required()`). **Residuo aceptado**: si **sin recargar** la pagina el cliente cambia la direccion de entrega a un partner que ademas figura en `billing_addresses`, el core puede resaltar esa tarjeta en la lista de facturacion (`_selectMatchingBillingAddress`, `checkout.js:436-455`); solo puede pasar con la **direccion propia del contacto**, la unica que aparece en las dos listas (`portal/controllers/portal.py:253-262`). Taparlo pide JS propio, desproporcionado para un caso tan acotado. |
 | D61 | ¿Como sabe el cliente del link que las fotos y la direccion son obligatorias? | Con un **aviso visible en texto** (no solo el asterisco ni el globito nativo del navegador, que sale en el idioma del navegador y desaparece al instante) en cada bloque obligatorio del formulario de la cita: **Direccion** (siempre que el bloque exista, `_is_installation_asking_address()`: calle y localidad son siempre obligatorias) → *"Required: street and number, and town."*; **Fotos** (solo si el bloque existe, `_is_installation_asking_photos()`, **y** `installation_min_photos > 0`) → *"Required: upload at least N photo(s) to confirm the appointment."*, con N = `installation_min_photos` del tipo de cita. Estilo destacado: `text-danger` + icono `fa-exclamation-circle`, y `o_not_editable` (D42). **Una linea propia dentro de cada bloque**, no un parametro de `installation_form_section`: el encabezado de seccion solo se pinta en el camino del link (D59), pero los bloques existen tambien en un tipo que pide direccion/fotos **sin** proyecto de FSM (formulario nativo, sin secciones); la linea dentro del bloque se ve en los dos casos. Ubicacion: en **Direccion**, primera linea del bloque, arriba de los inputs (queda justo debajo del titulo de la seccion en el link); en **Fotos**, **inmediatamente arriba del input de archivos**, debajo de la consigna y de los ejemplos (la guia es larga y el aviso tiene que estar pegado al control que el cliente tiene que usar). **Sin JS nuevo** y sin cambiar la validacion: el `required` del input y la revalidacion del servidor siguen igual; el aviso es la explicacion legible de esa regla. El numero de fotos se pinta con `t-out` dentro del texto, asi que el catalogo lleva **dos terminos** alrededor del numero ("Required: upload at least" / "photo(s) to confirm the appointment."), el orden de palabras del castellano calza con esa division. Traduccion es_419: "Obligatorio: subí al menos" / "foto(s) para poder confirmar la cita." y "Obligatorio: calle y número, y localidad." |
 | D62 | ¿La Cita muestra la direccion de instalacion? | **Si, en el campo nativo `calendar.event.location`** (Char, `odoo/addons/calendar/models/calendar_event.py:L139`), que ya se ve en la ficha de la cita (`odoo/addons/calendar/views/calendar_views.xml:L152`), en la lista (`:L91`, `optional="show"`), en el popover del Gantt de Citas (`enterprise/appointment/views/calendar_event_views.xml:L229-231`) y en el `.ics` que se descarga desde la cita (`odoo/addons/calendar/models/calendar_event.py:L1614`; el del correo de confirmacion no, porque ese correo sale dentro del `create()`, antes de escribir `location`). **Sin campos ni vistas nuevas.** El core llena `location` con la ubicacion del **tipo de cita** (`enterprise/appointment/models/appointment_type.py:L1225`); los tipos de instalacion no tienen ubicacion, asi que la cita queda vacia. Se escribe **solo si la cita no tiene `location`** (vacio o solo espacios): una ubicacion que venga del tipo de cita no se pisa. **Formato** (una linea): calle, piso/depto, CP + localidad, y ` (between streets: X)` si hay entre calles — p.ej. `Lamadrid 581, 2B, 1648 Tigre (entre calles: Peru y Chile)`; la etiqueta en el idioma de la **compañia** (lo lee la cuadrilla; mismo molde que `_installation_task_description()`). **Un solo helper**, `calendar.event._installation_fill_location(address)`, que formatea y escribe; `address` es cualquier mapping con las claves `street`, `street2`, `zip`, `city`, `between_streets` — un `dict` o un registro `res.partner` (los dos responden `address["street"]`). **Fuentes**: (a) **link** — lo **declarado** en el formulario (`address_vals`), aunque el contacto ya tuviera otra calle y no se le escriba (D58): la cita es de **esa** visita; dentro del savepoint de `_save_appointment_installation_address()`; (b) **checkout** — `partner_shipping_id` del pedido (D45), en `sale.order._action_confirm()` despues del `super()` (recien ahi existe la cita), sobre `installation_event_id.sudo()` (confirma el cliente publico o el procesamiento del pago); (c) **citas existentes** — backfill idempotente en `migrations/1.14.0/post-migrate.py` (ver *Metodos*). Escribir `location` **no reenvia invitaciones**: el `write()` del core solo re-notifica a los asistentes cuando cambia `start` (`odoo/addons/calendar/models/calendar_event.py:L855`); el campo es `tracking=True`, asi que el alta queda como nota de seguimiento en el chatter de la cita. |
-| D63 | ¿Donde registra el instalador el resultado de la instalacion? | **En la tarea de Field Service** (no en la Cita), en una pagina propia **Installation** del formulario: **modelos instalados** (`installation_product_ids`, lista de productos **sin cantidad**: una visita puede instalar varias cerraduras), **importe a cobrar** (`installation_amount`, **uno por visita**, lo carga el backoffice antes de la visita; el instalador lo **ve sin poder editarlo**, lo edita solo `project.group_project_manager`) y **fotos de la cerradura instalada** (`installation_photo_ids`). El instalador es un usuario interno de FSM (grupo usuario, no manager). **Fotos obligatorias para pasar la tarea a `1_done`**, solo en proyectos con el tilde `project.project.installation_require_photos`; `1_canceled` (la cerradura no va en esa puerta) pasa sin fotos y el motivo se deja en el chatter. **Por que campos propios y no el boton nativo "Productos" de `industry_fsm_sale`**: ese boton crea/modifica `sale.order.line` en el pedido de la tarea (`enterprise/industry_fsm_sale/models/product_product.py:L34` `_inverse_fsm_quantity`, vals en `:L75-81`) y sobre un pedido eCommerce ya pagado cambia cantidades del pedido. **Por que no la hoja de trabajo** (`industry_fsm_report`): no se exige al validar y la obligatoriedad necesitaria codigo igual. **Por que el gate va en `write()` y no en `action_fsm_validate`** (`enterprise/industry_fsm/models/project_task.py:L281`, que escribe `state = '1_done'` en `:L305`): el widget de estado del formulario (`odoo/addons/project/views/project_task_views.xml:L412`) setea `1_done` sin pasar por el boton; `write()` es el embudo comun. El chequeo corre **despues** del `super()`, para que un mismo guardado que trae fotos y estado juntos pase. **Por que un tilde por proyecto**: las tareas de FSM del service de helpdesk (modulo hermano `helpdesk_service_appointment`) viven en otros proyectos FSM y no tienen que exigir fotos. **Precarga de modelos**: en el camino eCommerce la tarea nace con los productos fisicos del pedido (`type == 'consu'`, sin envio ni pilas gratis); en el link no hay pedido y los carga el backoffice. Las fotos del **cliente** (lugar de instalacion) siguen en el chatter (D6); `installation_photo_ids` de la tarea son solo las del instalador. |
+| D63 | ¿Donde registra el instalador el resultado de la instalacion? | **En la tarea de Field Service** (no en la Cita), en una pagina propia **Installation** del formulario: **modelos instalados** (`installation_product_ids`, lista de productos **sin cantidad**: una visita puede instalar varias cerraduras), **importe a cobrar** (`installation_amount`, **uno por visita**, lo carga el backoffice antes de la visita; el instalador lo **ve sin poder editarlo**, lo edita solo `project.group_project_manager`) y **fotos de la cerradura instalada** (`installation_photo_ids`). El instalador es un usuario interno de FSM (grupo usuario, no manager). **Fotos obligatorias para pasar la tarea a `1_done`**, solo en proyectos con el tilde `project.project.installation_require_photos`; `1_canceled` (la cerradura no va en esa puerta) pasa sin fotos y el motivo se deja en el chatter. **Por que campos propios y no el boton nativo "Productos" de `industry_fsm_sale`**: ese boton crea/modifica `sale.order.line` en el pedido de la tarea (`enterprise/industry_fsm_sale/models/product_product.py:L34` `_inverse_fsm_quantity`, vals en `:L75-81`) y sobre un pedido eCommerce ya pagado cambia cantidades del pedido. **Por que no la hoja de trabajo** (`industry_fsm_report`): no se exige al validar y la obligatoriedad necesitaria codigo igual. **Por que el gate va en `write()` y no en `action_fsm_validate`** (`enterprise/industry_fsm/models/project_task.py:L281`, que escribe `state = '1_done'` en `:L305`): el widget de estado del formulario (`odoo/addons/project/views/project_task_views.xml:L412`) setea `1_done` sin pasar por el boton; `write()` es el embudo comun. El chequeo corre **despues** del `super()`, para que un mismo guardado que trae fotos y estado juntos pase. **Por que un tilde por proyecto**: las tareas de FSM del service de helpdesk (modulo hermano `helpdesk_service_appointment`) viven en otros proyectos FSM y no tienen que exigir fotos. **Precarga de modelos**: en el camino eCommerce la tarea nace con los productos fisicos del pedido (`type == 'consu'`, sin envio ni pilas gratis); en el link no hay pedido y los carga el backoffice. Las fotos del **cliente** (lugar de instalacion) llegan al chatter (D6) y se **muestran** de solo lectura en la misma pagina (D65); `installation_photo_ids` son solo las del instalador y son las **unicas** que cuentan para cerrar. |
 | D64 | ¿Se puede borrar la ultima foto de la cerradura de una tarea ya hecha? | **No: se bloquea el borrado.** El widget `many2many_binary` sube cada foto como `ir.attachment` con `res_model='project.task'` y `res_id` = la tarea (`odoo/addons/web/static/src/views/fields/many2many_binary/many2many_binary_field.xml:L17-18`), asi que la foto tambien aparece en la caja de adjuntos del chatter. Borrarla desde ahi llega a `ir.attachment.unlink()` (`odoo/addons/mail/controllers/attachment.py:L108` → `odoo/addons/mail/models/ir_attachment.py:L87`) sin pasar por `project.task.write()`, y dejaria una tarea hecha sin foto. Por eso hay un override de `ir.attachment.unlink()` que frena el borrado si alguna tarea hecha de un proyecto con *Require Installation Photos* se quedaria sin ninguna foto. Borrar una foto cuando quedan otras, o de una tarea que no esta hecha (incluida la cancelada), esta permitido. Quitar la foto desde la pagina **Installation** es un `write()` sobre la relacion y lo cubre el gate de `ProjectTask.write()`. |
+| D65 | ¿El instalador ve las fotos del lugar en la tarea? | **Si, en la pagina Installation**, en una seccion de solo lectura **Site photos** arriba de *Photos of the installed lock*. Campo `project.task.installation_site_photo_ids` (Many2many `ir.attachment`, compute **no almacenado**, readonly) con las imagenes del chatter de la tarea: adjuntos con `res_model = 'project.task'`, `res_id` = la tarea y `mimetype =like 'image/%'`, **menos** `installation_photo_ids`, que tambien son adjuntos de la tarea porque el `many2many_binary` las sube asi (D64). Entran las del cliente copiadas al chatter (D6: `message_post` reasigna el adjunto a la tarea, `odoo/addons/mail/models/mail_thread.py:L2420`), las del import historico de JotForm posteadas al chatter y cualquier imagen que el backoffice o el instalador suba al chatter. **Por que un compute y no una relacion propia**: el chatter ya es la fuente; una segunda relacion habria que mantenerla en linea con cada alta y cada borrado desde el chatter. Widget `many2many_binary` en modo lectura: miniaturas, sin boton de adjuntar ni cruz de quitar (`odoo/addons/web/static/src/views/fields/many2many_binary/many2many_binary_field.xml:L11`, `:L29`, `:L36`). La seccion se oculta si no hay fotos. **El gate no cambia** (D63/D64): las fotos del chatter no cuentan para cerrar la tarea. **Sin `sudo()`**: el `search()` de `ir.attachment` ya filtra por el acceso al registro referenciado (`odoo/odoo/addons/base/models/ir_attachment.py:L620`, reglas en `:L514`), y quien abre la tarea la puede leer. Una sola busqueda para todo el recordset (sin N+1). |
+| D66 | ¿A quien se asigna la tarea de instalacion al crearse? | Al **instalador predeterminado del tipo de cita**: `appointment.type.installation_default_user_id` (Many2one `res.users`, usuarios internos activos, el mismo domain que `project.task.user_ids`, `odoo/addons/project/models/project_task.py:L206`). **Dos caminos**: (a) **eCommerce**, en `SaleOrderLine._timesheet_create_task_prepare_values` sobre la linea de la reserva (`_is_installation_booking_line()`), con el tipo de cita del carrier del pedido: el core arma los vals con `user_ids: False` porque crea en `sudo()` (`odoo/addons/sale_project/models/sale_order_line.py:L279`), y `website_appointment_sale_project` pone el staff de la reserva en los tipos por usuarios (`enterprise/website_appointment_sale_project/models/sale_order_line.py:L20`, `:L47`); nuestro override corre despues de ese en el MRO por el orden de carga (mismo razonamiento que D34), el mismo en que ya se apoya la descripcion de la tarea (D47); (b) **link**, en `CalendarEvent._installation_generate_fsm_task` con el tipo de la cita. **Vacio en el tipo** → la asignacion no se toca: en el link la tarea nace sin asignar; en el eCommerce queda lo que arma el core. `[ASUNCION]` Con el campo cargado, el instalador predeterminado **reemplaza** al staff que pone `website_appointment_sale_project`: el tipo de cita es donde el funcional declara quien hace las instalaciones. `[ASUNCION]` Un usuario **archivado** no se asigna: la tarea nace como si el campo estuviera vacio. Las tareas existentes no se tocan (sin migracion). En produccion se configura como **dato** en los tipos *Instalación AMBA - Web* e *Instalación coordinada por Nokey*, con el usuario *Instalación Nokey*. Un solo instalador por tipo; con mas gente, se reasigna a mano. El modulo hermano `helpdesk_service_appointment` (visitas de service) queda fuera: ya asigna al tecnico de la cita. |
+| D67 | ¿Con que vista abren las tareas de Field Service? | Con el **calendario**, para todos los usuarios, en escritorio y en movil, en *My Tasks → Tasks* y en *All Tasks → All Tasks*. Esos menus (`enterprise/industry_fsm/views/fsm_views.xml:L1815`, `:L1835`) llaman a server actions que eligen entre dos acciones segun haya uno o varios proyectos FSM (`_server_action_project_task_fsm`, `enterprise/industry_fsm/models/project_task.py:L356`; produccion tiene 4 proyectos FSM). Se cubren las cuatro: `industry_fsm.project_task_action_fsm` / `project_task_action_fsm2` (`fsm_views.xml:L444`, `:L527`) y `industry_fsm.project_task_action_all_fsm` / `project_task_action_all_fsm2` (`:L829`, `:L888`). **Mecanismo**: override de `ProjectTask._server_action_project_task_fsm()` que, para esas cuatro acciones, devuelve el dict con la entrada `calendar` **primera** en `views` (el resto en su orden, con la misma vista calendario que ya trae cada accion) y `mobile_view_mode = 'calendar'`. **Por que no registros `ir.actions.act_window.view` propios**: el modelo tiene un indice unico `(act_window_id, view_mode)` (`odoo/odoo/addons/base/models/ir_actions.py:L419`) y las cuatro acciones ya traen su registro de calendario (`fsm_views.xml:L477`, `:L560`, `:L866`, `:L925`): un segundo registro de calendario aborta la instalacion del modulo. Cambiarles el `sequence` a esos registros seria pisar XML IDs de enterprise. **Por que tambien `mobile_view_mode`**: en pantalla chica el cliente web abre la vista de `mobile_view_mode` (`odoo/addons/web/static/src/webclient/actions/action_service.js:L1241`), cuyo default es `kanban` (`ir_actions.py:L320`); sin eso, el instalador en el celular seguiria entrando al kanban. El override es codigo del modulo: una actualizacion de `industry_fsm` no lo revierte. *My Tasks → Map*, *To Schedule* y los menus de planificacion no cambian (sus acciones no estan en el conjunto). |
 
 ## Alcance
 
@@ -140,6 +145,11 @@ instalados e importe a cobrar), con las fotos como requisito para cerrarla.
 - **Borrado bloqueado** de la ultima foto de una tarea hecha, tambien desde la caja de adjuntos del chatter (D64).
 - Precarga de los modelos instalados desde el pedido eCommerce al crearse la tarea.
 - Suite de tests del gate, del bloqueo del borrado y de la precarga (`tests/test_installation_task.py`).
+- **Fotos del lugar** en la misma pagina, de solo lectura, tomadas de las imagenes del chatter de la tarea (D65).
+
+**Despacho de Field Service**
+- **Instalador predeterminado** por tipo de cita: la tarea de instalacion nace asignada a ese usuario, en el camino eCommerce y en el del link (D66).
+- **Calendario como vista inicial** de *My Tasks* y *All Tasks* de Field Service, en escritorio y movil (D67).
 
 ### NO incluye
 
@@ -166,6 +176,10 @@ instalados e importe a cobrar), con las fotos como requisito para cerrarla.
 - **Factura o pago generados desde el importe a cobrar**: el importe es informativo para el instalador; cobrar y facturar sigue siendo trabajo del backoffice.
 - **Mostrar el resultado de la instalacion en la Cita**: vive solo en la tarea de Field Service (D63).
 - `[ASUNCION]` **Ocultar el boton nativo "Productos" de `industry_fsm_sale`** en la tarea: queda como lo deja el core; el instalador registra los modelos en la pagina **Installation**.
+- **Asignacion automatica por disponibilidad o entre varios instaladores**: hay un solo instalador predeterminado por tipo de cita; cuando haya mas gente, se reasigna a mano (D66).
+- **Galeria de fotos en la Cita**: las fotos del lugar se muestran en la tarea de Field Service (D65); en la Cita siguen en el chatter.
+- **Instalador predeterminado en las visitas de service** (`helpdesk_service_appointment`): ese modulo ya asigna al tecnico de la cita (D66).
+- **Cambiar la vista inicial del mapa, de *To Schedule* o de la planificacion** de Field Service (D67).
 
 ## Modelos
 
@@ -181,13 +195,13 @@ No aplica: el modulo no define modelos propios, solo extiende modelos de `odoo/`
 | `product.template` | `product.template` | **Configuracion de pilas del producto** (`free_battery_product_id`, `free_battery_qty`) + constrain de configuracion |
 | `res.partner` | `res.partner` | **Entre calles** (`between_streets`) y **reset de la confirmacion de direccion** cuando se edita el domicilio (D46, D48). La escritura desde el frontend la hace nuestra ruta con `sudo()` acotado (D49) |
 | `sale.order` | `sale.order` | Campos espejo de la instalacion, gate de pago, copia de fotos, **ubicacion de la cita** (D62), invitacion al portal; agregacion y sincronizacion de las lineas de pilas + engaches de carrito/backend/confirmacion; notas para el instalador, confirmacion de la direccion y estado de los 3 bloques del paso (D44, D47, D48) |
-| `sale.order.line` | `sale.order.line` | Deteccion de la linea de la reserva y titulo de la tarea de FSM; flag `is_free_battery_line` y las defensas de precio/edicion; entre calles + notas en la `description` de la tarea de FSM (D47) |
-| `appointment.type` | `appointment.type` | Proyecto de FSM para citas fuera del eCommerce, pedido de fotos/direccion y minimo, consigna de las fotos configurable (`installation_photos_message`), deteccion de "vengo del checkout" (D54) y del formulario del link (D59) |
+| `sale.order.line` | `sale.order.line` | Deteccion de la linea de la reserva y titulo de la tarea de FSM; flag `is_free_battery_line` y las defensas de precio/edicion; entre calles + notas en la `description` de la tarea de FSM (D47); instalador predeterminado como asignado de la tarea (D66) |
+| `appointment.type` | `appointment.type` | Proyecto de FSM para citas fuera del eCommerce, pedido de fotos/direccion y minimo, consigna de las fotos configurable (`installation_photos_message`), **instalador predeterminado** de las tareas (D66), deteccion de "vengo del checkout" (D54) y del formulario del link (D59) |
 | `appointment.question` | `appointment.question` | Formato de respuesta validado y marca de la guia de medidas |
 | `calendar.booking` | `calendar.booking` | Aclaracion en la descripcion de la linea ("incluido en el metodo de envio") |
-| `calendar.event` | `calendar.event` | Tarea de FSM de la cita agendada fuera del eCommerce + sincronizacion y fotos; **ubicacion de la cita** desde la direccion de instalacion (D62); **compañia del correo de la cita** resuelta por el pedido/organizador (D43) |
+| `calendar.event` | `calendar.event` | Tarea de FSM de la cita agendada fuera del eCommerce (asignada al instalador predeterminado, D66) + sincronizacion y fotos; **ubicacion de la cita** desde la direccion de instalacion (D62); **compañia del correo de la cita** resuelta por el pedido/organizador (D43) |
 | `website` | `website` | Paso de checkout condicional |
-| `project.task` | `project.task` | **Resultado de la instalacion** (modelos instalados, importe a cobrar, fotos del instalador) y **gate de fotos** al pasar a `1_done` (D63). Archivo `models/project_task.py` |
+| `project.task` | `project.task` | **Resultado de la instalacion** (modelos instalados, importe a cobrar, fotos del instalador) y **gate de fotos** al pasar a `1_done` (D63); **fotos del lugar** de solo lectura desde el chatter (D65); **calendario primero** en las acciones de tareas de Field Service (D67). Archivo `models/project_task.py` |
 | `project.project` | `project.project` | Tilde **Require Installation Photos** que activa el gate en las tareas del proyecto (D63). Archivo `models/project_project.py` |
 | `ir.attachment` | `ir.attachment` | Bloqueo del borrado de la **ultima foto** de la cerradura de una tarea hecha (D64, RB37). Sin campos. Archivo `models/ir_attachment.py` |
 
@@ -223,13 +237,15 @@ formulario de la cita, partner del carrito y vuelta al paso).
 | `appointment.type` | `installation_request_address` | Boolean | Ask for the Installation Address | No | `False` | Pide la direccion de instalacion en el formulario de la cita. Se tilda en los tipos agendados **fuera** del eCommerce (el link): ahi no hay pedido que la aporte (D58). Nunca se muestra en el camino del checkout |
 | `appointment.type` | `installation_min_photos` | Integer | Minimum Site Photos | No | `0` | Minimo de fotos del formulario de la cita; `> 0` pinta el aviso de obligatoriedad (D61) |
 | `appointment.type` | `installation_photos_message` | Html | Site Photos Message | No | — | `translate=True`, `sanitize_attributes=False` (espeja el `message_intro` nativo). Vacio = texto por defecto del modulo |
+| `appointment.type` | `installation_default_user_id` | Many2one `res.users` | Default Installer | No | — | `domain="[('share', '=', False), ('active', '=', True)]"` (el de `project.task.user_ids`); `ondelete` por defecto (`set null`); `help` en ingles: *"The installation task created for this appointment type is assigned to this user (it replaces the staff user of the booking). Leave empty to keep the usual assignment: unassigned for bookings made through the shared link."* Vacio = la asignacion que arma el core (D66, RB43) |
 | `appointment.question` | `answer_format` | Selection | Answer Format | Si | `free` | `free`/`integer`/`decimal`/`phone`/`identification` |
 | `appointment.question` | `installation_measure_guide` | Boolean | Show Measuring Guide | No | `False` | — |
 | `calendar.event` | `installation_task_id` | Many2one `project.task` | Installation Task | No | — | `copy=False`, `ondelete="set null"`, `index="btree_not_null"` |
 | `project.task` | `installation_product_ids` | Many2many `product.product` | Installed Models | No | — | tabla `project_task_installation_product_rel`; `copy=False`; sin cantidad (D63); precargado desde el pedido eCommerce |
 | `project.task` | `installation_amount` | Monetary | Amount to Charge | No | — | `currency_field="installation_currency_id"`; `copy=False`; un importe por visita; readonly en la vista salvo para `project.group_project_manager` |
 | `project.task` | `installation_currency_id` | Many2one `res.currency` (related, no store) | Installation Currency | No | — | `related="company_id.currency_id"`. No se usa el `currency_id` de `industry_fsm_sale`: no es dependencia del modulo y no es stored |
-| `project.task` | `installation_photo_ids` | Many2many `ir.attachment` | Installation Photos | No | — | tabla `project_task_installation_photo_rel`; `copy=False`; fotos del **instalador** (las del cliente siguen en el chatter, D6); gate de `write()` (RB37) |
+| `project.task` | `installation_photo_ids` | Many2many `ir.attachment` | Installation Photos | No | — | tabla `project_task_installation_photo_rel`; `copy=False`; fotos del **instalador** (las del lugar se muestran en `installation_site_photo_ids`, D65); gate de `write()` (RB37). El `help` del campo dice que las fotos del lugar vienen del chatter de la tarea |
+| `project.task` | `installation_site_photo_ids` | Many2many `ir.attachment` (compute, no store) | Site Photos | No | — | `_compute_installation_site_photo_ids`; `readonly=True`, sin `inverse` ni `search`; sin tabla (no almacenado); no cuenta para el gate (D65) |
 | `project.project` | `installation_require_photos` | Boolean | Require Installation Photos | No | `False` | `help` que explique que las tareas del proyecto no se marcan como hechas sin al menos una foto de la cerradura instalada; visible solo si `is_fsm` |
 
 > `calendar.event.location` es **del core** (Char, `tracking=True`); el modulo solo lo completa (D62).
@@ -266,7 +282,7 @@ ambiguedad de la UoM es el riesgo #1 de las pilas):
 
 #### `sale.order.line`
 - `_is_installation_booking_line()` — la linea es la reserva de la instalacion del carrier del pedido.
-- `_timesheet_create_task_prepare_values(project)` — **override** de `sale_project`: `name = "<pedido> - <tipo de cita>"` y `description` con **entre calles + notas para el instalador** (D47; detalle abajo).
+- `_timesheet_create_task_prepare_values(project)` — **override** de `sale_project`: `name = "<pedido> - <tipo de cita>"`, `description` con **entre calles + notas para el instalador** (D47), modelos instalados (D63) e **instalador predeterminado** (D66); detalle abajo.
 
 #### `delivery.carrier`
 - `_check_installation_appointment_type()` — `@api.constrains`: el tipo de cita debe tener paso de pago + producto, y ese producto generar tarea o tener precio.
@@ -277,7 +293,7 @@ ambiguedad de la UoM es el riesgo #1 de las pilas):
 
 #### `calendar.event`
 - `create()` / `write()` — **overrides**: generan la tarea de FSM de las citas con `installation_fsm_project_id` (aislado en savepoint) y la mantienen en linea al reprogramar/cancelar/desarchivar. El `write()` solo reacciona a `active`, `start` y `stop`: escribir `location` no toca la tarea.
-- `_installation_generate_fsm_task()`, `_installation_cancel_task()`, `_installation_restore_task()`, `_installation_post_photos(attachments)`.
+- `_installation_generate_fsm_task()`, `_installation_cancel_task()`, `_installation_restore_task()`, `_installation_post_photos(attachments)`. La tarea nace con `user_ids = [Command.set(installer.ids)]`, con `installer = appointment_type_id.installation_default_user_id.filtered("active")`: vacio (o archivado) → `Command.set([])`, sin asignar, que evita que el `create()` de `project.task` deje como asignado al usuario publico que agendo (D66).
 - `_installation_task_description(customer)` — cuerpo de la tarea de FSM: la descripcion de la cita mas el **"entre calles"** del contacto (D58). `Markup + Markup` (concatenar un `str` crudo escaparia el lado derecho) y la etiqueta en el idioma de la **compañia**, no del visitante: **reasigna `self`** con `with_context(lang=...)`, porque `_()` resuelve el idioma leyendo el `self` del frame del llamador (`odoo/tools/translate.py`), asi que guardar el context en otra variable seria inerte.
 - `_mail_get_companies(default=False)` — **override** (D43): resolvedor de "que compañia es esta
   cita" — pedido que la origino (el mas viejo, no cancelado) > organizador (`user_id.company_id`) >
@@ -496,6 +512,11 @@ ambiguedad de la UoM es el riesgo #1 de las pilas):
     instalador ve el codigo fuente del bloque de preguntas y respuestas. No reintroduce riesgo: ese
     HTML lo arma el core, no el visitante (lo del visitante ya viene escapado por
     `_get_installation_task_notes()`).
+  - **Instalador predeterminado** (D66): en la linea de la reserva,
+    `installer = order_id.carrier_id.installation_appointment_type_id.installation_default_user_id.filtered("active")`;
+    si hay → `values["user_ids"] = [Command.set(installer.ids)]`, pisando el `False` de
+    `sale_project` y el staff de `website_appointment_sale_project`. Sin instalador, la clave
+    `user_ids` no se toca.
   - **Modelos instalados** (D63): en la linea de la reserva se agrega
     `installation_product_ids = [Command.set(products.ids)]`, con `products` = los `product_id` de
     `order_id.order_line` que cumplen `product_id.type == 'consu'`, `not is_delivery`
@@ -856,6 +877,50 @@ ambiguedad de la UoM es el riesgo #1 de las pilas):
 - **Retorna**: `bool` (el del `super()`)
 - **Errores**: `UserError(_("You cannot delete the last photo of the installed lock of a task that is already done."))`
 
+### Fotos del lugar y despacho de Field Service (D65, D66, D67)
+
+### `ProjectTask._compute_installation_site_photo_ids()`
+
+- **Proposito**: mostrar en la pagina **Installation** las imagenes del chatter de la tarea que no son
+  fotos del instalador (D65).
+- **Decoradores**: `@api.depends("installation_photo_ids")` (se recalcula al subir o quitar una foto
+  del instalador en el mismo formulario; al no ser almacenado, se recalcula ademas en cada lectura).
+- **Logica**:
+  1. `task_ids = self._origin.ids` (los registros nuevos, sin id real, quedan vacios).
+  2. Si hay ids: **una sola** busqueda `self.env["ir.attachment"].search([("res_model", "=", "project.task"), ("res_id", "in", task_ids), ("mimetype", "=like", "image/%")])`,
+     agrupada en un `dict` `res_id → ir.attachment` (`setdefault`).
+  3. Por tarea: `task.installation_site_photo_ids = attachments_by_task.get(task._origin.id, empty) - task.installation_photo_ids`.
+- **Retorna**: `None` (compute).
+- **Errores**: ninguno.
+- **Sin `sudo()`**: el `search()` de `ir.attachment` filtra por el acceso al registro referenciado y
+  agrega `res_field = False` solo (`odoo/odoo/addons/base/models/ir_attachment.py:L620`), asi que no
+  trae los binarios de campos de imagen de la tarea y un adjunto que el usuario no puede leer no
+  aparece.
+- **Por que sin tabla**: es una vista del chatter; almacenarlo obligaria a recalcular ante cada
+  `message_post` y cada borrado de adjuntos.
+
+### `ProjectTask._server_action_project_task_fsm(xml_id_multiple_fsm_projects, xml_id_one_fsm_project, default_user_ids=False)`
+
+- **Proposito**: que *My Tasks* y *All Tasks* de Field Service abran en el calendario (D67).
+- **Decoradores**: ninguno (override de `industry_fsm`, `enterprise/industry_fsm/models/project_task.py:L356`;
+  misma firma).
+- **Logica**:
+  1. `action = super()._server_action_project_task_fsm(xml_id_multiple_fsm_projects, xml_id_one_fsm_project, default_user_ids)`.
+  2. Si **ninguno** de los dos xml ids esta en la constante de modulo `FSM_CALENDAR_FIRST_ACTIONS`
+     (`industry_fsm.project_task_action_fsm`, `industry_fsm.project_task_action_fsm2`,
+     `industry_fsm.project_task_action_all_fsm`, `industry_fsm.project_task_action_all_fsm2`) →
+     `return action`.
+  3. `action["views"] = sorted(action.get("views") or [], key=lambda view: view[1] != "calendar")`
+     (orden estable: el resto conserva su orden) y `action["mobile_view_mode"] = "calendar"` (las cuatro acciones
+     traen calendario; sin el, el cliente web abre la vista de escritorio, `ir_actions.py:L320`).
+  4. `return action`.
+- **Retorna**: `dict` (la accion).
+- **Errores**: ninguno.
+- **Por que funciona**: el cliente web abre `views[0]`
+  (`odoo/addons/web/static/src/webclient/actions/action_service.js:L1239`) y en pantalla chica la de
+  `mobile_view_mode` (`:L1241`); `views` viaja en el dict de la accion (`_get_readable_fields`,
+  `odoo/odoo/addons/base/models/ir_actions.py:L383`), armado por `_compute_views` (`:L288`).
+
 
 ## Vistas
 
@@ -875,7 +940,7 @@ ambiguedad de la UoM es el riesgo #1 de las pilas):
 - `between_streets` junto a los campos de direccion (dentro del bloque de `street`/`street2`/`city`), para que el backoffice y la cuadrilla lo vean en la ficha del contacto (D46). Archivo `views/res_partner_views.xml`.
 
 ### `appointment.type` form / `appointment.question` form y list
-- Tirador de `sequence` y `answer_format` en la lista de preguntas del tipo de cita; `installation_fsm_project_id`, `installation_request_photos`, `installation_request_address`, `installation_min_photos` en `group name="right_details"`.
+- Tirador de `sequence` y `answer_format` en la lista de preguntas del tipo de cita; `installation_fsm_project_id`, `installation_default_user_id` (D66), `installation_request_photos`, `installation_request_address`, `installation_min_photos` en `group name="right_details"`. `installation_default_user_id` va **sin `invisible`**: aplica a los dos caminos (el tipo del eCommerce no tiene `installation_fsm_project_id`).
 - `installation_photos_message` en la pestaña **Comunicacion** (`page name="messages"`), despues de `message_confirmation` y con su separador. **Sin `invisible`**: el tipo del eCommerce pide las fotos en el paso del checkout (tiene `installation_request_photos` apagado) y necesita el texto igual.
 - `answer_format` (oculto para `select`/`radio`/`checkbox`) e `installation_measure_guide` en la ficha de la pregunta, y en su lista.
 
@@ -889,8 +954,13 @@ ambiguedad de la UoM es el riesgo #1 de las pilas):
 - Pagina `name="installation_page"` **Installation**, despues de `page name="description_page"`
   (`odoo/addons/project/views/project_task_views.xml:L465`), con `invisible="not is_fsm"`:
   `installation_product_ids` (`widget="many2many_tags"`), `installation_amount` (`widget="monetary"`,
-  `readonly="1"`), `installation_currency_id` invisible e `installation_photo_ids`
-  (`widget="many2many_binary"`).
+  `readonly="1"`), `installation_currency_id` invisible, la seccion **Site photos** y despues
+  `installation_photo_ids` (`widget="many2many_binary"`) bajo su separador *Photos of the installed
+  lock*.
+- Seccion **Site photos** (D65): `<separator string="Site photos" invisible="not installation_site_photo_ids"/>`
+  + `<field name="installation_site_photo_ids" widget="many2many_binary" readonly="1" nolabel="1" invisible="not installation_site_photo_ids"/>`,
+  **arriba** del separador *Photos of the installed lock*. Readonly: el widget no pinta el boton de
+  adjuntar ni la cruz de quitar.
 - `installation_amount` va **dos veces** en la misma vista, una por grupo (molde del core:
   `alias_email` / `alias_name` en `odoo/addons/project/views/project_project_views.xml:L95-96`):
   - `<field name="installation_amount" widget="monetary" readonly="1" groups="!project.group_project_manager"/>`
@@ -901,6 +971,11 @@ ambiguedad de la UoM es el riesgo #1 de las pilas):
   `mode` distinto de `primary` no acepta `group_ids` (`_check_groups`,
   `odoo/odoo/addons/base/models/ir_ui_view.py:L537-543`, `ValidationError` que aborta el `-u`); la
   restriccion por grupo va en el atributo `groups` de cada nodo.
+
+### Acciones de tareas de Field Service
+- **Sin XML**: la vista inicial de *My Tasks* y *All Tasks* la cambia el override de
+  `_server_action_project_task_fsm()` (D67). No hay registros `ir.actions.act_window.view` propios ni
+  se tocan los de `industry_fsm`.
 
 ### `project.project` form (`project_view_form_inherit`, hereda `industry_fsm.project_view_form_inherit`)
 - Archivo `views/project_project_views.xml`. `installation_require_photos` como `setting` dentro del
@@ -1089,6 +1164,15 @@ ambiguedad de la UoM es el riesgo #1 de las pilas):
   Un usuario de FSM **puede** escribir `installation_amount` por RPC o por importacion (RB40): el
   modulo no lo impide en el ORM.
   Las fotos se suben como `ir.attachment` de la propia tarea (`many2many_binary`).
+- **Fotos del lugar** (D65): el compute lee `ir.attachment` **sin `sudo()`**; el `search()` del core ya
+  filtra por el acceso a la tarea referenciada, asi que un usuario solo ve miniaturas de adjuntos
+  que igual podria abrir desde el chatter. El campo es readonly y no escribe nada.
+- **Instalador predeterminado** (D66): `appointment.type` es configuracion (ACL del core de Citas);
+  la asignacion la escribe el `create()` de la tarea, que en los dos caminos ya corre con `sudo()`
+  (el core en `sale_project`, el modulo en `_installation_generate_fsm_task`). No agrega `sudo()`
+  nuevo.
+- **Calendario primero** (D67): el override solo reordena el dict de la accion que el core ya
+  resolvio para el usuario; no cambia dominios, contexto ni permisos.
 - **`sudo()` de lectura en `IrAttachment.unlink()`** (D64): solo el `search()` de las tareas que
   tienen la foto a borrar, para que el chequeo vea tareas que quien borra no puede leer. No se
   escribe ni se devuelve nada de esas tareas (el unico efecto es el `UserError`, cuyo texto no
@@ -1103,7 +1187,7 @@ ambiguedad de la UoM es el riesgo #1 de las pilas):
 4. **RB04**: Reagendar descarta la reserva anterior: queda **una sola** linea de instalacion en el carrito.
 5. **RB05**: Al confirmarse el pedido, las fotos se copian al chatter de la Cita y de la tarea de FSM.
 6. **RB06**: Al confirmarse un pedido con instalacion, se invita al cliente al portal; si ya tiene usuario (activo o archivado) o no tiene email, no se hace nada y queda nota en el chatter. Un fallo nunca rompe la confirmacion.
-7. **RB07**: Una cita de un tipo con `installation_fsm_project_id`, agendada fuera del eCommerce, genera tarea de FSM sin asignar; reprogramarla mueve las fechas de la tarea y cancelarla la cancela.
+7. **RB07**: Una cita de un tipo con `installation_fsm_project_id`, agendada fuera del eCommerce, genera tarea de FSM asignada al instalador predeterminado del tipo (sin asignar si esta vacio, RB43); reprogramarla mueve las fechas de la tarea y cancelarla la cancela.
 8. **RB08**: Las respuestas del formulario se validan segun `answer_format` en el navegador **y** en el servidor.
 
 **Pilas incluidas**
@@ -1181,6 +1265,18 @@ ambiguedad de la UoM es el riesgo #1 de las pilas):
     solo `project.group_project_manager`, el instalador lo ve. La restriccion es de la **interfaz**:
     por RPC o importacion un usuario de FSM con escritura sobre la tarea puede cambiarlo.
 41. **RB41**: Duplicar una tarea no copia modelos instalados, importe ni fotos.
+42. **RB42**: La pagina **Installation** muestra, de solo lectura, las imagenes del chatter de la tarea
+    que no son fotos del instalador (*Site photos*); sin ninguna, la seccion no se ve. Esas fotos no
+    cuentan para el gate de RB37 (D65).
+
+**Despacho de Field Service**
+43. **RB43**: Toda tarea de instalacion **nueva** (camino eCommerce o link) nace asignada al
+    `installation_default_user_id` del tipo de cita, si esta cargado y activo. Vacio → el link crea la
+    tarea sin asignar y el eCommerce deja la asignacion que arma el core. Las tareas existentes no se
+    tocan (D66).
+44. **RB44**: *My Tasks → Tasks* y *All Tasks → All Tasks* de Field Service abren en el calendario,
+    para todos los usuarios, en escritorio y en movil, con uno o varios proyectos FSM. Las demas vistas
+    siguen disponibles en el selector (D67).
 
 ## Edge cases
 
@@ -1263,6 +1359,32 @@ ambiguedad de la UoM es el riesgo #1 de las pilas):
 - **Tarea reabierta y vuelta a cerrar**: con el tilde, vuelve a exigir al menos una foto (si se las
   quitaron).
 
+**Fotos del lugar y despacho**
+- **Foto del instalador subida en el formulario sin guardar**: el adjunto nace con `res_id = 0` y no
+  aparece en *Site photos*; guardada, queda en `installation_photo_ids` y la resta la excluye.
+- **Foto del instalador borrada de la relacion pero no del chatter** (cruz del widget, que solo saca
+  el registro de la relacion): el adjunto sigue en la tarea y pasa a verse en *Site photos*.
+- **Adjuntos del chatter que no son imagen** (PDF, planillas): no aparecen en *Site photos*.
+- **Imagen del chatter que el usuario no puede leer**: el `search()` del core la filtra; no aparece.
+- **Tarea con muchas fotos en el chatter**: todas se muestran; no hay paginado ni tope.
+- **Instalador predeterminado archivado despues de configurarlo**: las tareas nuevas nacen sin ese
+  asignado (`filtered("active")`); las que ya lo tenian no cambian.
+- **Asignacion notificada**: asignar al crear dispara la notificacion nativa de asignacion de
+  `project.task` al instalador, segun su preferencia (correo o bandeja de Odoo).
+- **Tipo de cita por usuarios sin instalador predeterminado**: en el eCommerce la tarea sigue con el
+  staff de la reserva, como hasta ahora (`website_appointment_sale_project`).
+- **Producto de la cita con `task_template_id`**: la tarea no pasa por el override
+  (`_prepare_task_template_vals`, ya documentado arriba) y no recibe el instalador.
+- **Usuario que ya eligio otra vista en la sesion**: el calendario es la vista **inicial** al entrar
+  por el menu; cambiar de vista en el selector sigue funcionando y el breadcrumb vuelve a la elegida.
+- **Escala del calendario**: la de la vista de `industry_fsm` (`mode="month"`,
+  `enterprise/industry_fsm/views/fsm_views.xml:L120`); el `default_scale` del contexto de la accion lo
+  lee el Gantt, no el calendario.
+- **La accion de enterprise abierta sin la server action** (un boton o codigo que la llame por XML
+  ID): abre con la vista que define enterprise (kanban/lista). Los menus y las rutas `field-service` /
+  `field-service-tasks` (`enterprise/industry_fsm/views/fsm_views.xml:L434`) pasan por la server
+  action y abren el calendario.
+
 **Pilas incluidas**
 - **Producto sin pilas configuradas o carrier sin el flag**: no se crea ninguna linea (no-op), y si habia lineas gratis de un estado anterior del carrito, se borran.
 - **UoM del producto de pila ("Paquete de 4")**: `free_battery_qty = 1` despacha **un paquete** (4 pilas). Si el funcional escribe `4` pensando en pilas, se despachan **16**. Mitigacion: `string`/`help` explicitos + la UoM visible en la vista (D15).
@@ -1310,7 +1432,7 @@ ambiguedad de la UoM es el riesgo #1 de las pilas):
 - [ ] **CA09**: Confirmar con un cliente sin usuario → queda creado el usuario portal y se manda la invitacion; con usuario activo/archivado o sin email → no-op con nota en el chatter y sin romper la confirmacion.
 - [ ] **CA10**: Asociar a un metodo de envio un tipo de cita sin paso de pago o sin producto → `ValidationError`.
 - [ ] **CA11**: Responder una pregunta con formato `integer`/`decimal`/`phone`/`identification` con un valor invalido → se frena en el navegador y tambien en el servidor (vuelve al formulario con el detalle).
-- [ ] **CA12**: Agendar por el link compartido en un tipo con `installation_fsm_project_id` → tarea de FSM creada sin asignar; reprogramar mueve las fechas, cancelar cancela la tarea, desarchivar la repone.
+- [ ] **CA12**: Agendar por el link compartido en un tipo con `installation_fsm_project_id` y sin instalador predeterminado → tarea de FSM creada sin asignar; reprogramar mueve las fechas, cancelar cancela la tarea, desarchivar la repone.
 - [ ] **CA13**: Reagendar desde el paso → queda **una sola** linea de instalacion en el carrito.
 
 **Textos configurables**
@@ -1388,6 +1510,19 @@ ambiguedad de la UoM es el riesgo #1 de las pilas):
 - [ ] **CA72**: En es_419, la pagina, los campos, el tilde y el mensaje de error se leen en voseo ("Subí al menos una foto de la cerradura instalada antes de marcar la tarea como hecha.").
 - [ ] **CA73**: `tests/test_installation_task.py` corre en verde (cerrar sin foto con tilde → `UserError`, por `write()` y por `action_fsm_validate()`; con foto cierra; cancelar sin foto; proyecto sin tilde cierra sin foto; quitar por `write()` la ultima foto de una tarea hecha → `UserError`; `unlink()` del adjunto de la ultima foto de una tarea hecha → `UserError` y con otra foto restante se borra; precarga de modelos desde un pedido con una linea de envio `consu` con `is_delivery = True`, que queda afuera) y las suites existentes siguen en verde.
 - [ ] **CA74**: Con una tarea hecha de un proyecto con *Require Installation Photos* y una sola foto, borrar ese adjunto desde la caja de adjuntos del chatter → `UserError` *"You cannot delete the last photo of the installed lock of a task that is already done."* y la foto sigue en la pagina **Installation**. Con dos fotos, borrar una desde el chatter → se borra y queda la otra. Con la tarea cancelada, borrar la unica foto → se borra.
+
+**Fotos del lugar y despacho de Field Service**
+- [ ] **CA75**: Una tarea de instalacion con fotos del cliente en el chatter (pedido eCommerce pagado, o cita por link con fotos) → la pagina **Installation** muestra la seccion **Site photos** con sus miniaturas, arriba de *Photos of the installed lock*, sin boton de adjuntar ni cruz de quitar. Las fotos del instalador **no** aparecen repetidas en *Site photos*, y un PDF del chatter tampoco aparece. Una imagen subida despues al chatter aparece al recargar la tarea.
+- [ ] **CA76**: Tarea sin imagenes en el chatter → la seccion *Site photos* (separador incluido) no se ve.
+- [ ] **CA77**: En un proyecto con *Require Installation Photos*, una tarea con fotos en *Site photos* y **sin** fotos del instalador no se puede marcar como hecha (`UserError` de CA64): las del chatter no cuentan.
+- [ ] **CA78**: Un usuario de FSM (no manager) abre la tarea y ve *Site photos* sin error de acceso, en escritorio y en movil.
+- [ ] **CA79**: El formulario del tipo de cita muestra **Default Installer** junto a los campos de instalacion; el selector ofrece solo usuarios internos activos.
+- [ ] **CA80**: Pagar un pedido eCommerce con instalacion cuyo tipo de cita tiene *Default Installer* = "Instalación Nokey" → la tarea de Field Service nace asignada **solo** a ese usuario (tambien si el tipo es por usuarios con otro staff en la reserva). Con el campo vacio, la tarea nace con la asignacion de siempre (sin asignar en un tipo por recursos).
+- [ ] **CA81**: Agendar por el link en un tipo con *Default Installer* cargado → la tarea nace asignada a ese usuario; vacio → sin asignar (CA12). Con el usuario archivado → sin asignar. Las tareas creadas antes no cambian de asignado.
+- [ ] **CA82**: Con **varios** proyectos FSM (como produccion), *Field Service → My Tasks → Tasks* y *All Tasks → All Tasks* abren en el **calendario**, en escritorio y en movil (pantalla chica); el selector de vistas sigue ofreciendo kanban, lista, mapa, Gantt y el resto. *My Tasks → Map* sigue abriendo en el mapa y *To Schedule* en su vista de siempre.
+- [ ] **CA83**: Con **un solo** proyecto FSM, los mismos dos menus tambien abren en el calendario.
+- [ ] **CA84**: Actualizar `industry_fsm` (`-u industry_fsm`) no revierte CA82/CA83, y el `-u` del modulo no deja registros `ir.actions.act_window.view` propios ni modifica los de `industry_fsm`.
+- [ ] **CA85**: En es_419 se leen "Fotos del lugar", "Instalador predeterminado" y su ayuda traducida; `tests/test_free_batteries.py`, `tests/test_calendar_event_mail_company.py` y `tests/test_installation_task.py` siguen en verde.
 
 **Modulo sin historia**
 - [x] **CA62**: `python3 .claude/scripts/history_lint.py --module <modulo>` sale sin errores sobre spec, comentarios/docstrings de `.py`/`.xml`/`.js`, `README.md` e `index.html`, y `history_lint.py --seal` escribe la fila `Depurado` en esta spec.
@@ -1532,6 +1667,22 @@ ambiguedad de la UoM es el riesgo #1 de las pilas):
 | Quitar un archivo del `many2many_binary` | `odoo/addons/web/static/src/views/fields/many2many_binary/many2many_binary_field.js:L64-68` | `onFileRemove` → `removeRecord`: saca la foto de la relacion, llega como `write()` de la tarea |
 | Borrado de adjuntos | `odoo/odoo/addons/base/models/ir_attachment.py:L741` | `unlink()`: el override chequea antes de su `super()` |
 | Borrado desde el chatter | `odoo/addons/mail/controllers/attachment.py:L108` → `odoo/addons/mail/models/ir_attachment.py:L87` | `/mail/attachment/delete` valida propiedad y llama `attachment.sudo()._delete_and_notify()` → `unlink()`: no pasa por `project.task.write()` (D64) |
+| `message_post` reasigna el adjunto | `odoo/addons/mail/models/mail_thread.py:L2420` | `_process_attachments_for_post` escribe `res_model`/`res_id` del registro: las fotos del cliente copiadas quedan como adjuntos de la tarea (D65) |
+| Busqueda de adjuntos con control de acceso | `odoo/odoo/addons/base/models/ir_attachment.py:L620` | `_search` agrega `res_field = False` y filtra por acceso al registro referenciado: el compute de *Site photos* va sin `sudo()` |
+| Reglas de acceso de adjuntos | `odoo/odoo/addons/base/models/ir_attachment.py:L514` | `_check_access`: con `res_model`/`res_id`, accesible si lo es el registro |
+| `many2many_binary` en modo lectura | `odoo/addons/web/static/src/views/fields/many2many_binary/many2many_binary_field.xml:L11`, `:L29` y `:L36` | Sin boton de adjuntar ni cruz con `readonly`; miniatura para las imagenes |
+| Domain de los asignados de la tarea | `odoo/addons/project/models/project_task.py:L206` | `user_ids` con `[('share', '=', False), ('active', '=', True)]`: el mismo domain para `installation_default_user_id` |
+| Tarea sin asignar desde el pedido | `odoo/addons/sale_project/models/sale_order_line.py:L279` | `'user_ids': False` porque se crea en `sudo()`: nuestro override lo pisa con el instalador (D66) |
+| Staff de la reserva como asignado | `enterprise/website_appointment_sale_project/models/sale_order_line.py:L20` y `:L47` | En tipos por usuarios pone `staff_user_id`; el instalador predeterminado lo reemplaza (D66) |
+| Server action de las tareas FSM | `enterprise/industry_fsm/models/project_task.py:L356` | `_server_action_project_task_fsm()`: elige accion por cantidad de proyectos FSM; el override reordena `views` (D67) |
+| Acciones de *My Tasks* | `enterprise/industry_fsm/views/fsm_views.xml:L444` y `:L527` | `project_task_action_fsm` / `project_task_action_fsm2`; su calendario en `:L477` / `:L560` |
+| Acciones de *All Tasks* | `enterprise/industry_fsm/views/fsm_views.xml:L829` y `:L888` | `project_task_action_all_fsm` / `project_task_action_all_fsm2`; su calendario en `:L866` / `:L925` |
+| Menus *Tasks* y *All Tasks* | `enterprise/industry_fsm/views/fsm_views.xml:L1815` y `:L1835` | Llaman a las server actions (ruta `field-service` en `:L434`) |
+| Escala del calendario FSM | `enterprise/industry_fsm/views/fsm_views.xml:L120` | `mode="month"` en la vista calendario de tareas |
+| Un registro de vista por modo | `odoo/odoo/addons/base/models/ir_actions.py:L419` | `UniqueIndex('(act_window_id, view_mode)')`: por que no se agregan `act_window.view` propios (D67) |
+| Orden de `views` de la accion | `odoo/odoo/addons/base/models/ir_actions.py:L288` y `:L383` | `_compute_views` ordena por los `act_window.view`; `views` viaja en el dict de la accion |
+| Default de la vista movil | `odoo/odoo/addons/base/models/ir_actions.py:L320` | `mobile_view_mode` default `kanban` |
+| Vista inicial en el cliente web | `odoo/addons/web/static/src/webclient/actions/action_service.js:L1239` y `:L1241` | `views[0]` en escritorio; `mobile_view_mode` en pantalla chica |
 
 **Internos del modulo** (archivo + metodo):
 
@@ -1551,6 +1702,8 @@ ambiguedad de la UoM es el riesgo #1 de las pilas):
 | Tarea de FSM de la cita | `models/calendar_event.py` → `_installation_generate_fsm_task()` / `_installation_task_description()` | Molde del idioma de la compañia que reusa `_installation_fill_location()` |
 | Confirmacion del pedido | `models/sale_order.py` → `_action_confirm()` | Fotos + ubicacion + portal despues del `super()` |
 | Gate de fotos de la tarea | `models/project_task.py` → `write()` | RB37/RB38 (D63) |
+| Fotos del lugar y calendario primero | `models/project_task.py` → `_compute_installation_site_photo_ids()` / `_server_action_project_task_fsm()` | RB42 (D65) y RB44 (D67) |
+| Asignacion de la tarea del link | `models/calendar_event.py` → `_installation_generate_fsm_task()` | RB43 (D66): reemplaza el `user_ids` vacio explicito por el instalador del tipo |
 | Bloqueo del borrado de la ultima foto | `models/ir_attachment.py` → `unlink()` | RB37 (D64) |
 | Importe a cobrar por grupo | `views/project_task_views.xml` → `view_task_form2_inherit` | El campo dos veces con `groups`; sin `group_ids` en el registro |
 | Precarga de modelos instalados | `models/sale_order_line.py` → `_timesheet_create_task_prepare_values()` | RB39; mismo override que el titulo y las notas de la tarea |
@@ -1563,26 +1716,22 @@ ambiguedad de la UoM es el riesgo #1 de las pilas):
 
 | Archivo | Que se actualiza |
 |---------|------------------|
-| `README.md` del modulo | Seccion nueva *Resultado de la instalacion*: pagina **Installation** de la tarea (modelos, importe, fotos), quien edita el importe, fotos obligatorias con el tilde del proyecto y cancelacion sin fotos, la ultima foto de una tarea hecha no se puede borrar (tampoco desde el chatter); en *Configuracion*, prender *Require Installation Photos* en el proyecto FSM de instalaciones; `industry_fsm` en las dependencias |
-| `static/description/index.html` | Lo mismo: bloque del resultado de la instalacion en la tarea de Field Service |
-| `README.md` del repo (`extra-addons/odoo_customization_sunra/README.md`) | Fila del modulo: version `1.15.0` y el resultado de la instalacion en la descripcion |
-| `__manifest__.py` | `version` → `1.15.0`; `depends` += `industry_fsm`; `data` += `views/project_task_views.xml`, `views/project_project_views.xml`; en `description`, una linea del resultado de la instalacion en la tarea |
-| `i18n/es_419.po` | Terminos nuevos en voseo: pagina *Installation*, *Installed Models*, *Amount to Charge*, *Installation Photos* (de `project.task`), *Require Installation Photos* y su `help`, el `UserError` del gate y el del borrado de la ultima foto |
-| Esta spec | `Version` = `1.15.0`; al cerrar, `Estado` → `implemented` |
+| `README.md` del modulo | En *Resultado de la instalacion*: la seccion *Site photos* de la pagina **Installation** (de donde salen, que no cuentan para cerrar). Seccion *Despacho de Field Service*: instalador predeterminado por tipo de cita (los dos caminos, vacio = sin asignar, tareas existentes sin cambios) y calendario como vista inicial de *My Tasks* / *All Tasks*. En *Configuracion*: cargar *Default Installer* en *Instalación AMBA - Web* e *Instalación coordinada por Nokey* con el usuario *Instalación Nokey* |
+| `static/description/index.html` | Lo mismo: fotos del lugar en la tarea, instalador predeterminado y calendario |
+| `README.md` del repo (`extra-addons/odoo_customization_sunra/README.md`) | Fila del modulo: fotos del lugar, instalador predeterminado y calendario |
+| `__manifest__.py` | `version` → `1.16.0`; en `description`, las fotos del lugar en la tarea, el instalador predeterminado y el calendario como vista inicial. Sin archivos de `data` nuevos |
+| `i18n/es_419.po` | "Site photos" / "Site Photos" → "Fotos del lugar"; "Default Installer" → "Instalador predeterminado"; el `help` de `installation_default_user_id` (traducción del texto vigente del código: reemplaza al staff de la reserva; vacío = la asignación que arma el core, sin asignar en el link); el `help` ajustado de `installation_photo_ids`; en voseo |
+| Esta spec | `Version` = `1.16.0` al cerrar (junto con el manifest); `Estado` → `implemented` |
 
 ## Plan del cambio
 
-> Cambio en curso: resultado de la instalacion en la tarea de Field Service (D63, D64, RB37..RB41).
-> El repo no tiene `.swarm.conf`; los tests de este cambio se escriben por pedido explicito.
+> Cambio en curso: fotos del lugar en la tarea (D65), instalador predeterminado (D66) y calendario
+> como vista inicial de Field Service (D67). Version objetivo `1.16.0`. El repo no tiene
+> `.swarm.conf`: sin tests nuevos obligatorios; las tres suites existentes tienen que seguir en verde.
 
 | ID | Descripcion | Depende de | Archivos | Cubre |
 |----|-------------|------------|----------|-------|
-| **T01** | Modelos: `models/project_project.py` (`installation_require_photos`) y `models/project_task.py` (`installation_product_ids`, `installation_amount`, `installation_currency_id`, `installation_photo_ids`, todos `copy=False` salvo el related; override de `write()` con el gate despues del `super()`); registrar ambos en `models/__init__.py` | — | `models/project_task.py`, `models/project_project.py`, `models/__init__.py` | CA64, CA65, CA66, CA67, CA71 |
-| **T02** | Manifest: `depends` += `industry_fsm`; `data` += las dos vistas nuevas | T01 | `__manifest__.py` | CA69, CA70 |
-| **T03** | Vistas: `views/project_task_views.xml` (una sola vista, `view_task_form2_inherit` sobre `industry_fsm.view_task_form2_inherit`, con la pagina **Installation** e `installation_amount` dos veces: `readonly="1" groups="!project.group_project_manager"` y editable con `groups="project.group_project_manager"`; sin `group_ids` en el registro y sin segunda herencia) y `views/project_project_views.xml` (tilde en `group_field_service`, `invisible="not is_fsm"`). Verificar escritorio y movil con un usuario de FSM y con un manager | T01, T02 | `views/project_task_views.xml`, `views/project_project_views.xml` | CA64, CA69, CA70 |
-| **T04** | Precarga: en `SaleOrderLine._timesheet_create_task_prepare_values`, `installation_product_ids` con los productos `consu` del pedido, sin `is_delivery`, sin `is_free_battery_line`, sin `display_type` | T01 | `models/sale_order_line.py` | CA68 |
-| **T05** | i18n: entradas nuevas en `i18n/es_419.po`, en voseo (incluido el `UserError` del borrado) | T01, T03, T09 | `i18n/es_419.po` | CA72 |
-| **T06** | Tests: `tests/test_installation_task.py` (`TransactionCase`, `@tagged('post_install', '-at_install')`): cerrar sin foto con tilde → `UserError`, por `write()` y por `action_fsm_validate()`; con foto cierra; cancelar sin foto; proyecto sin tilde cierra sin foto; quitar por `write()` la ultima foto de una tarea hecha → `UserError`; `unlink()` del adjunto de la ultima foto → `UserError` y con otra foto restante se borra; precarga desde un pedido con una linea de envio `consu` con `is_delivery = True` (la exclusion la prueba `is_delivery`, no el `type`). Registrar en `tests/__init__.py`; correr las tres suites | T01, T04, T09 | `tests/test_installation_task.py`, `tests/__init__.py` | CA64, CA65, CA66, CA67, CA68, CA73, CA74 |
-| **T07** | Documentacion: `README.md` e `index.html` del modulo, fila del modulo en el README del repo | T03, T04, T09 | `README.md`, `static/description/index.html`, `../README.md` | CA69, CA70 |
-| **T09** | Bloqueo del borrado: `models/ir_attachment.py` con el override de `unlink()` (busqueda `sudo()` de lectura, `active_test=False`, `UserError` si alguna tarea hecha con tilde se queda sin fotos, antes del `super()`); registrar en `models/__init__.py` | T01 | `models/ir_attachment.py`, `models/__init__.py` | CA74 |
-| **T08** | Cierre: `version` del manifest → `1.15.0` (+ linea en `description`), `Version` de la spec igual, `Estado` → `implemented`; `-u` del modulo en la base de desarrollo; `spec_lint.py` y `history_lint.py --module` sin errores; `history_lint.py --seal <modulo>` | T01, T02, T03, T04, T05, T06, T07, T09 | `__manifest__.py`, `specs/website_sale_installation_appointment.md` | CA64, CA65, CA66, CA67, CA68, CA69, CA70, CA71, CA72, CA73, CA74 |
+| **T01** | Instalador predeterminado: campo `installation_default_user_id` en `models/appointment_type.py` (domain de `project.task.user_ids`, `help` en ingles); en `SaleOrderLine._timesheet_create_task_prepare_values`, dentro del `if self._is_installation_booking_line()`, `values["user_ids"] = [Command.set(installer.ids)]` si hay instalador activo; en `CalendarEvent._installation_generate_fsm_task`, `user_ids = [Command.set(installer.ids)]` (vacio → `Command.set([])`, reemplaza el `[(6, 0, [])]`, importar `Command`); campo en `views/appointment_type_views.xml` dentro de `group name="right_details"`, despues de `installation_fsm_project_id`, sin `invisible` | — | `models/appointment_type.py`, `models/sale_order_line.py`, `models/calendar_event.py`, `views/appointment_type_views.xml` | CA12, CA79, CA80, CA81 |
+| **T02** | Fotos del lugar: en `models/project_task.py`, `installation_site_photo_ids` (compute no almacenado, `readonly=True`, `@api.depends("installation_photo_ids")`, una sola busqueda de `ir.attachment` sin `sudo()`, agrupada por `res_id`, menos `installation_photo_ids`) y `help` de `installation_photo_ids` ajustado; en `views/project_task_views.xml`, separador *Site photos* + campo `many2many_binary` readonly, los dos con `invisible="not installation_site_photo_ids"`, arriba del separador *Photos of the installed lock*. Verificar con un usuario de FSM en escritorio y movil | — | `models/project_task.py`, `views/project_task_views.xml` | CA75, CA76, CA77, CA78 |
+| **T03** | Calendario primero: en `models/project_task.py`, constante `FSM_CALENDAR_FIRST_ACTIONS` (las cuatro acciones) y override de `_server_action_project_task_fsm()` con la misma firma: `views` con `calendar` primero (orden estable) y `mobile_view_mode = "calendar"`. Sin XML. Verificar con uno y con varios proyectos FSM, y *Map* / *To Schedule* sin cambios | — | `models/project_task.py` | CA82, CA83, CA84 |
+| **T04** | Cierre: `i18n/es_419.po` con los terminos nuevos; `README.md` e `index.html` del modulo y fila del README del repo; `version` del manifest → `1.16.0` (+ lineas en `description`) y `Version` de esta spec igual, `Estado` → `implemented`; `-u` del modulo en la base de desarrollo; correr las tres suites; `spec_lint.py` y `history_lint.py --module` sin errores; `history_lint.py --seal <modulo>` | T01, T02, T03 | `i18n/es_419.po`, `README.md`, `static/description/index.html`, `../README.md`, `__manifest__.py`, `specs/website_sale_installation_appointment.md` | CA84, CA85 |
