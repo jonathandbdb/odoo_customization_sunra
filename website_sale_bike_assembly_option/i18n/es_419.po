@@ -1,0 +1,38 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+#	* website_sale_bike_assembly_option
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: es_419\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: website_sale_bike_assembly_option
+#: model:ir.model.fields,field_description:website_sale_bike_assembly_option.field_sale_order_line__assembled_product_id
+msgid "Assembled Vehicle"
+msgstr "Vehículo armado"
+
+#. module: website_sale_bike_assembly_option
+#: model:ir.model.fields,help:website_sale_bike_assembly_option.field_sale_order_line__assembled_product_id
+msgid "Assembled vehicle whose price this box kit line takes."
+msgstr "Vehículo armado del que esta línea de kit en caja toma el precio."
+
+#. module: website_sale_bike_assembly_option
+#: model_terms:ir.ui.view,arch_db:website_sale_bike_assembly_option.product_bike_assembly_option
+msgid "Assembled"
+msgstr "Armada"
+
+#. module: website_sale_bike_assembly_option
+#: model_terms:ir.ui.view,arch_db:website_sale_bike_assembly_option.product_bike_assembly_option
+msgid "In box"
+msgstr "En caja"
+
+#. module: website_sale_bike_assembly_option
+#. odoo-python
+#: code:addons/website_sale_bike_assembly_option/models/sale_order.py:0
+msgid "This vehicle cannot be ordered in a box."
+msgstr "Este vehículo no se puede pedir en caja."

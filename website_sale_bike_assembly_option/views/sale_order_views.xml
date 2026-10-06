@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Pedido: bicicleta asociada al kit en las lineas -->
+    <record id="sale_order_view_form" model="ir.ui.view">
+        <field name="name">sale.order.view.form.inherit.website_sale_bike_assembly_option</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='order_line']/list/field[@name='product_uom_qty']" position="after">
+                <field name="assembled_product_id" optional="hide" readonly="1" invisible="display_type"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
+<!-- vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4-->

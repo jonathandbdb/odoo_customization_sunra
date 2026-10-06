@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Selector Armada / En caja: dentro del formulario, fuera de la seccion de atributos -->
+    <template id="product_bike_assembly_option" inherit_id="website_sale.product">
+        <xpath expr="//t[@name='variant_info']" position="after">
+            <div t-if="product._has_bike_assembly_option()"
+                 class="o_wsale_product_details_content_section o_bike_assembly_option mb-4">
+                <div class="btn-group" role="group">
+                    <input type="radio" class="btn-check" name="bike_assembly_option"
+                           id="bike_assembly_option_assembled" value="assembled" checked="checked"/>
+                    <label class="btn btn-outline-primary" for="bike_assembly_option_assembled">Assembled</label>
+                    <input type="radio" class="btn-check" name="bike_assembly_option"
+                           id="bike_assembly_option_boxed" value="boxed"/>
+                    <label class="btn btn-outline-primary" for="bike_assembly_option_boxed">In box</label>
+                </div>
+            </div>
+        </xpath>
+    </template>
+
+    <!-- El kit en el carrito enlaza a la ficha de la bicicleta -->
+    <template id="cart_line_product_link" inherit_id="website_sale.cart_line_product_link">
+        <xpath expr="//a[@name='o_cart_line_product_link']" position="attributes">
+            <attribute name="t-att-href">(line.assembled_product_id or line.product_id).website_url</attribute>
+        </xpath>
+    </template>
+</odoo>
+<!-- vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4-->

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<body>
+    <section style="max-width: 980px; margin: 0 auto; padding: 32px 24px; font-family: Arial, Helvetica, sans-serif; color-scheme: var(--o-webclient-color-scheme, normal); color: CanvasText; line-height: 1.55; background: transparent;">
+        <div style="padding: 28px 30px; border: 1px solid ButtonBorder; border-radius: 8px; background: Canvas;">
+            <p style="margin: 0 0 8px; color: LinkText; font-size: 13px; font-weight: 700; text-transform: uppercase;">Website - eCommerce</p>
+            <h1 style="margin: 0 0 12px; color: CanvasText; font-size: 32px; line-height: 1.2;">website_sale_bike_assembly_option</h1>
+            <p style="margin: 0; max-width: 760px; color: GrayText; font-size: 16px;">Selector <strong>Armada / En caja</strong> en la ficha del vehículo: con "En caja" el carrito recibe el kit al mismo precio que el vehículo armado.</p>
+        </div>
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 10px; color: LinkText; font-size: 23px;">Objetivo</h2>
+            <p style="margin: 0;">Cada bicicleta existe como producto armado y como kit en caja, unidos por la lista de materiales de fabricaci&oacute;n. El concesionario elige c&oacute;mo recibe la bici desde la web sin que el kit tenga que publicarse como producto aparte.</p>
+        </div>
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 10px; color: LinkText; font-size: 23px;">Funcionalidades principales</h2>
+            <ul style="margin: 0; padding-left: 20px;">
+                <li style="margin-bottom: 8px;"><strong>Selector</strong> "Armada" (por defecto) / "En caja" en la ficha, solo para bicis cuya LdM de kit tiene un &uacute;nico componente con n&uacute;mero de serie.</li>
+                <li style="margin-bottom: 8px;"><strong>Mismo precio</strong>: el kit cuesta lo que la bici armada en la lista de precios del sitio, tambi&eacute;n al cambiar la cantidad. Conserva sus propios impuestos.</li>
+                <li style="margin-bottom: 8px;"><strong>Carrito</strong>: el kit enlaza a la ficha de la bici, se fusiona solo con el mismo kit y su tope es el stock del kit.</li>
+                <li style="margin-bottom: 8px;"><strong>Disponibilidad</strong>: la bici armada muestra su stock m&aacute;s el de su kit (con compa&ntilde;&iacute;as de stock web configuradas); un kit sin compa&ntilde;&iacute;as propias usa las de su bici.</li>
+                <li style="margin-bottom: 8px;"><strong>Compa&ntilde;&iacute;a</strong>: sin configuraci&oacute;n propia, el kit se vende por la compa&ntilde;&iacute;a de la bici y viaja al pedido derivado con su v&iacute;nculo.</li>
+                <li style="margin-bottom: 8px;"><strong>Backoffice</strong>: columna opcional "Vehículo armado" en las l&iacute;neas del pedido.</li>
+            </ul>
+        </div>
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 10px; color: LinkText; font-size: 23px;">Configuraci&oacute;n</h2>
+            <ul style="margin: 0; padding-left: 20px;">
+                <li style="margin-bottom: 8px;">LdM de la bici con el tilde de kit y un &uacute;nico componente serializado.</li>
+                <li style="margin-bottom: 8px;">Kit sin compa&ntilde;&iacute;a y con los mismos impuestos de venta que la bici.</li>
+            </ul>
+        </div>
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 10px; color: LinkText; font-size: 23px;">L&iacute;mites</h2>
+            <ul style="margin: 0; padding-left: 20px;">
+                <li style="margin-bottom: 8px;">Doble conteo: un carrito con armadas y kits de la misma bici puede superar los kits f&iacute;sicos.</li>
+                <li style="margin-bottom: 8px;">Sin selector en la grilla, el agregado r&aacute;pido ni los opcionales (agregan la armada).</li>
+            </ul>
+        </div>
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 10px; color: LinkText; font-size: 23px;">Dependencias</h2>
+            <p style="margin: 0;"><code>sale_website_company_routing</code> y <code>sunra_mrp_component_serials</code>. M&oacute;dulo gestionado por SDD: la especificaci&oacute;n vive en <code>specs/website_sale_bike_assembly_option.md</code>.</p>
+        </div>
+    </section>
+</body>
+</html>
