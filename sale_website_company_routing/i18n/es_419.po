@@ -1,0 +1,255 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* sale_website_company_routing
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-10-06 14:16+0000\n"
+"PO-Revision-Date: 2026-10-06 14:16+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: es_419\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: sale_website_company_routing
+#. odoo-python
+#: code:addons/sale_website_company_routing/models/sale_order.py:0
+msgid ""
+"Combo product %(product)s belongs to %(company)s: lines of combo products "
+"cannot be routed to another company."
+msgstr ""
+"El producto combo %(product)s pertenece a %(company)s: las líneas de "
+"productos combo no se pueden rutear a otra compañía."
+
+#. module: sale_website_company_routing
+#: model_terms:ir.ui.view,arch_db:sale_website_company_routing.product_template_view_form
+msgid "Companies"
+msgstr "Compañías"
+
+#. module: sale_website_company_routing
+#: model:ir.model.fields,help:sale_website_company_routing.field_product_category__website_stock_company_ids
+msgid ""
+"Companies whose stock is shown on the website for the products of this "
+"category. Empty: the ones of the parent category or, if none defines it, the"
+" website warehouse."
+msgstr ""
+"Compañías cuyo stock se muestra en la web para los productos de esta "
+"categoría. Vacío: las de la categoría padre o, si ninguna las define, el "
+"almacén del sitio."
+
+#. module: sale_website_company_routing
+#: model:ir.model.fields,help:sale_website_company_routing.field_product_product__website_stock_company_ids
+#: model:ir.model.fields,help:sale_website_company_routing.field_product_template__website_stock_company_ids
+msgid ""
+"Companies whose stock is shown on the website for this product. Empty: the "
+"ones of its category."
+msgstr ""
+"Compañías cuyo stock se muestra en la web para este producto. Vacío: las de "
+"su categoría."
+
+#. module: sale_website_company_routing
+#. odoo-python
+#: code:addons/sale_website_company_routing/models/sale_order.py:0
+msgid ""
+"Company %(company)s has no warehouse to ship the lines of order %(order)s."
+msgstr ""
+"La compañía %(company)s no tiene almacén para despachar las líneas del "
+"pedido %(order)s."
+
+#. module: sale_website_company_routing
+#: model:ir.model.fields,help:sale_website_company_routing.field_product_category__sale_company_id
+msgid ""
+"Company that sells and ships the products of this category. Empty: the one "
+"of the parent category or, if none defines it, the company of the order."
+msgstr ""
+"Compañía que vende y despacha los productos de esta categoría. Vacío: la de "
+"la categoría padre o, si ninguna la define, la compañía del pedido."
+
+#. module: sale_website_company_routing
+#: model:ir.model.fields,help:sale_website_company_routing.field_sale_order_line__sale_company_id
+msgid ""
+"Company that sells and ships this line. When the order is confirmed, the "
+"lines of another company move to a new order of that company."
+msgstr ""
+"Compañía que vende y despacha esta línea. Al confirmar el pedido, las líneas"
+" de otra compañía pasan a un pedido nuevo de esa compañía."
+
+#. module: sale_website_company_routing
+#: model:ir.model.fields,help:sale_website_company_routing.field_product_product__sale_company_id
+#: model:ir.model.fields,help:sale_website_company_routing.field_product_template__sale_company_id
+msgid ""
+"Company that sells and ships this product. Empty: the one of its category."
+msgstr ""
+"Compañía que vende y despacha este producto. Vacío: la de su categoría."
+
+#. module: sale_website_company_routing
+#. odoo-python
+#: code:addons/sale_website_company_routing/models/sale_order.py:0
+msgid ""
+"Contact %(partner)s belongs to %(partner_company)s and cannot be used in "
+"%(company)s, where the lines of order %(order)s are routed."
+msgstr ""
+"El contacto %(partner)s pertenece a %(partner_company)s y no se puede usar "
+"en %(company)s, donde se rutean las líneas del pedido %(order)s."
+
+#. module: sale_website_company_routing
+#. odoo-python
+#: code:addons/sale_website_company_routing/models/sale_order.py:0
+msgid ""
+"Delivery method %(carrier)s (or its shipping product) belongs to "
+"%(item_company)s and cannot be used in %(company)s, where the lines of order"
+" %(order)s are routed."
+msgstr ""
+"El método de envío %(carrier)s (o su producto de flete) pertenece a "
+"%(item_company)s y no se puede usar en %(company)s, donde se rutean las "
+"líneas del pedido %(order)s."
+
+#. module: sale_website_company_routing
+#: model_terms:ir.ui.view,arch_db:sale_website_company_routing.product_template_view_form
+msgid "From category"
+msgstr "De la categoría"
+
+#. module: sale_website_company_routing
+#. odoo-python
+#: code:addons/sale_website_company_routing/models/sale_order.py:0
+msgid "Order created when confirming %(order)s."
+msgstr "Pedido creado al confirmar %(order)s."
+
+#. module: sale_website_company_routing
+#: model:ir.model.fields,help:sale_website_company_routing.field_sale_order__company_routing_origin_id
+msgid "Order this one was split from when it was confirmed."
+msgstr "Pedido del que se separó este al confirmarse."
+
+#. module: sale_website_company_routing
+#: model:ir.model.fields,help:sale_website_company_routing.field_sale_order__company_routing_order_ids
+msgid "Orders created in other companies from the lines of this order."
+msgstr ""
+"Pedidos creados en otras compañías a partir de las líneas de este pedido."
+
+#. module: sale_website_company_routing
+#. odoo-python
+#: code:addons/sale_website_company_routing/models/sale_order.py:0
+msgid ""
+"Product %(product)s belongs to %(product_company)s and cannot be sold by "
+"%(company)s."
+msgstr ""
+"El producto %(product)s pertenece a %(product_company)s y no lo puede vender"
+" %(company)s."
+
+#. module: sale_website_company_routing
+#. odoo-python
+#: code:addons/sale_website_company_routing/models/sale_order.py:0
+msgid "Product %(product)s has no tax in company %(company)s."
+msgstr ""
+"El producto %(product)s no tiene impuestos en la compañía %(company)s."
+
+#. module: sale_website_company_routing
+#: model:ir.model.fields,field_description:sale_website_company_routing.field_sale_order__company_routing_origin_id
+msgid "Routed From"
+msgstr "Ruteado desde"
+
+#. module: sale_website_company_routing
+#. odoo-python
+#: code:addons/sale_website_company_routing/models/sale_order.py:0
+#: model:ir.model.fields,field_description:sale_website_company_routing.field_sale_order__company_routing_order_ids
+#: model_terms:ir.ui.view,arch_db:sale_website_company_routing.sale_order_view_form
+msgid "Routed Orders"
+msgstr "Pedidos ruteados"
+
+#. module: sale_website_company_routing
+#: model:ir.model.fields,field_description:sale_website_company_routing.field_sale_order__company_routing_order_count
+msgid "Routed Orders Count"
+msgstr "Cantidad de pedidos ruteados"
+
+#. module: sale_website_company_routing
+#: model:ir.model.fields,field_description:sale_website_company_routing.field_product_category__sale_company_id
+#: model:ir.model.fields,field_description:sale_website_company_routing.field_product_product__sale_company_id
+#: model:ir.model.fields,field_description:sale_website_company_routing.field_product_template__sale_company_id
+#: model:ir.model.fields,field_description:sale_website_company_routing.field_sale_order_line__sale_company_id
+msgid "Selling Company"
+msgstr "Compañía que vende"
+
+#. module: sale_website_company_routing
+#. odoo-python
+#: code:addons/sale_website_company_routing/models/sale_order.py:0
+msgid ""
+"The discount %(reward)s of the original order was not applied to this order:"
+" %(reason)s."
+msgstr ""
+"El descuento %(reward)s del pedido original no se aplicó a este pedido: "
+"%(reason)s."
+
+#. module: sale_website_company_routing
+#. odoo-python
+#: code:addons/sale_website_company_routing/models/sale_order.py:0
+msgid "The lines of other companies were moved to: %(orders)s."
+msgstr "Las líneas de otras compañías se movieron a: %(orders)s."
+
+#. module: sale_website_company_routing
+#. odoo-python
+#: code:addons/sale_website_company_routing/models/sale_order.py:0
+msgid "The linked lines of order %(order)s cannot be routed."
+msgstr "Las líneas vinculadas del pedido %(order)s no se pueden rutear."
+
+#. module: sale_website_company_routing
+#. odoo-python
+#: code:addons/sale_website_company_routing/models/sale_order.py:0
+msgid ""
+"The online payment remains registered in %(company)s, the company of this "
+"order."
+msgstr ""
+"El pago online queda registrado en %(company)s, la compañía de este pedido."
+
+#. module: sale_website_company_routing
+#. odoo-python
+#: code:addons/sale_website_company_routing/models/sale_order.py:0
+msgid ""
+"The warehouse %(warehouse)s of the order created in %(company)s belongs to "
+"another company."
+msgstr ""
+"El almacén %(warehouse)s del pedido creado en %(company)s pertenece a otra "
+"compañía."
+
+#. module: sale_website_company_routing
+#. odoo-python
+#: code:addons/sale_website_company_routing/models/sale_order.py:0
+msgid ""
+"There is no %(currency)s exchange rate in company %(company)s on or before "
+"%(date)s to convert the lines of order %(order)s."
+msgstr ""
+"No hay cotización de %(currency)s en la compañía %(company)s a la fecha "
+"%(date)s (o anterior) para convertir las líneas del pedido %(order)s."
+
+#. module: sale_website_company_routing
+#: model:ir.model.fields,field_description:sale_website_company_routing.field_product_category__website_stock_company_ids
+#: model:ir.model.fields,field_description:sale_website_company_routing.field_product_product__website_stock_company_ids
+#: model:ir.model.fields,field_description:sale_website_company_routing.field_product_template__website_stock_company_ids
+msgid "Website Stock Companies"
+msgstr "Compañías de stock web"
+
+#. module: sale_website_company_routing
+#. odoo-python
+#: code:addons/sale_website_company_routing/models/sale_order.py:0
+msgid ""
+"it needs a code, a coupon or a customer card, which stay on the original "
+"order"
+msgstr ""
+"requiere un código, un cupón o una tarjeta de cliente, que quedan en el "
+"pedido original"
+
+#. module: sale_website_company_routing
+#. odoo-python
+#: code:addons/sale_website_company_routing/models/sale_order.py:0
+msgid "the order does not meet its conditions"
+msgstr "el pedido no cumple sus condiciones"
+
+#. module: sale_website_company_routing
+#. odoo-python
+#: code:addons/sale_website_company_routing/models/sale_order.py:0
+msgid "the program belongs to %(company)s"
+msgstr "el programa pertenece a %(company)s"

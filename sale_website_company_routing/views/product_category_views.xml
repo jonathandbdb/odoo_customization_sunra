@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Categoria de producto: compañia que vende y compañias de stock web -->
+    <record id="product_category_view_form" model="ir.ui.view">
+        <field name="name">product.category.view.form.inherit.sale_website_company_routing</field>
+        <field name="model">product.category</field>
+        <field name="inherit_id" ref="product.product_category_form_view"/>
+        <field name="arch" type="xml">
+            <field name="parent_id" position="after">
+                <field name="sale_company_id" groups="base.group_multi_company" options="{'no_create': True}"/>
+                <field name="website_stock_company_ids" groups="base.group_multi_company"
+                       widget="many2many_tags" options="{'no_create': True}"/>
+            </field>
+        </field>
+    </record>
+</odoo>
+<!-- vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4-->

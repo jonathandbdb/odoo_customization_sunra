@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Producto: compañia que vende y compañias de stock web, en la pestaña Ventas -->
+    <record id="product_template_view_form" model="ir.ui.view">
+        <field name="name">product.template.view.form.inherit.sale_website_company_routing</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="sale.product_template_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='sales']/group[@name='sale']" position="inside">
+                <group name="company_routing" string="Companies" groups="base.group_multi_company">
+                    <field name="sale_company_id" placeholder="From category"
+                           options="{'no_create': True}"/>
+                    <field name="website_stock_company_ids" placeholder="From category"
+                           widget="many2many_tags" options="{'no_create': True}"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>
+<!-- vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4-->

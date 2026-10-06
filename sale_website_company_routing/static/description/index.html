@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<body>
+    <section style="max-width: 980px; margin: 0 auto; padding: 32px 24px; font-family: Arial, Helvetica, sans-serif; color-scheme: var(--o-webclient-color-scheme, normal); color: CanvasText; line-height: 1.55; background: transparent;">
+        <div style="padding: 28px 30px; border: 1px solid ButtonBorder; border-radius: 8px; background: Canvas;">
+            <p style="margin: 0 0 8px; color: LinkText; font-size: 13px; font-weight: 700; text-transform: uppercase;">Ventas - Multi-compa&ntilde;ia</p>
+            <h1 style="margin: 0 0 12px; color: CanvasText; font-size: 32px; line-height: 1.2;">sale_website_company_routing</h1>
+            <p style="margin: 0; max-width: 760px; color: GrayText; font-size: 16px;">Cada producto lo vende y despacha la compa&ntilde;ia que corresponde, aunque el sitio web sea de otra, y la web muestra el stock de la compa&ntilde;ia que realmente lo tiene.</p>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 10px; color: LinkText; font-size: 23px;">Objetivo</h2>
+            <p style="margin: 0;">En una base multi-compa&ntilde;ia un sitio web pertenece a una sola compa&ntilde;ia y el carrito se crea siempre en ella. Este m&oacute;dulo permite que algunos productos los venda y despache otra compa&ntilde;ia (una factura por compa&ntilde;ia, cada una con su almac&eacute;n, lista de precios, moneda e impuestos) y que el stock que muestra el eCommerce sea el de la compa&ntilde;ia que lo tiene. Sin configurar nada, todo funciona igual que en Odoo est&aacute;ndar.</p>
+        </div>
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 10px; color: LinkText; font-size: 23px;">Funcionalidades principales</h2>
+            <ul style="margin: 0; padding-left: 20px;">
+                <li style="margin-bottom: 8px;"><strong>Compa&ntilde;ia que vende</strong>: se declara en el producto (pesta&ntilde;a Ventas) o en su categor&iacute;a, y hereda de la categor&iacute;a padre. Cada l&iacute;nea del pedido la muestra y se puede cambiar a mano en borrador.</li>
+                <li style="margin-bottom: 8px;"><strong>Ruteo al confirmar</strong>: las l&iacute;neas de otra compa&ntilde;ia pasan a un pedido nuevo en esa compa&ntilde;ia, confirmado y vinculado al original (bot&oacute;n <em>Routed Orders</em>, campo y chatter), con la lista de precios del cliente en esa compa&ntilde;ia y el precio convertido con la cotizaci&oacute;n de la fecha de confirmaci&oacute;n.</li>
+                <li style="margin-bottom: 8px;"><strong>Env&iacute;o</strong>: el env&iacute;o y el m&eacute;todo de env&iacute;o viajan con lo ruteado; si al original no le queda ning&uacute;n producto, se cancela. Si se rutea todo el carrito, los c&oacute;digos, cupones y tarjetas de regalo del original se pierden para esa compra. El almac&eacute;n de retiro en tienda debe ser de la compa&ntilde;&iacute;a del env&iacute;o.</li>
+                <li style="margin-bottom: 8px;"><strong>Descuentos</strong>: las promociones autom&aacute;ticas de loyalty (y el descuento por medio de pago) se recalculan en cada pedido sobre sus propias l&iacute;neas; los c&oacute;digos, cupones, tarjetas de regalo y monedero quedan en el pedido original, con aviso en el derivado.</li>
+                <li style="margin-bottom: 8px;"><strong>Stock web por compa&ntilde;ia</strong>: el producto o su categor&iacute;a declaran de qu&eacute; compa&ntilde;ias se toma el stock (suma si son varias; 0 si no tienen almacenes). Lo respetan la ficha, los listados, el tope del carrito y el sem&aacute;foro de stock.</li>
+            </ul>
+        </div>
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 10px; color: LinkText; font-size: 23px;">Configuraci&oacute;n</h2>
+            <ul style="margin: 0; padding-left: 20px;">
+                <li style="margin-bottom: 8px;">Los campos se ven solo con el grupo <em>Multi-compa&ntilde;ia</em>.</li>
+                <li style="margin-bottom: 8px;">Los <strong>m&eacute;todos de env&iacute;o</strong> del sitio y sus productos de flete van <strong>sin compa&ntilde;ia</strong>.</li>
+                <li style="margin-bottom: 8px;">Los <strong>usuarios portal</strong> de los concesionarios necesitan las dos compa&ntilde;&iacute;as para ver el pedido original y los derivados.</li>
+                <li style="margin-bottom: 8px;">Hace falta <strong>cotizaci&oacute;n</strong> de la moneda del pedido en la compa&ntilde;ia destino, y que esa compa&ntilde;ia tenga almac&eacute;n, y el cliente y los productos usables e impuestos en ella. Si algo falta, la confirmaci&oacute;n se bloquea con un mensaje y no se crea nada.</li>
+                <li style="margin-bottom: 8px;">No se rutean pedidos con env&iacute;o con instalaci&oacute;n ni l&iacute;neas de producto combo.</li>
+            </ul>
+        </div>
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 10px; color: LinkText; font-size: 23px;">Detalle tecnico</h2>
+            <ul style="margin: 0; padding-left: 20px;">
+                <li style="margin-bottom: 8px;">Extiende <code>product.category</code>, <code>product.template</code>, <code>sale.order.line</code>, <code>sale.order</code> y <code>website</code>; sin modelos nuevos ni ACLs nuevas.</li>
+                <li style="margin-bottom: 8px;">Las l&iacute;neas se <strong>recrean</strong> en el derivado (no se reasigna <code>order_id</code>) con <code>price_unit</code> y <code>discount</code> expl&iacute;citos; el derivado no lleva sitio web.</li>
+                <li style="margin-bottom: 8px;">Hooks para otros m&oacute;dulos: <code>_company_routing_validate()</code>, <code>_company_routing_pre_split()</code> y <code>_company_routing_post_split()</code>.</li>
+                <li style="margin-bottom: 8px;">Helper por lotes <code>website._get_products_free_qty()</code>, usado por <code>_get_product_available_qty</code> y <code>sale.order._get_free_qty</code>; corre en <code>sudo()</code> solo para leer cantidades.</li>
+                <li style="margin-bottom: 8px;"><code>pre_init_hook</code> que completa <code>sale_order_line.sale_company_id</code> por SQL al instalar.</li>
+                <li style="margin-bottom: 8px;">No se modifica core ni enterprise: todo es <code>_inherit</code>.</li>
+            </ul>
+        </div>
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 10px; color: LinkText; font-size: 23px;">Dependencias</h2>
+            <p style="margin: 0;"><code>sale_stock</code>, <code>website_sale_stock</code>, <code>website_sale_collect</code> y <code>sale_loyalty</code>. Lo enganchan <code>website_sale_stock_level_indicator</code>, <code>website_sale_payment_method_price</code> y <code>website_sale_installation_appointment</code>. M&oacute;dulo gestionado por SDD: la especificaci&oacute;n vive en <code>specs/sale_website_company_routing.md</code> y su versi&oacute;n acompa&ntilde;a la del manifest.</p>
+        </div>
+    </section>
+</body>
+</html>

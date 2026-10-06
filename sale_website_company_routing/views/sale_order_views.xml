@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Pedido: compañia de cada linea, boton de pedidos ruteados y vinculo con el original -->
+    <record id="sale_order_view_form" model="ir.ui.view">
+        <field name="name">sale.order.view.form.inherit.sale_website_company_routing</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='order_line']/list/field[@name='product_uom_qty']" position="after">
+                <field name="sale_company_id" optional="show" groups="base.group_multi_company"
+                       readonly="parent.state not in ('draft', 'sent')" invisible="display_type"
+                       options="{'no_create': True}"/>
+            </xpath>
+            <xpath expr="//field[@name='order_line']/form//div[@name='ordered_qty']" position="after">
+                <field name="sale_company_id" groups="base.group_multi_company"
+                       readonly="parent.state not in ('draft', 'sent')" invisible="display_type"
+                       options="{'no_create': True}"/>
+            </xpath>
+            <div name="button_box" position="inside">
+                <button name="action_view_company_routing_orders" type="object"
+                        class="oe_stat_button" icon="fa-random"
+                        invisible="company_routing_order_count == 0">
+                    <field name="company_routing_order_count" widget="statinfo" string="Routed Orders"/>
+                </button>
+            </div>
+            <field name="origin" position="after">
+                <field name="company_routing_origin_id" invisible="not company_routing_origin_id"/>
+            </field>
+        </field>
+    </record>
+</odoo>
+<!-- vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4-->
