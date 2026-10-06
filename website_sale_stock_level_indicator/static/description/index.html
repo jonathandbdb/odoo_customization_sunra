@@ -61,8 +61,8 @@
 
         <div style="margin-top: 30px;">
             <h2 style="margin: 0 0 12px; color: LinkText; font-size: 23px;">Como funciona</h2>
-            <p style="margin: 0 0 12px;"><strong>La disponibilidad se mide con el deposito del sitio.</strong> Se usa el mismo helper que el resto del eCommerce, que resuelve <code>free_qty</code> en el deposito configurado en el sitio. Con dos sitios web en la misma base y depositos distintos, cada uno mira el suyo. El stock negativo (sobreventa) se pisa en cero: para el que compra es simplemente sin stock.</p>
-            <p style="margin: 0 0 12px;"><strong>El listado resuelve las cantidades en una sola consulta.</strong> <code>product.template</code> no tiene <code>free_qty</code> en Odoo 19 (solo <code>product.product</code>), y el helper del core recibe un registro suelto. Llamarlo por tarjeta hace N+1: cada <code>with_context()</code> sobre un registro abre su propio bucket de cache y rompe el prefetch, asi que una grilla de repuestos terminaria haciendo una consulta por producto. Por eso el helper recibe ademas <strong>todas</strong> las variantes que se estan renderizando y resuelve la pagina entera de una vez.</p>
+            <p style="margin: 0 0 12px;"><strong>La disponibilidad se mide como en el resto del eCommerce.</strong> Si el producto declara compa&ntilde;ias de stock web se usa el helper por lotes de <code>sale_website_company_routing</code> (stock de esas compa&ntilde;ias); si no, el c&aacute;lculo est&aacute;ndar del sitio (el dep&oacute;sito configurado y, con <code>website_sale_collect</code>, Click &amp; Collect). Con dos sitios web en la misma base y depositos distintos, cada uno mira el suyo. El stock negativo (sobreventa) se pisa en cero: para el que compra es simplemente sin stock.</p>
+            <p style="margin: 0 0 12px;"><strong>El listado resuelve las cantidades en una sola consulta.</strong> <code>product.template</code> no tiene <code>free_qty</code> en Odoo 19 (solo <code>product.product</code>), y el helper del core recibe un registro suelto. Llamarlo por tarjeta hace N+1, asi que una grilla de repuestos terminaria haciendo una consulta por producto. Por eso se reciben ademas <strong>todas</strong> las variantes que se estan renderizando y las cantidades de la pagina se piden al helper una sola vez, memorizadas por request.</p>
             <p style="margin: 0;"><strong>La ficha sigue a la variante elegida.</strong> La pagina se renderiza para la plantilla, asi que el unico lugar donde se sabe que variante quedo seleccionada es el payload de <code>/website_sale/get_combination_info</code>: el modulo le agrega los datos del nivel y un parche de <code>_onChangeCombination</code> repinta el cartel. El cartel va debajo del titulo y <strong>no</strong> dentro del <code>div.availability_messages</code> del core, porque ese contenedor lo reescribe entero el JS de disponibilidad y borraria el nodo.</p>
         </div>
 
@@ -80,7 +80,7 @@
         </div>
 
         <div style="margin-top: 30px; padding: 20px 24px; border: 1px solid ButtonBorder; border-radius: 8px; background: Canvas;">
-            <p style="margin: 0; color: GrayText; font-size: 14px;">Sunra &middot; LGPL-3 &middot; Odoo 19 &middot; depende de <code>website_sale_stock</code></p>
+            <p style="margin: 0; color: GrayText; font-size: 14px;">Sunra &middot; LGPL-3 &middot; Odoo 19 &middot; depende de <code>website_sale_stock</code> y <code>sale_website_company_routing</code></p>
         </div>
     </section>
 </body>

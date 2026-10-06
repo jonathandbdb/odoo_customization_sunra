@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     "name": "website_sale_stock_level_indicator",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "summary": "eCommerce: semaforo de stock con niveles configurables por sitio web",
     "description": """
 Muestra en el eCommerce un cartel con el nivel de stock del producto (sin stock, poco stock, stock
@@ -12,7 +12,8 @@ normal, stock alto) en el listado de la tienda y en la pagina de producto.
   sin tocar codigo.
 - El texto de cada nivel es traducible, asi que se puede decir "Poco stock" o lo que use el
   negocio.
-- La disponibilidad se mide con el deposito del sitio, igual que el resto del eCommerce.
+- La disponibilidad se mide igual que el resto del eCommerce: con el deposito del sitio o, si el producto
+  declara compañias de stock web (sale_website_company_routing), con el stock de esas compañias.
 - El core solo trae dos estados (sin stock y un umbral), y en el listado no muestra nada.
     """,
     "category": "Website/Website",
@@ -21,6 +22,7 @@ normal, stock alto) en el listado de la tienda y en la pagina de producto.
     "license": "LGPL-3",
     "depends": [
         "website_sale_stock",
+        "sale_website_company_routing",
     ],
     "data": [
         "security/ir.model.access.csv",

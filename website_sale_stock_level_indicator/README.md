@@ -66,24 +66,27 @@ tocar código.
 
 ## Cómo funciona
 
-### La disponibilidad se mide con el depósito del sitio
+### La disponibilidad se mide como en el resto del eCommerce
 
-Se usa `website._get_product_available_qty()`, el mismo helper que el resto del eCommerce, que
-resuelve `free_qty` en el depósito configurado en el sitio (`website.warehouse_id`). Con dos sitios
-web en la misma base y depósitos distintos, cada uno mira el suyo.
+Si el producto declara compañías de stock web, se usa el helper por lotes
+`website._get_products_free_qty()` de `sale_website_company_routing` (suma del stock libre de los
+almacenes de esas compañías), el mismo que alimenta la ficha y el tope del carrito. Los productos sin
+configurar siguen el cálculo estándar del sitio (`website._get_product_available_qty()`): el depósito
+configurado (`website.warehouse_id`) y, con `website_sale_collect`, Click & Collect. Con dos sitios web en la misma base y depósitos
+distintos, cada uno mira el suyo.
 
 El stock negativo (sobreventa) se pisa en cero: para el que compra es simplemente sin stock.
 
 ### El listado resuelve las cantidades en una sola consulta
 
 `product.template` **no tiene** `free_qty` en Odoo 19 (solo `product.product`), y el helper del core
-recibe un registro suelto. Llamarlo por tarjeta hace N+1: cada `with_context()` sobre un registro
-abre su propio bucket de caché y rompe el prefetch, así que una grilla de repuestos terminaría
+recibe un registro suelto. Llamarlo por tarjeta hace N+1, así que una grilla de repuestos terminaría
 haciendo una consulta por producto.
 
 Por eso `website._get_variant_stock_level()` recibe además **todas** las variantes que se están
-renderizando —el diccionario `product_variants` que ya arma el controller de la tienda— y resuelve
-la página entera de una vez; las tarjetas siguientes salen de caché.
+renderizando —el diccionario `product_variants` que ya arma el controller de la tienda— y pide las
+cantidades de la página al helper **una sola vez**; las tarjetas siguientes leen de una memoria
+guardada en el request.
 
 ### La ficha sigue a la variante elegida
 
