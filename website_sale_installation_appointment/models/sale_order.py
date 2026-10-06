@@ -510,6 +510,21 @@ class SaleOrder(models.Model):
         if delete_commands or create_commands:
             self.order_line = delete_commands + create_commands
 
+    def _company_routing_validate(self, groups):
+        # Un envio con instalacion no se rutea: la cita y las fotos quedan ligadas a este pedido
+        self.ensure_one()
+        error = super()._company_routing_validate(groups)
+        if error:
+            return error
+        if self.carrier_id.installation_appointment_type_id:
+            return _(
+                "Order %(order)s has a delivery method with installation and lines that belong to "
+                "another company. These orders cannot be split between companies: remove the "
+                "installation delivery method or the lines of the other company.",
+                order=self.name,
+            )
+        return False
+
     def action_confirm(self):
         # Red de seguridad final (backend sin onchange disparado, importaciones, API): va ANTES
         # del super(), con el state todavia draft/sent (altas y bajas de lineas son legales

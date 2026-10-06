@@ -3,15 +3,15 @@
 | Campo | Valor |
 |-------|-------|
 | **Modulo** | `website_sale_installation_appointment` |
-| **Version** | `1.16.0` (== `version` del `__manifest__.py`, formato `x.x.x`) |
+| **Version** | `1.17.0` (== `version` del `__manifest__.py`, formato `x.x.x`) |
 | **Serie Odoo** | `19` (informativa) |
-| **Estado** | `implemented` |
-| **Actualizado** | `2026-09-30` |
-| **Depurado** | `2026-09-30` |
+| **Estado** | `verified` |
+| **Actualizado** | `2026-10-06` |
+| **Depurado** | `2026-10-06` |
 
 > Cliente: **Miluan SRL / Nokey** (eCommerce de cerraduras inteligentes, `nokey.odoo.com`).
 > Repo: `extra-addons/odoo_customization_sunra`. Licencia LGPL-3, autor Sunra.
-> `depends`: `website_sale`, `delivery`, `website_appointment_sale`, `sale_project`, `industry_fsm`.
+> `depends`: `website_sale`, `delivery`, `website_appointment_sale`, `sale_project`, `industry_fsm`, `sale_website_company_routing`.
 
 ## Objetivo
 
@@ -100,6 +100,7 @@ cita y el tablero de Field Service abriendo en el **calendario**.
 | D65 | ¿El instalador ve las fotos del lugar en la tarea? | **Si, en la pagina Installation**, en una seccion de solo lectura **Site photos** arriba de *Photos of the installed lock*. Campo `project.task.installation_site_photo_ids` (Many2many `ir.attachment`, compute **no almacenado**, readonly) con las imagenes del chatter de la tarea: adjuntos con `res_model = 'project.task'`, `res_id` = la tarea y `mimetype =like 'image/%'`, **menos** `installation_photo_ids`, que tambien son adjuntos de la tarea porque el `many2many_binary` las sube asi (D64). Entran las del cliente copiadas al chatter (D6: `message_post` reasigna el adjunto a la tarea, `odoo/addons/mail/models/mail_thread.py:L2420`), las del import historico de JotForm posteadas al chatter y cualquier imagen que el backoffice o el instalador suba al chatter. **Por que un compute y no una relacion propia**: el chatter ya es la fuente; una segunda relacion habria que mantenerla en linea con cada alta y cada borrado desde el chatter. Widget `many2many_binary` en modo lectura: miniaturas, sin boton de adjuntar ni cruz de quitar (`odoo/addons/web/static/src/views/fields/many2many_binary/many2many_binary_field.xml:L11`, `:L29`, `:L36`). La seccion se oculta si no hay fotos. **El gate no cambia** (D63/D64): las fotos del chatter no cuentan para cerrar la tarea. **Sin `sudo()`**: el `search()` de `ir.attachment` ya filtra por el acceso al registro referenciado (`odoo/odoo/addons/base/models/ir_attachment.py:L620`, reglas en `:L514`), y quien abre la tarea la puede leer. Una sola busqueda para todo el recordset (sin N+1). |
 | D66 | ¿A quien se asigna la tarea de instalacion al crearse? | Al **instalador predeterminado del tipo de cita**: `appointment.type.installation_default_user_id` (Many2one `res.users`, usuarios internos activos, el mismo domain que `project.task.user_ids`, `odoo/addons/project/models/project_task.py:L206`). **Dos caminos**: (a) **eCommerce**, en `SaleOrderLine._timesheet_create_task_prepare_values` sobre la linea de la reserva (`_is_installation_booking_line()`), con el tipo de cita del carrier del pedido: el core arma los vals con `user_ids: False` porque crea en `sudo()` (`odoo/addons/sale_project/models/sale_order_line.py:L279`), y `website_appointment_sale_project` pone el staff de la reserva en los tipos por usuarios (`enterprise/website_appointment_sale_project/models/sale_order_line.py:L20`, `:L47`); nuestro override corre despues de ese en el MRO por el orden de carga (mismo razonamiento que D34), el mismo en que ya se apoya la descripcion de la tarea (D47); (b) **link**, en `CalendarEvent._installation_generate_fsm_task` con el tipo de la cita. **Vacio en el tipo** → la asignacion no se toca: en el link la tarea nace sin asignar; en el eCommerce queda lo que arma el core. `[ASUNCION]` Con el campo cargado, el instalador predeterminado **reemplaza** al staff que pone `website_appointment_sale_project`: el tipo de cita es donde el funcional declara quien hace las instalaciones. `[ASUNCION]` Un usuario **archivado** no se asigna: la tarea nace como si el campo estuviera vacio. Las tareas existentes no se tocan (sin migracion). En produccion se configura como **dato** en los tipos *Instalación AMBA - Web* e *Instalación coordinada por Nokey*, con el usuario *Instalación Nokey*. Un solo instalador por tipo; con mas gente, se reasigna a mano. El modulo hermano `helpdesk_service_appointment` (visitas de service) queda fuera: ya asigna al tecnico de la cita. |
 | D67 | ¿Con que vista abren las tareas de Field Service? | Con el **calendario**, para todos los usuarios, en escritorio y en movil, en *My Tasks → Tasks* y en *All Tasks → All Tasks*. Esos menus (`enterprise/industry_fsm/views/fsm_views.xml:L1815`, `:L1835`) llaman a server actions que eligen entre dos acciones segun haya uno o varios proyectos FSM (`_server_action_project_task_fsm`, `enterprise/industry_fsm/models/project_task.py:L356`; produccion tiene 4 proyectos FSM). Se cubren las cuatro: `industry_fsm.project_task_action_fsm` / `project_task_action_fsm2` (`fsm_views.xml:L444`, `:L527`) y `industry_fsm.project_task_action_all_fsm` / `project_task_action_all_fsm2` (`:L829`, `:L888`). **Mecanismo**: override de `ProjectTask._server_action_project_task_fsm()` que, para esas cuatro acciones, devuelve el dict con la entrada `calendar` **primera** en `views` (el resto en su orden, con la misma vista calendario que ya trae cada accion) y `mobile_view_mode = 'calendar'`. **Por que no registros `ir.actions.act_window.view` propios**: el modelo tiene un indice unico `(act_window_id, view_mode)` (`odoo/odoo/addons/base/models/ir_actions.py:L419`) y las cuatro acciones ya traen su registro de calendario (`fsm_views.xml:L477`, `:L560`, `:L866`, `:L925`): un segundo registro de calendario aborta la instalacion del modulo. Cambiarles el `sequence` a esos registros seria pisar XML IDs de enterprise. **Por que tambien `mobile_view_mode`**: en pantalla chica el cliente web abre la vista de `mobile_view_mode` (`odoo/addons/web/static/src/webclient/actions/action_service.js:L1241`), cuyo default es `kanban` (`ir_actions.py:L320`); sin eso, el instalador en el celular seguiria entrando al kanban. El override es codigo del modulo: una actualizacion de `industry_fsm` no lo revierte. *My Tasks → Map*, *To Schedule* y los menus de planificacion no cambian (sus acciones no estan en el conjunto). |
+| D68 | ¿Se puede partir por compañia un pedido con envio con instalacion? | **No.** La cita, las fotos y la tarea quedan ligadas a este pedido, y el ruteo de `sale_website_company_routing` crearia lineas y derivados sin ellas. Se sobreescribe el hook `_company_routing_validate()` de ese modulo: si el `carrier_id` del pedido tiene `installation_appointment_type_id` y hay lineas para rutear, devuelve un mensaje y la confirmacion se bloquea con `UserError` antes de crear nada. Sin lineas para rutear el hook no se invoca y el pedido se confirma normal. |
 
 ## Alcance
 
@@ -745,6 +746,12 @@ ambiguedad de la UoM es el riesgo #1 de las pilas):
   - **No** se puede reusar `_sync_free_battery_lines()`: en un onchange `self` es un registro virtual (`NewId`) y un `create()` real escribiria en la base. Precedente del core: la sincronizacion de lineas de combo (`odoo/addons/sale/models/sale_order.py:L936`), y `delivery` tiene su propio `@api.onchange('order_line', ...)` (`odoo/addons/delivery/models/sale_order.py:L42`). Los dos caminos comparten el calculo (`_get_free_battery_needs()` + `_prepare_free_battery_line_vals()`).
   - **Naming**: se llama `_onchange_free_battery_lines` y **no** `_onchange_order_line` a proposito — ese nombre **pisaria** el onchange del core que sincroniza las lineas de combo (`odoo/addons/sale/models/sale_order.py:L936`). Desviacion deliberada de la convencion `_onchange_<campo>` de `AGENTS.md`.
   - **Tests con `odoo.tests.Form`**: `carrier_id` no esta en ninguna vista de `sale.order` (ni en `odoo/` ni en `enterprise/`), asi que un `Form` no puede **cambiarlo** (`Form.__setattr__` tira `AssertionError`); si el pedido **ya tiene** `carrier_id` en base al abrir el `Form`, el onchange lo ve igual por el fallback a `record._origin[fname]` (`odoo/odoo/orm/fields.py`). `tests/test_free_batteries.py` usa `.new()` + llamada directa para la rama `Command.create` y `Form` sobre un pedido con carrier para la rama `Command.delete`.
+
+### `SaleOrder._company_routing_validate(groups)` (override, D68)
+
+- **Proposito**: bloquear el ruteo por compañia de un pedido con envio con instalacion.
+- **Logica**: `super()`; si devuelve error, lo propaga. Si `carrier_id.installation_appointment_type_id` esta seteado → devuelve el mensaje de error.
+- **Retorna**: mensaje de error (`str`) o `False`. El llamador (`sale_website_company_routing`) lo eleva como `UserError`.
 
 ### `SaleOrder.action_confirm()`
 
@@ -1523,6 +1530,7 @@ ambiguedad de la UoM es el riesgo #1 de las pilas):
 - [ ] **CA83**: Con **un solo** proyecto FSM, los mismos dos menus tambien abren en el calendario.
 - [ ] **CA84**: Actualizar `industry_fsm` (`-u industry_fsm`) no revierte CA82/CA83, y el `-u` del modulo no deja registros `ir.actions.act_window.view` propios ni modifica los de `industry_fsm`.
 - [ ] **CA85**: En es_419 se leen "Fotos del lugar", "Instalador predeterminado" y su ayuda traducida; `tests/test_free_batteries.py`, `tests/test_calendar_event_mail_company.py` y `tests/test_installation_task.py` siguen en verde.
+- [x] **CA86**: Un pedido con `carrier_id` con instalacion y lineas de otra compañia (segun `sale_website_company_routing`) no se confirma: `UserError` que nombra el pedido; no se crea ningun derivado.
 
 **Modulo sin historia**
 - [x] **CA62**: `python3 .claude/scripts/history_lint.py --module <modulo>` sale sin errores sobre spec, comentarios/docstrings de `.py`/`.xml`/`.js`, `README.md` e `index.html`, y `history_lint.py --seal` escribe la fila `Depurado` en esta spec.
@@ -1716,22 +1724,15 @@ ambiguedad de la UoM es el riesgo #1 de las pilas):
 
 | Archivo | Que se actualiza |
 |---------|------------------|
-| `README.md` del modulo | En *Resultado de la instalacion*: la seccion *Site photos* de la pagina **Installation** (de donde salen, que no cuentan para cerrar). Seccion *Despacho de Field Service*: instalador predeterminado por tipo de cita (los dos caminos, vacio = sin asignar, tareas existentes sin cambios) y calendario como vista inicial de *My Tasks* / *All Tasks*. En *Configuracion*: cargar *Default Installer* en *Instalación AMBA - Web* e *Instalación coordinada por Nokey* con el usuario *Instalación Nokey* |
-| `static/description/index.html` | Lo mismo: fotos del lugar en la tarea, instalador predeterminado y calendario |
-| `README.md` del repo (`extra-addons/odoo_customization_sunra/README.md`) | Fila del modulo: fotos del lugar, instalador predeterminado y calendario |
-| `__manifest__.py` | `version` → `1.16.0`; en `description`, las fotos del lugar en la tarea, el instalador predeterminado y el calendario como vista inicial. Sin archivos de `data` nuevos |
-| `i18n/es_419.po` | "Site photos" / "Site Photos" → "Fotos del lugar"; "Default Installer" → "Instalador predeterminado"; el `help` de `installation_default_user_id` (traducción del texto vigente del código: reemplaza al staff de la reserva; vacío = la asignación que arma el core, sin asignar en el link); el `help` ajustado de `installation_photo_ids`; en voseo |
-| Esta spec | `Version` = `1.16.0` al cerrar (junto con el manifest); `Estado` → `implemented` |
+| `README.md` del modulo | Dependencia de `sale_website_company_routing` y la limitacion: un pedido con envio con instalacion no se parte por compañia |
+| `static/description/index.html` | Idem |
+| `__manifest__.py` | `version` → `1.17.0`, `depends` y `description` |
+| `i18n/es_419.po` | Traduccion del mensaje de D68 |
+| Esta spec | D68, `_company_routing_validate()`, CA86 |
 
 ## Plan del cambio
 
-> Cambio en curso: fotos del lugar en la tarea (D65), instalador predeterminado (D66) y calendario
-> como vista inicial de Field Service (D67). Version objetivo `1.16.0`. El repo no tiene
-> `.swarm.conf`: sin tests nuevos obligatorios; las tres suites existentes tienen que seguir en verde.
-
 | ID | Descripcion | Depende de | Archivos | Cubre |
 |----|-------------|------------|----------|-------|
-| **T01** | Instalador predeterminado: campo `installation_default_user_id` en `models/appointment_type.py` (domain de `project.task.user_ids`, `help` en ingles); en `SaleOrderLine._timesheet_create_task_prepare_values`, dentro del `if self._is_installation_booking_line()`, `values["user_ids"] = [Command.set(installer.ids)]` si hay instalador activo; en `CalendarEvent._installation_generate_fsm_task`, `user_ids = [Command.set(installer.ids)]` (vacio → `Command.set([])`, reemplaza el `[(6, 0, [])]`, importar `Command`); campo en `views/appointment_type_views.xml` dentro de `group name="right_details"`, despues de `installation_fsm_project_id`, sin `invisible` | — | `models/appointment_type.py`, `models/sale_order_line.py`, `models/calendar_event.py`, `views/appointment_type_views.xml` | CA12, CA79, CA80, CA81 |
-| **T02** | Fotos del lugar: en `models/project_task.py`, `installation_site_photo_ids` (compute no almacenado, `readonly=True`, `@api.depends("installation_photo_ids")`, una sola busqueda de `ir.attachment` sin `sudo()`, agrupada por `res_id`, menos `installation_photo_ids`) y `help` de `installation_photo_ids` ajustado; en `views/project_task_views.xml`, separador *Site photos* + campo `many2many_binary` readonly, los dos con `invisible="not installation_site_photo_ids"`, arriba del separador *Photos of the installed lock*. Verificar con un usuario de FSM en escritorio y movil | — | `models/project_task.py`, `views/project_task_views.xml` | CA75, CA76, CA77, CA78 |
-| **T03** | Calendario primero: en `models/project_task.py`, constante `FSM_CALENDAR_FIRST_ACTIONS` (las cuatro acciones) y override de `_server_action_project_task_fsm()` con la misma firma: `views` con `calendar` primero (orden estable) y `mobile_view_mode = "calendar"`. Sin XML. Verificar con uno y con varios proyectos FSM, y *Map* / *To Schedule* sin cambios | — | `models/project_task.py` | CA82, CA83, CA84 |
-| **T04** | Cierre: `i18n/es_419.po` con los terminos nuevos; `README.md` e `index.html` del modulo y fila del README del repo; `version` del manifest → `1.16.0` (+ lineas en `description`) y `Version` de esta spec igual, `Estado` → `implemented`; `-u` del modulo en la base de desarrollo; correr las tres suites; `spec_lint.py` y `history_lint.py --module` sin errores; `history_lint.py --seal <modulo>` | T01, T02, T03 | `i18n/es_419.po`, `README.md`, `static/description/index.html`, `../README.md`, `__manifest__.py`, `specs/website_sale_installation_appointment.md` | CA84, CA85 |
+| **T01** | Dependencia de `sale_website_company_routing` y override de `_company_routing_validate()` | — | `__manifest__.py`, `models/sale_order.py` | CA86 |
+| **T02** | Traduccion, README, index.html y version | T01 | `i18n/es_419.po`, `README.md`, `static/description/index.html` | — |

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     "name": "website_sale_installation_appointment",
-    "version": "1.16.0",
+    "version": "1.17.0",
     "summary": "Envio con instalacion en el eCommerce: agenda la cita y pide fotos del lugar en el checkout",
     "description": """
 Permite vender un envio "con instalacion incluida" desde el eCommerce y que esa venta quede agendada
@@ -37,6 +37,8 @@ como Cita (app Citas), con las fotos del lugar y los datos que cargo el cliente.
   fotos del lugar (imagenes del chatter) de solo lectura.
 - El tipo de cita puede tener un instalador predeterminado al que nace asignada la tarea, y las
   tareas de Field Service (My Tasks / All Tasks) abren en la vista calendario.
+- Un pedido con envio con instalacion no se puede partir por compañia (sale_website_company_routing):
+  si tiene lineas de otra compañia, la confirmacion se bloquea con un mensaje claro.
     """,
     "category": "Website/Website",
     "author": "Sunra",
@@ -48,6 +50,7 @@ como Cita (app Citas), con las fotos del lugar y los datos que cargo el cliente.
         "website_appointment_sale",
         "sale_project",
         "industry_fsm",
+        "sale_website_company_routing",
     ],
     "data": [
         "data/website_checkout_step_data.xml",

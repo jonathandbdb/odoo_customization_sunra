@@ -83,7 +83,7 @@
                 <li style="margin-bottom: 8px;"><strong>Metodo de envio "con instalacion"</strong>: precio fijo con su costo, publicado, con esa etiqueta en "Debe tener etiquetas" (aparece solo si el carrito lleva un producto instalable), zona de cobertura por pais/provincia/CP, y <strong>Tipo de cita de instalacion</strong> = el del punto 2.</li>
                 <li style="margin-bottom: 8px;"><strong>Proveedor de pago habilitado</strong>: la Cita se crea al confirmarse el pedido. Sin proveedor habilitado el checkout no confirma y la reserva queda pendiente.</li>
                 <li style="margin-bottom: 8px;"><strong>Pilas incluidas sin costo</strong> (opcional): en cada producto, "Producto de pila gratis" + "Cantidad de pilas gratis" (en la UoM de esa pila); y en el metodo de envio que las incluye, "Includes Free Batteries". Requiere <code>invoice_policy = 'order'</code> en el producto de pila (si no, la linea no llega a facturarse) y stock aprovisionado si la pila es storable.</li>
-                <li><strong>Instalador predeterminado</strong>: en el tipo de cita, campo <strong>Default Installer</strong>; la tarea de instalacion nace asignada a ese usuario (reemplaza al staff de la reserva). Vacio = la asignacion que arma el core (sin asignar en el link).</li>
+                <li><strong>Instalador predeterminado</strong>: en el tipo de cita, campo <strong>Default Installer</strong>; la tarea de instalacion nace asignada a ese usuario (en lugar del staff de la reserva). Vacio = la asignacion que arma el core (sin asignar en el link).</li>
                 <li><strong>Resultado de la instalacion</strong>: la pagina Installation muestra ademas, de solo lectura, las <strong>fotos del lugar</strong> del chatter; y Field Service abre en el calendario. En el <strong>proyecto</strong> de Field Service donde caen las tareas de instalacion, tildar <strong>Require Installation Photos</strong> si esas tareas no deben poder cerrarse sin foto de la cerradura instalada. Al <strong>instalador</strong> asignarle el grupo <strong>usuario de Field Service</strong> (<code>industry_fsm.group_fsm_user</code>), no el de manager: asi completa la pagina Installation pero no puede editar el importe a cobrar, reservado a <code>project.group_project_manager</code>.</li>
             </ol>
         </div>
@@ -105,6 +105,7 @@
         <div style="margin-top: 30px;">
             <h2 style="margin: 0 0 10px; color: LinkText; font-size: 23px;">Dependencias</h2>
             <ul style="margin: 0; padding-left: 22px;">
+                <li><code>sale_website_company_routing</code> (Sunra) - un pedido con envio con instalacion no se parte por compa&ntilde;ia: si tiene lineas de otra compa&ntilde;ia, la confirmacion se bloquea con un mensaje claro.</li>
                 <li><code>website_sale</code> (core) - checkout del eCommerce y sus pasos.</li>
                 <li><code>delivery</code> (core) - metodos de envio, su precio y su disponibilidad condicional por etiquetas y zona.</li>
                 <li><code>website_appointment_sale</code> (Enterprise) - puente reserva &rarr; carrito &rarr; Cita al confirmar el pedido.</li>

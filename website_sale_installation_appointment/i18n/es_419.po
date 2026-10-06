@@ -1221,3 +1221,16 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:website_sale_installation_appointment.view_task_form2_inherit
 msgid "Site photos"
 msgstr "Fotos del lugar"
+
+#. module: website_sale_installation_appointment
+#. odoo-python
+#: code:addons/website_sale_installation_appointment/models/sale_order.py:0
+msgid ""
+"Order %(order)s has a delivery method with installation and lines that "
+"belong to another company. These orders cannot be split between companies: "
+"remove the installation delivery method or the lines of the other company."
+msgstr ""
+"El pedido %(order)s tiene un método de envío con instalación y líneas que "
+"pertenecen a otra compañía. Estos pedidos no se pueden dividir entre "
+"compañías: quitá el método de envío con instalación o las líneas de la otra "
+"compañía."

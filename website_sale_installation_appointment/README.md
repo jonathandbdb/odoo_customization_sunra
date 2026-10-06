@@ -5,9 +5,9 @@ Cita** (app Citas), con las **fotos del lugar** y los datos que cargó el client
 Field Service** del instalador, y con el **resultado de la instalación** que el instalador registra en
 esa misma tarea.
 
-- **Versión**: 1.15.0
+- **Versión**: 1.17.0
 - **Licencia**: LGPL-3
-- **Depende de**: `website_sale`, `delivery`, `website_appointment_sale`, `sale_project`, `industry_fsm`
+- **Depende de**: `website_sale`, `delivery`, `website_appointment_sale`, `sale_project`, `industry_fsm`, `sale_website_company_routing`
 
 ## Para qué sirve
 
@@ -185,7 +185,7 @@ Para bloques libres (banners, promos) están las zonas de snippets que ya trae c
 | `sale.order` | **`installation_notes`** | Indicaciones para el instalador de **esta** venta (Text, `copy=False`). Se editan en el Paso 1 y se propagan a la descripción de la tarea de FSM. |
 | `sale.order` | **`installation_address_confirmed`** | Lo marca el botón *Confirmar dirección* del Paso 1 (Boolean, `copy=False`, default `False`). Se resetea si se edita la dirección de envío después. |
 | `appointment.type` | `installation_fsm_project_id` | Proyecto de Field Service donde crear la tarea cuando la cita se agenda **sin** pasar por el eCommerce (link compartido). Vacío = la tarea la genera el pedido. |
-| `appointment.type` | **`installation_default_user_id`** | Instalador predeterminado: usuario interno activo al que nace asignada la tarea de instalación (eCommerce y link). Reemplaza al staff de la reserva; vacío = la asignación que arma el core (sin asignar en el link). |
+| `appointment.type` | **`installation_default_user_id`** | Instalador predeterminado: usuario interno activo al que nace asignada la tarea de instalación (eCommerce y link). Se usa en lugar del staff de la reserva; vacío = la asignación que arma el core (sin asignar en el link). |
 | `appointment.type` | `installation_request_photos` | Pedir fotos del lugar en el formulario de la cita. |
 | `appointment.type` | `installation_min_photos` | Fotos necesarias para reservar (0 = opcionales pero visibles). |
 | `appointment.type` | `installation_photos_message` | Consigna de las fotos del lugar (Html, traducible). Vacío = texto por defecto del módulo. |
@@ -524,6 +524,13 @@ backoffice.
 4. Paga. Al confirmarse el pedido: se crea la **Cita**, la **tarea de Field Service** (con "entre
    calles" e indicaciones en la descripción) y las fotos quedan en el chatter de las dos. La
    dirección de entrega queda además como la **Ubicación** de la Cita.
+
+## Pedidos con varias compañías
+
+Con `sale_website_company_routing`, un pedido cuyo método de envío tiene instalación **no se puede
+partir por compañía**: si además tiene líneas que pertenecen a otra compañía, la confirmación se
+bloquea con un mensaje claro y no se crea ningún pedido derivado. La cita, las fotos y la tarea
+quedan ligadas al pedido original.
 
 ## Gotchas
 
