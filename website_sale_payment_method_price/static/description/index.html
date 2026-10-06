@@ -38,8 +38,12 @@
                         <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">Si el cliente cambia de medio de pago, el descuento se quita. Si modifica el carrito, se recalcula. Y al crear la transaccion se revalida que el ajuste corresponda al medio con el que se paga: nunca se cobra un importe distinto al mostrado.</td>
                     </tr>
                     <tr>
-                        <td style="padding: 14px 16px; font-weight: 700; background: ButtonFace; color: ButtonText;">Solo medios disponibles</td>
-                        <td style="padding: 14px 16px; color: CanvasText;">No se publica el precio de un medio que el cliente no puede elegir: se descartan los medios archivados y los que dependen de un proveedor deshabilitado, sin publicar, de otra compania o restringido a otro sitio.</td>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; font-weight: 700; background: ButtonFace; color: ButtonText;">Solo medios disponibles</td>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">No se publica el precio de un medio que el cliente no puede elegir: se descartan los medios archivados y los que dependen de un proveedor deshabilitado, sin publicar, de otra compania o restringido a otro sitio.</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 14px 16px; font-weight: 700; background: ButtonFace; color: ButtonText;">Pedidos ruteados por compa&ntilde;ia</td>
+                        <td style="padding: 14px 16px; color: CanvasText;">Cuando <em>sale_website_company_routing</em> parte un pedido en uno por compa&ntilde;ia, el descuento por medio de pago se recalcula en cada pedido sobre sus propias lineas, antes de confirmarlos.</td>
                     </tr>
                 </tbody>
             </table>
@@ -68,7 +72,7 @@
 
         <div style="margin-top: 30px;">
             <h2 style="margin: 0 0 10px; color: LinkText; font-size: 23px;">Dependencias</h2>
-            <p style="margin: 0;"><code>website_sale</code>. Modulo gestionado por SDD: la especificacion vive en <code>specs/website_sale_payment_method_price.md</code> y su version acompana la del manifest.</p>
+            <p style="margin: 0;"><code>website_sale</code> y <code>sale_website_company_routing</code>. Modulo gestionado por SDD: la especificacion vive en <code>specs/website_sale_payment_method_price.md</code> y su version acompana la del manifest.</p>
         </div>
     </section>
 </body>

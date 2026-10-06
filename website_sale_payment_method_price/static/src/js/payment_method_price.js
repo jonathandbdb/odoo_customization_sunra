@@ -5,22 +5,13 @@ import { WebsiteSale } from "@website_sale/interactions/website_sale";
 patch(WebsiteSale.prototype, {
 
     /**
-     * Repintar el recuadro de precio por medio de pago al cambiar de variante (D17).
+     * Repintar el recuadro de precio por medio de pago al cambiar de variante.
      *
-     * El precio de la ficha se recalcula por jsonrpc en /website_sale/get_combination_info, que
-     * devuelve JSON y no HTML: el DOM lo actualiza el cliente. Este metodo tiene que espejar el
-     * markup del template (views/website_sale_templates.xml): si cambia uno, cambia el otro.
-     *
-     * Restriccion: `replaceChildren()` se hace UNICAMENTE sobre `.o_wspmp_prices`. Sobre el
-     * recuadro (`.o_wspmp_box`) y el slot de cuotas solo se togglean clases/texto: con el `move`
-     * de 1.2.0 el `span.oe_price` (ficha) o `span.fw-bold` (grilla, precio de `price_reduce`) del
-     * core viven DENTRO del recuadro y los repinta `super._onChangeCombination()`
-     * (variant_mixin.js:346), que corre primero. Vaciar el recuadro entero los borraria (y, con
-     * el puente de cuotas instalado, tambien la linea de cuotas).
-     *
-     * Se parchea la interaccion y no VariantMixin porque el core copia el mixin al prototipo con
-     * Object.assign (website_sale/interactions/website_sale.js:651): un patch sobre el mixin
-     * llegaria tarde y no tendria efecto.
+     * Tiene que espejar el markup de views/website_sale_templates.xml. El `replaceChildren()` va
+     * solo sobre `.o_wspmp_prices`: el precio del core vive dentro del recuadro y lo repinta el
+     * super (variant_mixin.js:346), asi que vaciar el recuadro lo borraria. Se parchea la
+     * interaccion y no VariantMixin porque el core copia el mixin al prototipo con Object.assign
+     * (website_sale.js:651).
      *
      * @override
      */

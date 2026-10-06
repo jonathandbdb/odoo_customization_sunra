@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     "name": "website_sale_payment_method_price",
-    "version": "1.3.2",
+    "version": "1.4.0",
     "summary": "Descuento o recargo por medio de pago en el eCommerce, con recuadro de precio y ahorro en la vidriera",
     "description": """
 Permite configurar un descuento (o recargo) por **medio de pago** y por **sitio web**, publicarlo en
@@ -21,6 +21,8 @@ un recuadro de precio propio y aplicarlo de verdad al pedido en el checkout.
 - Al elegir el medio de pago en el checkout, el descuento se aplica al pedido como linea con su IVA
   (reusa el descuento global del core, que lo parte por combinacion de impuestos) y se cae solo si el
   cliente cambia de medio.
+- Si el pedido se parte por compañia (sale_website_company_routing), el descuento se recalcula en cada
+  pedido sobre sus propias lineas.
 - El redondeo espeja la semantica de `price_round` del core: multiplo, al mas cercano, aplicado
   despues del porcentaje.
     """,
@@ -30,6 +32,7 @@ un recuadro de precio propio y aplicarlo de verdad al pedido en el checkout.
     "license": "LGPL-3",
     "depends": [
         "website_sale",
+        "sale_website_company_routing",
     ],
     "data": [
         "security/ir.model.access.csv",

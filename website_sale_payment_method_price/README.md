@@ -6,8 +6,8 @@ aplica de verdad al pedido en el checkout.
 
 | | |
 |---|---|
-| **Versión** | 1.3.2 |
-| **Depende de** | `website_sale` |
+| **Versión** | 1.4.0 |
+| **Depende de** | `website_sale`, `sale_website_company_routing` |
 | **Repos/entornos** | `odoo_customization_sunra`, rama `develop_19.0` |
 | **Spec SDD** | `specs/website_sale_payment_method_price.md` |
 
@@ -48,8 +48,7 @@ checkout cobra $ 133.705,00.
 
 ### La vidriera: el recuadro de precio
 
-Desde 1.3.0 el bloque de precio es un **recuadro propio** (segunda maqueta, la que eligió el
-cliente), con **un precio por renglón** y el pill que lo explica al lado:
+El bloque de precio es un **recuadro propio**, con **un precio por renglón** y el pill que lo explica al lado:
 
 1. Dentro del recuadro, el precio de **referencia** tachado con un **pill neutro** (`-22%`): es el
    precio que el core ya publica cuando hay uno (el de lista, si la lista de precios aplica un
@@ -63,7 +62,7 @@ cliente), con **un precio por renglón** y el pill que lo explica al lado:
 5. La etiqueta *pagando con* **`<medio>`**.
 6. Un **slot vacío** (`div[@name='wspmp_installments']`) para que el módulo puente
    `website_sale_installment_plans_ux` publique ahí la línea de cuotas de ADHOC, si está instalado.
-7. **Debajo del recuadro** (desde 1.3.1), el precio sin impuestos nacionales de
+7. **Debajo del recuadro**, el precio sin impuestos nacionales de
    `l10n_ar_website_sale` (si el sitio es AR), en cuerpo chico y gris: es un dato para ARCA, no un
    argumento de venta. El nodo **no se toca, no se mueve por herencia y no se elimina** — se
    reordena por CSS.
@@ -130,10 +129,18 @@ Método central: `_apply_to_price(price)` (porcentaje y después redondeo, mismo
 El ajuste **se suma** a los descuentos de cupones/promociones (decisión comercial de la cliente): un pedido con cupón y pago
 por transferencia muestra **dos** renglones de descuento, uno por mecanismo.
 
-Desde 1.1.0, los renglones de descuento que quedan **sin impuestos** (el residual que deja el reparto por grupo de impuesto)
+Los renglones de descuento que quedan **sin impuestos** (el residual que deja el reparto por grupo de impuesto)
 no cuentan como base descontable. Sin eso, el residual de un descuento hacía que el otro se partiera en dos, y viceversa: los
 dos descuentos quedaban en cuatro renglones que no se consolidaban solos. Si el pedido tiene una porción sin IVA **real** (un
 producto sin impuestos), el descuento sí se parte por grupo: es lo correcto, no se puede revertir un IVA que no existe.
+
+## Pedidos ruteados por compañía
+
+Con `sale_website_company_routing`, al confirmar un pedido con líneas de otra compañía se crea un
+pedido derivado. El descuento por medio de pago se quita antes del reparto y se **recalcula en cada
+pedido sobre sus propias líneas** (el original y cada derivado), antes de confirmarlos. Si el original solo conserva recompensas se
+cancela y no recibe el descuento. La base del
+cálculo (con o sin impuestos) es la del sitio del pedido original.
 
 ## Gotchas
 

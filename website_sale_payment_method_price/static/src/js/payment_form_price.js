@@ -10,17 +10,10 @@ const SELECTED_OPTION_PARAM = "wspmp_pm";
 patch(PaymentForm.prototype, {
 
     /**
-     * Volver a marcar el medio elegido antes de que el core arme el formulario.
-     *
-     * El ajuste del pedido se aplica en el servidor y el paso de pago se recarga, con lo cual la
-     * seleccion del radio se perderia y el boton de pagar quedaria deshabilitado. El id viaja en la
-     * URL y aca se re-marca ANTES del super: el willStart del core, al encontrar un radio marcado,
-     * despliega el formulario inline del medio y habilita el boton, igual que cuando hay un solo
-     * medio de pago.
-     *
-     * No se puede simular la eleccion con un click(): los listeners de dynamicContent se enganchan
-     * recien cuando willStart resuelve (colibri.js:L51), asi que el evento change no lo escucharia
-     * nadie y el boton quedaria trabado.
+     * Volver a marcar el medio elegido ANTES del super: el willStart del core, al encontrar un
+     * radio marcado, despliega el formulario inline y habilita el boton de pagar. Un click()
+     * posterior no sirve: los listeners se enganchan recien cuando willStart resuelve
+     * (colibri.js:L51).
      *
      * @override
      */

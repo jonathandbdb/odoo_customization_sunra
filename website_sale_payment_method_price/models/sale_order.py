@@ -53,7 +53,11 @@ class SaleOrder(models.Model):
         lines = self._get_payment_price_scope_lines(rule)
         if not lines:
             return 0.0
-        tax_excluded = self.website_id.show_line_subtotals_tax_selection == "tax_excluded"
+        # El pedido derivado por ruteo de compañia no tiene sitio: la base de calculo es la del original
+        website = self.website_id or self.env["website"].browse(
+            self.env.context.get("wspmp_website_id")
+        )
+        tax_excluded = website.show_line_subtotals_tax_selection == "tax_excluded"
         base_gross = sum(lines.mapped("price_total"))
         base_net = sum(lines.mapped("price_subtotal"))
         base_shown = base_net if tax_excluded else base_gross
@@ -152,6 +156,37 @@ class SaleOrder(models.Model):
         new_lines.is_payment_method_discount = True
         self.payment_price_rule_id = rule
 
+    def _company_routing_pre_split(self):
+        """Override de `sale_website_company_routing`: quitar el descuento antes de repartir las lineas."""
+        self.ensure_one()
+        state = super()._company_routing_pre_split()
+        if self.payment_price_rule_id:
+            state["payment_price_rule_id"] = self.payment_price_rule_id.id
+            self._remove_payment_price_rule()
+        return state
+
+    def _company_routing_post_split(self, derived_orders, state):
+        """Override de `sale_website_company_routing`: recalcular el descuento en cada pedido."""
+        self.ensure_one()
+        super()._company_routing_post_split(derived_orders, state)
+        rule = self.env["payment.method.website.price"].browse(state.get("payment_price_rule_id"))
+        if not rule:
+            return
+        # El original que solo conserva recompensas se cancela: no se le re-aplica el ajuste
+        for order in (self | derived_orders).filtered(lambda so: so._company_routing_has_product_lines()):
+            order.with_company(order.company_id).with_context(
+                wspmp_website_id=self.website_id.id
+            )._apply_payment_price_rule(rule)
+
+    def _company_routing_has_product_lines(self):
+        """Override de `sale_website_company_routing`: el ajuste por medio de pago no es una linea de producto."""
+        self.ensure_one()
+        return bool(self.order_line.filtered(
+            lambda line: not line.display_type
+            and not line.reward_id
+            and not line.is_payment_method_discount
+        ))
+
     def _get_residual_discount_lines(self):
         """
         Lineas de descuento que quedaron **sin impuestos**: el residual del reparto por grupo.
@@ -170,9 +205,8 @@ class SaleOrder(models.Model):
             if line.is_payment_method_discount:
                 return True
             # Las recompensas de `sale_loyalty` (cupones y promociones) son el otro mecanismo que
-            # parte el importe por grupo de impuesto. El campo se consulta en blando: el modulo no
-            # depende de `sale_loyalty`, y sin ese modulo este hook no lo llama nadie.
-            return bool(line._fields.get("reward_id") and line.reward_id)
+            # parte el importe por grupo de impuesto.
+            return bool(line.reward_id)
 
         return self.order_line.filtered(lambda line: not line.tax_ids and is_discount_line(line))
 
@@ -185,9 +219,7 @@ class SaleOrder(models.Model):
         :return: lineas que no cuentan para el minimo ni para la base de las recompensas
         :rtype: recordset de `sale.order.line`
         """
-        parent = getattr(super(), "_get_no_effect_on_threshold_lines", None)
-        lines = parent() if parent else self.env["sale.order.line"]
-        return lines | self._get_residual_discount_lines()
+        return super()._get_no_effect_on_threshold_lines() | self._get_residual_discount_lines()
 
     def _recompute_cart(self):
         """Override de `website_sale` para reajustar el descuento cuando cambia el carrito."""

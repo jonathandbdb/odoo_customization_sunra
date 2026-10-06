@@ -1,22 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Ficha del producto: recuadro de precio por medio de pago (D17/D25). Contrato de locators
-         por `name` (D21): `div[@name='wspmp_box']` y el slot `div[@name='wspmp_installments']`.
-         Cuatro operaciones, en este orden (el `move` no puede ir anidado dentro del markup nuevo,
-         T02): (a) arma el recuadro como ultimo hijo de `div[@name='product_price']` (con
-         `priority="18"` se aplica despues de `l10n_ar_website_sale`, que agrega el `<small>` de
-         impuestos nacionales con la prioridad por defecto, D18); (b) mueve el contenedor del
-         precio del core (`product_price_container`, con el precio actual y el de lista) DENTRO del
-         recuadro, sin duplicarlo (D19), **antes** del slot de cuotas: asi el orden en el DOM queda
-         precios -> contenedor -> slot incluso cuando el recuadro esta "display: contents" (sin
-         reglas visibles, CA19) y `order: -1` no puede reordenar nada; (c) y (d) envuelven cada
-         precio del core en su propio renglon (`div.o_wspmp_line`) junto al pill que le corresponde
-         — el del descuento que ya publica el core arriba (lista de precios / comparativo) y el del
-         medio de pago abajo (D25, maqueta aprobada el 14-09-2026). Los dos envoltorios van
-         DESPUES del `move` a proposito: asi los nodos quedan detras del `t-set` del recuadro y las
-         variables (`wspmp_prices`, `wspmp_ref_badge`) ya estan en contexto al renderizar.
-         El JS de variantes (payment_method_price.js) repinta `.o_wspmp_prices` y togglea las
-         clases y el texto de los dos pills al cambiar de variante. -->
+    <!-- Ficha del producto: recuadro de precio por medio de pago (D17/D25, locators por `name`, D21).
+         El orden de las operaciones importa: los envoltorios `$0` van despues del `move` para que
+         los nodos queden detras del `t-set` del recuadro (variables en contexto). -->
     <template
         id="product_price"
         inherit_id="website_sale.product_price"
