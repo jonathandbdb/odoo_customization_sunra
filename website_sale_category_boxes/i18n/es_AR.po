@@ -1,0 +1,37 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* website_sale_category_boxes
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: es_AR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: \n"
+
+#. module: website_sale_category_boxes
+#: model:ir.model.fields,field_description:website_sale_category_boxes.field_res_config_settings__website_shop_category_boxes
+#: model:ir.model.fields,field_description:website_sale_category_boxes.field_website__shop_category_boxes
+#: model_terms:ir.ui.view,arch_db:website_sale_category_boxes.res_config_settings_view_form
+msgid "Category Boxes"
+msgstr "Categorías en cajas"
+
+#. module: website_sale_category_boxes
+#: model:ir.model.fields,help:website_sale_category_boxes.field_res_config_settings__website_shop_category_boxes
+#: model:ir.model.fields,help:website_sale_category_boxes.field_website__shop_category_boxes
+msgid "Show each main shop category in its own box in the shop sidebar."
+msgstr "Muestra cada categoría principal de la tienda en su propia caja, en el lateral de la tienda."
+
+#. module: website_sale_category_boxes
+#: model_terms:ir.ui.view,arch_db:website_sale_category_boxes.res_config_settings_view_form
+msgid ""
+"Show each main category of the shop sidebar in its own box. Applies to the "
+"selected website."
+msgstr ""
+"Muestra cada categoría principal del lateral de la tienda en su propia caja. "
+"Se aplica al sitio web seleccionado."
