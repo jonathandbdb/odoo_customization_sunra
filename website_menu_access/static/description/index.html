@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<body>
+    <section style="max-width: 980px; margin: 0 auto; padding: 32px 24px; font-family: Arial, Helvetica, sans-serif; color-scheme: var(--o-webclient-color-scheme, normal); color: CanvasText; line-height: 1.55; background: transparent;">
+        <div style="padding: 28px 30px; border: 1px solid ButtonBorder; border-radius: 8px; background: Canvas;">
+            <p style="margin: 0 0 8px; color: LinkText; font-size: 13px; font-weight: 700; text-transform: uppercase;">Sitio web - Permisos de acceso</p>
+            <h1 style="margin: 0 0 12px; color: CanvasText; font-size: 32px; line-height: 1.2;">website_menu_access</h1>
+            <p style="margin: 0; max-width: 760px; color: GrayText; font-size: 16px;">Oculta la app Sitio web del backend a los usuarios internos que no tienen el permiso de Sitio web.</p>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 10px; color: LinkText; font-size: 23px;">Objetivo</h2>
+            <p style="margin: 0;">Por defecto, Odoo muestra la app Sitio web a todo usuario interno. Este modulo la limita a quienes tienen el grupo Sitio web (Editor restringido), de modo que perfiles como Administracion dejen de verla.</p>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 12px; color: LinkText; font-size: 23px;">Funcionalidades principales</h2>
+            <table style="width: 100%; border-collapse: collapse; border: 1px solid ButtonBorder; background: Canvas;">
+                <tbody>
+                    <tr>
+                        <td style="width: 28%; padding: 14px 16px; border-bottom: 1px solid ButtonBorder; font-weight: 700; background: ButtonFace; color: ButtonText;">Menu restringido</td>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">El menu raiz de Sitio web solo se muestra a los usuarios con el grupo Editor restringido de Sitio web.</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; font-weight: 700; background: ButtonFace; color: ButtonText;">Sin cambios de datos</td>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">No agrega modelos, campos ni grupos nuevos.</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 14px 16px; font-weight: 700; background: ButtonFace; color: ButtonText;">Desinstalacion limpia</td>
+                        <td style="padding: 14px 16px; color: CanvasText;">Al desinstalar, el menu vuelve a ser visible para todo usuario interno, como en el core.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 12px; color: LinkText; font-size: 23px;">Configuracion</h2>
+            <ol style="margin: 0; padding-left: 22px;">
+                <li style="margin-bottom: 8px;">Ir a Ajustes - Usuarios y compañias - Usuarios y abrir el usuario que no debe ver la web.</li>
+                <li style="margin-bottom: 8px;">En la pestaña de permisos, dejar el campo "Sitio web" vacio.</li>
+                <li>Guardar. El usuario no vera mas la app Sitio web al recargar el navegador.</li>
+            </ol>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 10px; color: LinkText; font-size: 23px;">Casos en que el usuario sigue viendo la app</h2>
+            <p style="margin: 0 0 10px;">Algunos permisos incluyen el de Sitio web, por lo que el usuario sigue viendo la app aunque "Sitio web" este vacio:</p>
+            <ul style="margin: 0 0 14px; padding-left: 22px;">
+                <li style="margin-bottom: 6px;">Ajustes = Administracion.</li>
+                <li style="margin-bottom: 6px;">Ventas = Administrador.</li>
+                <li>Los permisos de gestor de eventos, eLearning y reclutamiento web.</li>
+            </ul>
+            <p style="margin: 0; padding: 14px 16px; border-left: 4px solid Highlight; background: color-mix(in srgb, Highlight 14%, Canvas); color: CanvasText;">Los programas de descuento y lealtad no los modifica este modulo: se ocultan quitando Ventas = Administrador.</p>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 10px; color: LinkText; font-size: 23px;">Detalle tecnico</h2>
+            <p style="margin: 0 0 14px;">Reemplaza los <code>group_ids</code> del menu <code>website.menu_website_configuration</code> (en el core, <code>base.group_user</code>) por <code>website.group_website_restricted_editor</code>. Un <code>uninstall_hook</code> restituye <code>base.group_user</code>.</p>
+            <p style="margin: 0; padding: 14px 16px; border-left: 4px solid Highlight; background: color-mix(in srgb, Highlight 14%, Canvas); color: CanvasText;">Los grupos que implican el permiso de Sitio web estan definidos en <code>website/security/website_security.xml</code> y <code>website_sale/security/res_groups.xml</code>.</p>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 10px; color: LinkText; font-size: 23px;">Dependencias</h2>
+            <ul style="margin: 0; padding-left: 22px;">
+                <li>website</li>
+            </ul>
+        </div>
+
+        <p style="margin: 34px 0 0; padding-top: 18px; border-top: 1px solid ButtonBorder; color: GrayText; font-size: 14px;">Desarrollado por Sunra - https://github.com/sunraargsh</p>
+    </section>
+</body>
+</html>
