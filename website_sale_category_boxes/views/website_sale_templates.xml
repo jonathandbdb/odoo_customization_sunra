@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Marca el contenedor de categorias; no se tocan class/t-attf-class porque las vistas collapsible del core dependen de ellas. -->
+    <template id="products_categories_list" inherit_id="website_sale.products_categories_list" name="Category Boxes">
+        <xpath expr="//div[@name='wsale_products_categories_list']" position="attributes">
+            <attribute name="t-att-data-category-boxes">website.shop_category_boxes and '1'</attribute>
+        </xpath>
+    </template>
+</odoo>
+<!-- vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4-->

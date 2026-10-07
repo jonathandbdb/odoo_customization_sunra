@@ -1,0 +1,248 @@
+// Categorias del lateral de la tienda en cajas desplegables (activas con [data-category-boxes]).
+// Alcanza al lateral y al offcanvas movil, que reusan la misma lista. Todo el color sale del tema
+// del sitio (primario / color de texto) para que cada sitio use su marca.
+
+// Fallback para navegadores sin color-mix(): la linea se declara dos veces.
+$cb-line-fallback: rgba($body-color, .16);
+$cb-line: color-mix(in srgb, currentColor 16%, transparent);
+$cb-line-strong: rgba($primary, .55);
+$cb-tint: rgba($primary, .06);
+$cb-tint-hover: rgba($primary, .09);
+$cb-gap: .4rem;
+
+.wsale_products_categories_list[data-category-boxes] {
+    li {
+        width: 100%;
+    }
+
+    ul {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    a {
+        display: block;
+        color: inherit;
+        text-decoration: none;
+        overflow-wrap: anywhere;
+        transition: color .15s ease, background-color .15s ease;
+
+        &:hover {
+            color: $primary;
+            text-decoration: none;
+        }
+
+        // Categoria actual: el core la subraya; en cajas se marca con color y peso.
+        &.text-decoration-underline {
+            text-decoration: none !important;
+            color: $primary;
+            font-weight: 600;
+        }
+    }
+
+    a:focus-visible,
+    .o_categories_recursive_button:focus-visible {
+        outline: 2px solid $primary;
+        outline-offset: -2px;
+        border-radius: $border-radius;
+    }
+
+    // Cabecera de una categoria con hijos (modo "Contraer categorias"): el nombre y toda la franja
+    // restante hasta el chevron son zona de click.
+    .accordion-header {
+        display: flex;
+        align-items: stretch;
+        margin: 0 !important;
+
+        > a {
+            flex: 0 1 auto;
+        }
+    }
+
+    .o_categories_recursive_button {
+        flex: 1 1 auto;
+        min-width: 2.75rem;
+        margin: 0 !important;
+        padding: 0 .9rem 0 .5rem !important;
+        color: inherit;
+        border: 0;
+        border-radius: 0;
+        cursor: pointer;
+
+        // Chevron propio con bordes: toma el color del texto y rota sin depender del SVG de Bootstrap.
+        &::after {
+            display: block;
+            flex: none;
+            width: .5rem;
+            height: .5rem;
+            margin-left: auto;
+            background: none;
+            border-right: 2px solid currentColor;
+            border-bottom: 2px solid currentColor;
+            opacity: .6;
+            transform: rotate(-45deg);
+            transition: transform .2s ease, opacity .15s ease;
+        }
+
+        &:hover::after {
+            opacity: 1;
+            color: $primary;
+        }
+
+        &:not(.collapsed)::after {
+            transform: rotate(45deg);
+            opacity: 1;
+            color: $primary;
+        }
+    }
+
+    // ---- Nivel 1: cajas ----
+    > ul {
+        > li {
+            position: relative;
+            // Con !important para ganarle al mb-1 del core, que tambien lo lleva.
+            margin: 0 0 $cb-gap !important;
+            border: 1px solid $cb-line-fallback;
+            border: 1px solid $cb-line;
+            border-radius: $border-radius;
+            overflow: hidden;
+            transition: border-color .15s ease, background-color .15s ease, box-shadow .15s ease;
+
+            &:hover {
+                border-color: $cb-line-strong;
+                background-color: $cb-tint;
+            }
+
+            // Categorias sin productos publicados (solo las ve personal interno).
+            &[data-publish="off"] {
+                border-style: dashed;
+            }
+
+            > a,
+            > .accordion-header > a,
+            > div:not(.accordion-header) > a {
+                min-height: 2.75rem;
+                padding: .7rem 1rem !important;
+                font-size: .8125rem;
+                font-weight: 600;
+                letter-spacing: .06em;
+                line-height: 1.3;
+                text-transform: uppercase;
+            }
+
+            // Sin acordeon el nombre ocupa todo el ancho; con acordeon el boton absorbe el resto.
+            > .accordion-header > a {
+                padding-right: .25rem !important;
+            }
+
+            // Caja abierta: borde primario y panel de subcategorias con fondo tenue.
+            &:has(> .accordion-header > button[aria-expanded="true"]),
+            &:has(> ul.nav-hierarchy) {
+                border-color: $cb-line-strong;
+            }
+
+            // "Estas aca": la categoria actual o la que la contiene.
+            &:has(.text-decoration-underline) {
+                border-color: $cb-line-strong;
+                box-shadow: inset 3px 0 0 $primary;
+            }
+
+            // Hoja en modo "Contraer categorias": el core envuelve el link en un div flex.
+            > div:not(.accordion-header) > a {
+                flex: 1 1 auto;
+            }
+
+            // Mismo panel con y sin "Contraer categorias" (el core usa ps-3/mt-1 en un modo y ps-2 en el otro).
+            > ul {
+                margin: 0 !important;
+                padding: .35rem .5rem .6rem !important;
+                background-color: $cb-tint;
+                border-top: 1px solid $cb-line-fallback;
+                border-top: 1px solid $cb-line;
+            }
+        }
+
+        // "All Products": pill liviana, sin caja, coherente con el set.
+        > li:first-child {
+            border-color: transparent;
+            background: transparent;
+            box-shadow: none;
+
+            &:hover {
+                background-color: $cb-tint;
+                border-color: transparent;
+            }
+
+            > a {
+                min-height: 2.25rem;
+                padding: .5rem 1rem !important;
+                font-size: .8125rem;
+                font-weight: 500;
+                letter-spacing: .02em;
+                text-transform: none;
+                border-radius: $border-radius;
+
+                &.text-decoration-underline {
+                    background-color: $cb-tint-hover;
+                    font-weight: 600;
+                }
+            }
+        }
+    }
+
+    // ---- Subniveles ----
+    ul ul {
+        li {
+            margin: 0 0 1px !important;
+        }
+
+        a {
+            padding: .4rem .6rem !important;
+            font-size: .875rem;
+            font-weight: 400;
+            line-height: 1.35;
+            text-transform: none;
+            letter-spacing: 0;
+            border-radius: calc(#{$border-radius} * .75);
+
+            &:hover {
+                background-color: $cb-tint-hover;
+            }
+
+            &.text-decoration-underline {
+                font-weight: 600;
+            }
+        }
+
+        .accordion-header > a {
+            padding-right: .25rem !important;
+        }
+
+        .o_categories_recursive_button {
+            padding-right: .5rem !important;
+            border-radius: calc(#{$border-radius} * .75);
+
+            &::after {
+                width: .4rem;
+                height: .4rem;
+            }
+        }
+
+        // Tercer nivel en adelante: guia vertical para leer la jerarquia.
+        ul {
+            margin: .1rem 0 .25rem .6rem;
+            padding-left: .5rem;
+            border-left: 1px solid $cb-line-fallback;
+            border-left: 1px solid $cb-line;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        a,
+        .o_categories_recursive_button::after,
+        > ul > li {
+            transition: none;
+        }
+    }
+}

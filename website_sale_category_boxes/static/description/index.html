@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es">
+<body>
+    <section style="max-width: 980px; margin: 0 auto; padding: 32px 24px; font-family: Arial, Helvetica, sans-serif; color-scheme: var(--o-webclient-color-scheme, normal); color: CanvasText; line-height: 1.55; background: transparent;">
+        <div style="padding: 28px 30px; border: 1px solid ButtonBorder; border-radius: 8px; background: Canvas;">
+            <p style="margin: 0 0 8px; color: LinkText; font-size: 13px; font-weight: 700; text-transform: uppercase;">eCommerce - Tienda web</p>
+            <h1 style="margin: 0 0 12px; color: CanvasText; font-size: 32px; line-height: 1.2;">website_sale_category_boxes</h1>
+            <p style="margin: 0; max-width: 760px; color: GrayText; font-size: 16px;">Muestra cada categoría principal del lateral de la tienda (/shop) y del menú móvil de filtros en su propia caja, con los colores del tema de cada sitio web.</p>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 10px; color: LinkText; font-size: 23px;">Objetivo</h2>
+            <p style="margin: 0;">Dar al listado de categorías de la tienda un aspecto ordenado y coherente con la identidad de cada sitio, sin tocar el comportamiento del core. Se activa por sitio web; con el interruptor apagado la tienda se ve igual que en el core.</p>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 12px; color: LinkText; font-size: 23px;">Funcionalidades principales</h2>
+            <table style="width: 100%; border-collapse: collapse; border: 1px solid ButtonBorder; background: Canvas;">
+                <tbody>
+                    <tr>
+                        <td style="width: 28%; padding: 14px 16px; border-bottom: 1px solid ButtonBorder; font-weight: 700; background: ButtonFace; color: ButtonText;">Una caja por categoría</td>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">Cada categoría principal va en una caja con borde sutil y el nombre en mayúsculas. Las subcategorías se muestran en un panel tenue con una guía de jerarquía.</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; font-weight: 700; background: ButtonFace; color: ButtonText;">Colores del tema</td>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">Hover y caja abierta usan el color primario del sitio; la categoría actual lleva una barra de acento y el chevron rota al desplegar. Los radios también salen del tema.</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; font-weight: 700; background: ButtonFace; color: ButtonText;">Accesibilidad</td>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">Foco visible al navegar con teclado y sin animaciones cuando el usuario tiene activado prefers-reduced-motion.</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 14px 16px; font-weight: 700; background: ButtonFace; color: ButtonText;">Activación por sitio</td>
+                        <td style="padding: 14px 16px; color: CanvasText;">Un interruptor en los ajustes de eCommerce habilita las cajas solo en el sitio web seleccionado.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 12px; color: LinkText; font-size: 23px;">Configuración</h2>
+            <ol style="margin: 0; padding-left: 22px;">
+                <li style="margin-bottom: 8px;">Ir a Sitio web - Ajustes - eCommerce, elegir el sitio web y activar <strong>Category Boxes</strong>. Guardar.</li>
+                <li style="margin-bottom: 8px;">Recomendado: en el editor de la tienda (Editar - grilla de productos - Estilo) activar <strong>Contraer categorías</strong>, que es la opción estándar que hace que las categorías se desplieguen.</li>
+                <li>Verificar en /shop (escritorio y menú móvil de filtros). Funciona también sin "Contraer categorías", pero se recomienda usarlas juntas.</li>
+            </ol>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 10px; color: LinkText; font-size: 23px;">Detalle técnico</h2>
+            <p style="margin: 0 0 14px;">El campo <code>website.shop_category_boxes</code> (Boolean) se expone en <code>res.config.settings</code> como <code>website_shop_category_boxes</code> (related). La plantilla hereda <code>website_sale.products_categories_list</code> y agrega el atributo <code>data-category-boxes</code> al contenedor de la lista; todo el diseño vive en <code>static/src/scss/category_boxes.scss</code>, cargado en <code>web.assets_frontend</code>.</p>
+            <p style="margin: 0; padding: 14px 16px; border-left: 4px solid Highlight; background: color-mix(in srgb, Highlight 14%, Canvas); color: CanvasText;">No se modifican las clases del contenedor del core: las vistas de categorías contraíbles dependen de ellas. No hay JavaScript propio ni modelos nuevos.</p>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 10px; color: LinkText; font-size: 23px;">Dependencias</h2>
+            <ul style="margin: 0; padding-left: 22px;">
+                <li><code>website_sale</code></li>
+                <li>Sin servicios externos ni configuración adicional.</li>
+            </ul>
+        </div>
+
+        <p style="margin: 34px 0 0; padding-top: 18px; border-top: 1px solid ButtonBorder; color: GrayText; font-size: 14px;">Desarrollado por Sunra - https://github.com/sunraargsh</p>
+    </section>
+</body>
+</html>
