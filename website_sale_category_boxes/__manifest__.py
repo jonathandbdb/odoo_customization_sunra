@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     "name": "website_sale_category_boxes",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "summary": "Categorías de la tienda en formato cajas, configurable por sitio web",
     "description": """
 Muestra las categorías del lateral de la tienda web (/shop) en cajas desplegables.
