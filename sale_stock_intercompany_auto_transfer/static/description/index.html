@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es">
+<body>
+    <section style="max-width: 980px; margin: 0 auto; padding: 32px 24px; font-family: Arial, Helvetica, sans-serif; color-scheme: var(--o-webclient-color-scheme, normal); color: CanvasText; line-height: 1.55; background: transparent;">
+        <div style="padding: 28px 30px; border: 1px solid ButtonBorder; border-radius: 8px; background: Canvas;">
+            <p style="margin: 0 0 8px; color: LinkText; font-size: 13px; font-weight: 700; text-transform: uppercase;">Inventario - Ventas - Inter-company</p>
+            <h1 style="margin: 0 0 12px; color: CanvasText; font-size: 32px; line-height: 1.2;">sale_stock_intercompany_auto_transfer</h1>
+            <p style="margin: 0; max-width: 760px; color: GrayText; font-size: 16px;">Valida solas las transferencias inter-company de reabastecimiento cuando una venta necesita stock de otra compañía: el depósito solo valida la entrega al cliente.</p>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 10px; color: LinkText; font-size: 23px;">Objetivo</h2>
+            <p style="margin: 0 0 10px;">La ruta "Resupply From" del core arma tres pasos: salida del almacén proveedor, ubicación de tránsito inter-company y recepción en el almacén destino. El core deja la salida y la recepción para validar a mano, una en cada compañía.</p>
+            <p style="margin: 0;">Con este módulo, al confirmar un pedido que dispara esa cadena, la salida y la recepción quedan hechas por lo que había disponible y la entrega al cliente queda reservada con lo recibido. Caso de uso: cada compañía "Prueba" vende con almacén propio y, si no alcanza su stock, pide el faltante a la compañía real y el traspaso ocurre sin intervención.</p>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 12px; color: LinkText; font-size: 23px;">Funcionalidades principales</h2>
+            <table style="width: 100%; border-collapse: collapse; border: 1px solid ButtonBorder; background: Canvas;">
+                <tbody>
+                    <tr>
+                        <td style="width: 28%; padding: 14px 16px; border-bottom: 1px solid ButtonBorder; font-weight: 700; background: ButtonFace; color: ButtonText;">Opción por tipo de recepción</td>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">Casilla "Auto-Validate Inter-Company Transfer" en el tipo de operación de recepción de la compañía destino. Apagada, la cadena es la estándar del core.</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; font-weight: 700; background: ButtonFace; color: ButtonText;">Validación al confirmar la venta</td>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">Se reserva el stock en la compañía real, se valida la salida por lo reservado y la recepción encadenada se valida por lo recibido. La entrega al cliente queda reservada, sin validar.</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; font-weight: 700; background: ButtonFace; color: ButtonText;">Validación manual de la salida</td>
+                        <td style="padding: 14px 16px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">Al validar a mano una salida cuyo destino es una recepción activada de otra compañía, esa recepción se valida sola.</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 14px 16px; font-weight: 700; background: ButtonFace; color: ButtonText;">Tolerancia a errores</td>
+                        <td style="padding: 14px 16px; color: CanvasText;">Un error de negocio al validar nunca impide confirmar el pedido: la transferencia queda pendiente y se avisa en el pedido.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 10px; color: LinkText; font-size: 23px;">Configuración</h2>
+            <p style="margin: 0 0 12px;">El módulo no crea esta configuración del core; sin ella no funciona. Todas las precondiciones deben cumplirse.</p>
+            <table style="width: 100%; border-collapse: collapse; border: 1px solid ButtonBorder; background: Canvas;">
+                <tbody>
+                    <tr>
+                        <td style="width: 7%; padding: 12px 14px; border-bottom: 1px solid ButtonBorder; font-weight: 700; background: ButtonFace; color: ButtonText;">P1</td>
+                        <td style="padding: 12px 14px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">Ubicación de tránsito inter-company activa (<code>stock.stock_location_inter_company</code>).</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 12px 14px; border-bottom: 1px solid ButtonBorder; font-weight: 700; background: ButtonFace; color: ButtonText;">P2</td>
+                        <td style="padding: 12px 14px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">Almacén de la compañía "Prueba" con "Reabastecer desde" (Resupply From) apuntando al almacén de la compañía real, y esa ruta aplicada al almacén (o a los productos/categorías). "Reabastecer desde" se edita con ambas compañías activas en el selector; el módulo quita la restricción de misma compañía del campo.</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 12px 14px; border-bottom: 1px solid ButtonBorder; font-weight: 700; background: ButtonFace; color: ButtonText;">P3</td>
+                        <td style="padding: 12px 14px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">Regla de entrega del almacén "Prueba" en "Tomar del stock, si no está disponible, disparar otra regla" (<code>mts_else_mto</code>): pide a la compañía real solo el faltante.</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 12px 14px; border-bottom: 1px solid ButtonBorder; font-weight: 700; background: ButtonFace; color: ButtonText;">P4</td>
+                        <td style="padding: 12px 14px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">Tipo de entrega de la compañía "Prueba" con reserva "Al confirmar". Con otro método la entrega al cliente no se reserva sola con lo recibido.</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 12px 14px; border-bottom: 1px solid ButtonBorder; font-weight: 700; background: ButtonFace; color: ButtonText;">P5</td>
+                        <td style="padding: 12px 14px; border-bottom: 1px solid ButtonBorder; color: CanvasText;">Tipo de salida de la compañía real y tipo de recepción de la "Prueba" con "Crear backorder" en "Preguntar" (o "Siempre"). Con "Nunca" el faltante se cancela y la recepción queda esperando un movimiento que no llega.</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 12px 14px; font-weight: 700; background: ButtonFace; color: ButtonText;">P6</td>
+                        <td style="padding: 12px 14px; color: CanvasText;">Casilla "Auto-Validate Inter-Company Transfer" activada en el tipo de operación de recepción de la compañía "Prueba" (Inventario &gt; Configuración &gt; Tipos de operación). Es el interruptor del módulo.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 10px; color: LinkText; font-size: 23px;">Comportamiento ante faltante en la compañía real</h2>
+            <ul style="margin: 0; padding-left: 22px;">
+                <li style="margin-bottom: 8px;">Si la compañía real no tiene stock suficiente, se valida lo disponible y el resto queda como backorder pendiente en esa compañía. La recepción de ese backorder se valida sola cuando alguien lo valide.</li>
+                <li style="margin-bottom: 8px;">Sin nada disponible no se valida nada.</li>
+                <li style="margin-bottom: 8px;">La entrega al cliente nunca se valida: queda reservada con lo recibido.</li>
+                <li style="margin-bottom: 8px;">Lotes y series: no se elige lote; viaja el reservado según la estrategia de remoción.</li>
+                <li>El pedido recibe un único aviso con faltantes y transferencias pendientes. Si una recepción falla, el motivo queda en su chatter y, si tiene pedido de venta, también en el pedido.</li>
+            </ul>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 10px; color: LinkText; font-size: 23px;">Detalle técnico</h2>
+            <p style="margin: 0 0 14px;">Sin modelos nuevos: no hay ACLs, grupos ni reglas. La validación corre en <code>sudo()</code> y en la compañía de cada transferencia, acotada a la cadena inter-company; quien confirma el pedido puede no tener acceso a la otra compañía. Una recepción de la misma compañía no se toca, y los errores de concurrencia o de base de datos se propagan para que el framework reintente.</p>
+            <p style="margin: 0; padding: 14px 16px; border-left: 4px solid Highlight; background: color-mix(in srgb, Highlight 14%, Canvas); color: CanvasText;">La opción la configura la compañía destino pero mueve stock de la compañía proveedora: quien edita los tipos de operación de la destino decide la salida de la otra compañía.</p>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 10px; color: LinkText; font-size: 23px;">Avisos</h2>
+            <ul style="margin: 0; padding-left: 22px;">
+                <li style="margin-bottom: 8px;">Si la compañía proveedora tiene activo el mail de confirmación de entrega y la salida es de tipo entrega, el core envía el mail al validar la salida.</li>
+                <li style="margin-bottom: 8px;">Si la proveedora valoriza en tiempo real, sus asientos de salida se generan sin revisión manual.</li>
+                <li style="margin-bottom: 8px;">Bajar la cantidad de una línea confirmada genera en el core una cadena inversa que el módulo no valida.</li>
+                <li style="margin-bottom: 8px;">Al validar la salida con "No Backorder" queda en la compañía del pedido una recepción backorder sin origen, que se cancela a mano.</li>
+                <li style="margin-bottom: 8px;">Aumentar una línea de un pedido confirmado puede sobre-demandar (comportamiento del core); el módulo valida lo que el core generó.</li>
+                <li style="margin-bottom: 8px;">La cantidad entregada de la línea ignora la salida de la proveedora y la recepción inter-company.</li>
+                <li>No cancela en cascada las transferencias si se cancela el pedido, no controla el stock de la proveedora al confirmar y no cubre cadenas de varios pasos dentro de la proveedora.</li>
+            </ul>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h2 style="margin: 0 0 10px; color: LinkText; font-size: 23px;">Dependencias</h2>
+            <ul style="margin: 0; padding-left: 22px;">
+                <li><code>sale_stock</code> (Odoo 19).</li>
+                <li>Configuración de almacenes, rutas y reglas inter-company del core (P1 a P5).</li>
+            </ul>
+        </div>
+
+        <p style="margin: 34px 0 0; padding-top: 18px; border-top: 1px solid ButtonBorder; color: GrayText; font-size: 14px;">Desarrollado por Sunra - https://github.com/sunraargsh</p>
+    </section>
+</body>
+</html>
