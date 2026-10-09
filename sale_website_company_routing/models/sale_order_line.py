@@ -40,6 +40,9 @@ class SaleOrderLine(models.Model):
         :rtype: recordset de `res.company`
         """
         self.ensure_one()
+        # La linea recien agregada en el formulario todavia no tiene producto
+        if not self.product_id:
+            return self.env["res.company"]
         return self.product_id.product_tmpl_id.sudo()._get_sale_company()
 
     def _prepare_company_routing_values(self, target_order, convert):

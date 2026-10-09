@@ -3,7 +3,7 @@
 | Campo | Valor |
 |-------|-------|
 | **Modulo** | `sale_website_company_routing` |
-| **Version** | `1.0.0` (== `version` del `__manifest__.py`, formato `x.x.x`) |
+| **Version** | `1.0.1` (== `version` del `__manifest__.py`, formato `x.x.x`) |
 | **Serie Odoo** | `19` (informativa) |
 | **Estado** | `implemented` |
 | **Actualizado** | `2026-10-06` |
@@ -138,7 +138,7 @@ Utilidad `tools.get_request_memo(name)`: diccionario que vive lo que dura el req
 
 ### `SaleOrderLine._get_routing_product_company()`
 - **Proposito**: hook de la compañia que aporta el producto (lo extiende `website_sale_bike_assembly_option`).
-- **Logica**: `self.product_id.product_tmpl_id.sudo()._get_sale_company()`.
+- **Logica**: `self.product_id.product_tmpl_id.sudo()._get_sale_company()`; una linea sin producto (recien agregada en el formulario) devuelve compañia vacia, sin `ensure_one`.
 
 ### `SaleOrderLine._compute_sale_company_id()`
 - **Decoradores**: `@api.depends('product_id', 'order_id.company_id', 'linked_line_id.sale_company_id', 'display_type')`

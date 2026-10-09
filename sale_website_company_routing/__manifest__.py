@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     "name": "sale_website_company_routing",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "summary": "Ruteo de lineas de pedido entre compañias al confirmar y stock web por compañia",
     "description": """
 En una base multi-compañia, un sitio web pertenece a una sola compañia y el carrito se crea siempre
