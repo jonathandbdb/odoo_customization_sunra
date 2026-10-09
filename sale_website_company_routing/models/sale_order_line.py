@@ -17,7 +17,13 @@ class SaleOrderLine(models.Model):
              "another company move to a new order of that company.",
     )
 
-    @api.depends("product_id", "order_id.company_id", "linked_line_id.sale_company_id", "display_type")
+    @api.depends(
+        "product_id",
+        "order_id.company_id",
+        "order_id.company_id.company_routing_excluded",
+        "linked_line_id.sale_company_id",
+        "display_type",
+    )
     def _compute_sale_company_id(self):
         for line in self:
             # En pedidos confirmados o cancelados la linea conserva su valor
@@ -25,6 +31,8 @@ class SaleOrderLine(models.Model):
                 continue
             if line.display_type:
                 line.sale_company_id = False
+            elif line.order_id.company_id.company_routing_excluded:
+                line.sale_company_id = line.order_id.company_id
             elif line.linked_line_id:
                 line.sale_company_id = line.linked_line_id.sale_company_id
             else:

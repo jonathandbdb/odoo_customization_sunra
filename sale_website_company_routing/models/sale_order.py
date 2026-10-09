@@ -202,6 +202,8 @@ class SaleOrder(models.Model):
         """
         self.ensure_one()
         groups = {}
+        if self.company_id.company_routing_excluded:
+            return groups
         lines = self.order_line.filtered(
             lambda line: not line.display_type
             and not line.is_downpayment

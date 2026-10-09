@@ -3,11 +3,11 @@
 | Campo | Valor |
 |-------|-------|
 | **Modulo** | `sale_website_company_routing` |
-| **Version** | `1.0.1` (== `version` del `__manifest__.py`, formato `x.x.x`) |
+| **Version** | `1.1.0` (== `version` del `__manifest__.py`, formato `x.x.x`) |
 | **Serie Odoo** | `19` (informativa) |
-| **Estado** | `implemented` |
-| **Actualizado** | `2026-10-06` |
-| **Depurado** | `2026-10-06` |
+| **Estado** | `verified` |
+| **Actualizado** | `2026-10-09` |
+| **Depurado** | `2026-10-09` |
 
 ## Objetivo
 
@@ -67,6 +67,8 @@ Es generico (no conoce bicis ni a Sunra): sin configurar, el comportamiento es i
 | D32 | Visibilidad e idioma | La UI oculta los campos nuevos sin `base.group_multi_company`: el grupo va **solo en las vistas**. UI en ingles con `_()`, traduccion en `i18n/es_419.po`. |
 | D33 | Dependencia de `website_sale_collect` | Depende de `website_sale_collect` (instalado en produccion) para quedar **por encima** en el MRO de `website._get_product_available_qty`: con compañias de stock web gana el helper; sin configuracion `super()` aplica la logica de Click & Collect. |
 | D34 | Datos de retiro en tienda | `pickup_location_data` (de `website_sale_collect`) viaja con el `carrier_id` al derivado que se queda con el envio y se limpia en el original. **Antes de crear nada** se valida que el almacen de `pickup_location_data['id']` sea de la compañia que se queda con el envio (`UserError` si no). En el derivado se imita `_set_pickup_location` de `website_sale_collect`: `warehouse_id` = el de la pickup, `_compute_fiscal_position_id()` y, si cambia la posicion fiscal, `_recompute_taxes()`; despues se valida el almacen (D29). Aplica solo a transportistas `delivery_type == "in_store"`: otros transportistas con punto de retiro guardan en `pickup_location_data` un id externo, no un `stock.warehouse` (`website_sale_collect/models/sale_order.py:L72`). |
+| D35 | Exclusion de una compañia del ruteo | `res.company.company_routing_excluded` (default `False`). `_company_routing_get_groups()` devuelve `{}` si la compañia **del pedido** esta excluida; la exclusion no mira la compañia destino de las lineas. |
+| D36 | Compute de la linea en compañia excluida | `_compute_sale_company_id()` fija `sale_company_id` = compañia del pedido (antes de las ramas de linea vinculada y de producto); depende de `order_id.company_id.company_routing_excluded`. Se puede cambiar a mano, sin efecto al confirmar. |
 
 ## Alcance
 
@@ -104,6 +106,7 @@ No aplica: el modulo solo extiende modelos del core.
 |--------|-----------|---------------|
 | `product.category` | `product.category` | `sale_company_id`, `website_stock_company_ids` + resolucion por ancestros. |
 | `product.template` | `product.template` | `sale_company_id`, `website_stock_company_ids` + resolucion producto → categoria. |
+| `res.company` | `res.company` | `company_routing_excluded`. |
 | `sale.order.line` | `sale.order.line` | `sale_company_id` + hooks de resolucion y de valores para recrear la linea. |
 | `sale.order` | `sale.order` | Vinculo original ↔ derivados, `action_confirm()`, ruteo, hooks de validacion y descuentos, re-aplicado de loyalty, `_get_free_qty()`. |
 | `website` | `website` | Helper `_get_products_free_qty()` (+ `_compute_products_free_qty()` sin memoria) y `_get_product_available_qty()`. |
@@ -118,6 +121,7 @@ Utilidad `tools.get_request_memo(name)`: diccionario que vive lo que dura el req
 | `product.category` | `website_stock_company_ids` | Many2many `res.company` | Website Stock Companies | No | - | Relacion `product_category_website_stock_company_rel`. Vacio = la del ancestro o almacen del sitio. |
 | `product.template` | `sale_company_id` | Many2one `res.company` | Selling Company | No | - | `ondelete='set null'`. Vacio = la de la categoria. |
 | `product.template` | `website_stock_company_ids` | Many2many `res.company` | Website Stock Companies | No | - | Relacion `product_template_website_stock_company_rel`. Vacio = la de la categoria. |
+| `res.company` | `company_routing_excluded` | Boolean | Exclude from Company Routing | No | `False` | Pedidos de la compañia se confirman enteros en ella (D35). |
 | `sale.order.line` | `sale_company_id` | Many2one `res.company` | Selling Company | No | compute | `compute='_compute_sale_company_id'`, `store=True`, `readonly=False`, `precompute=True`, `recursive=True`. Vacio en lineas `display_type`. Inicializada por `pre_init_hook` (D30). |
 | `sale.order` | `company_routing_origin_id` | Many2one `sale.order` | Routed From | No | - | `readonly=True`, `copy=False`, `index='btree_not_null'`, `ondelete='set null'`. |
 | `sale.order` | `company_routing_order_ids` | One2many (`sale.order`, `company_routing_origin_id`) | Routed Orders | No | - | Derivados del pedido. |
@@ -243,6 +247,7 @@ Utilidad `tools.get_request_memo(name)`: diccionario que vive lo que dura el req
 7. **RB07**: Si una validacion falla (cliente, producto, impuestos, combo, carrier, cotizacion, envio con instalacion, almacen), no se crea ningun derivado y el pedido no se confirma.
 8. **RB08**: Los descuentos globales se recalculan en cada pedido sobre sus propias lineas: loyalty en el original y, en el derivado, solo los programas automaticos (D27); el descuento por medio de pago en cada pedido.
 9. **RB09**: El stock web de un producto con compañias de stock web es la suma del stock libre de todos sus almacenes (0 si no tienen almacenes); sin configurar, el del almacen del sitio.
+10. **RB10**: Un pedido de una compañia excluida del ruteo se confirma entero en su compañia; ninguna linea se mueve.
 
 ## Edge cases
 
@@ -268,6 +273,9 @@ Utilidad `tools.get_request_memo(name)`: diccionario que vive lo que dura el req
 - **Pedido con pago online**: se rutea y se avisa (D21).
 - **`website_sale_collect`** (dependencia, D33): para productos con compañias de stock web, el helper reemplaza el calculo de Click & Collect (maximo entre tiendas y almacen del punto de retiro elegido); la disponibilidad mostrada es la de las compañias declaradas. Los productos sin configurar siguen la logica de Click & Collect (`super()`).
 - **Compañias de stock web sin almacenes**: stock 0 (D22).
+- **Pedido de una compañia excluida con productos de otra compañia** (ej. una bici de Miluan vendida desde "YG Prueba"): no se rutea; la linea queda en el pedido y su abastecimiento lo resuelve la configuracion de stock de la compañia del pedido.
+- **Compañia que se excluye con pedidos en borrador abiertos**: al confirmarlos no se rutean; sus lineas recalculan `sale_company_id` a la compañia del pedido cuando se recomputan (D36).
+- **Pedido de una compañia no excluida cuyas lineas apuntan a una compañia excluida**: se rutea normalmente; la exclusion mira solo la compañia del pedido (D35).
 - **Instalacion sobre pedidos existentes**: las lineas historicas quedan con `sale_company_id` = su `company_id`; nada confirmado se rutea.
 
 ## Criterios de aceptacion
@@ -301,10 +309,17 @@ Utilidad `tools.get_request_memo(name)`: diccionario que vive lo que dura el req
 - [ ] **CA27**: Al instalar, las lineas existentes quedan con `sale_company_id` = su `company_id` sin recalcular el historico.
 - [ ] **CA28**: Un usuario de backoffice con `base.group_multi_company` pero sin acceso a Miluan abre un pedido con lineas de Miluan sin `AccessError` y ve el nombre de la compañia.
 
+- [x] **CA29**: Con `company_routing_excluded` activo en "Miluan Prueba", confirmar un pedido de esa compañia con un producto cuya compañia que vende es otra → el pedido se confirma entero, sin derivados, sin boton "Routed Orders" ni mensaje de ruteo en el chatter.
+- [x] **CA30**: En un pedido en borrador de una compañia excluida, la columna `sale_company_id` de cada linea muestra la compañia del pedido; cambiarla a mano y confirmar no crea derivados.
+- [x] **CA31**: Con la opcion apagada (default), el ruteo se comporta igual que sin ella (CA01..CA28 siguen valiendo).
+- [x] **CA32**: El campo "Exclude from Company Routing" aparece en el formulario de compañia (pestaña General Information) solo con `base.group_multi_company`.
+
 ## Referencias al core
 
 | Que | Anclaje (`path:L#`) | Por que importa |
 |-----|---------------------|-----------------|
+| Formulario de compañia | `odoo/odoo/addons/base/views/res_company_views.xml:4` | Vista a heredar (`base.view_company_form`). |
+| Pestaña "General Information" de la compañia | `odoo/odoo/addons/base/views/res_company_views.xml:28` | `page[@name='general_info']`; ancla `color` en la linea 51. |
 | Filtro de productos por compañia del sitio | `odoo/addons/website_sale/models/website.py:662` | Los productos ruteados siguen con `company_id` vacio. |
 | Carrito en la compañia del sitio | `odoo/addons/website_sale/models/website.py:676` | El ruteo ocurre al confirmar. |
 | Valores del carrito | `odoo/addons/website_sale/models/website.py:687-698` | `company_id`, `pricelist_id`, `team_id`, `website_id` del original. |
@@ -361,26 +376,16 @@ Utilidad `tools.get_request_memo(name)`: diccionario que vive lo que dura el req
 
 | Archivo | Accion | Que reflejar |
 |---------|--------|-------------|
-| `sale_website_company_routing/README.md` | crear | Configuracion (producto/categoria, herencia), ruteo, envio, descuentos, stock web, requisitos (carriers sin compañia, usuarios portal con ambas compañias, cotizaciones) y limites. |
-| `sale_website_company_routing/static/description/index.html` | crear | Idem para usuario funcional. |
-| `website_sale_stock_level_indicator/README.md` + `index.html` | actualizar | El semaforo usa el stock web por compañia. |
-| `website_sale_payment_method_price/README.md` + `index.html` + `specs/website_sale_payment_method_price.md` | actualizar | Recalculo del descuento por pedido al rutear. |
-| `website_sale_installation_appointment/README.md` + `index.html` + `specs/website_sale_installation_appointment.md` | actualizar | Pedido con envio con instalacion no se rutea. |
-| `odoo_customization_sunra/README.md` | actualizar | Fila del modulo nuevo. |
+| `sale_website_company_routing/README.md` | actualizar | Opcion "Exclude from Company Routing" en la compañia: que hace, donde se configura y caso de uso (compañias que venden sin facturar). |
+| `sale_website_company_routing/static/description/index.html` | actualizar | Idem para usuario funcional. |
 
 ## Plan del cambio en curso
 
 | Tarea | Descripcion | Depende de | Archivos | Cubre |
 |-------|-------------|------------|----------|-------|
-| **T01** | Scaffold: manifest (`depends`: `sale_stock`, `website_sale_stock`, `website_sale_collect`, `sale_loyalty`), `__init__`, `pre_init_hook`, `tools.py` | — | `__manifest__.py`, `__init__.py`, `hooks.py`, `tools.py`, `models/__init__.py` | CA27 |
-| **T02** | Campos y resolucion en categoria y producto (ancestros, version por lotes) | T01 | `models/product_category.py`, `models/product_template.py` | CA01, CA02, CA03 |
-| **T03** | `sale.order.line.sale_company_id` (compute recursivo, solo draft/sent), `_get_routing_product_company`, `_prepare_company_routing_values` | T02 | `models/sale_order_line.py` | CA01, CA02, CA03, CA04 |
-| **T04** | Ruteo: `action_confirm`, `_company_routing_split` (validaciones, envio y carrier, lista de precios y conversion en sudo, almacen, cancelacion, chatter, confirmacion), `_prepare_company_routing_order_values`, `_company_routing_validate`, boton | T03 | `models/sale_order.py` | CA04, CA05, CA06, CA07, CA08, CA09, CA10, CA11, CA12, CA13, CA14, CA15, CA17 |
-| **T05** | Hooks `_company_routing_pre_split` / `_post_split` + re-aplicado de loyalty | T04 | `models/sale_order.py` | CA19 |
-| **T06** | Stock web: helper por lotes + overrides de `_get_product_available_qty` y `_get_free_qty` | T02 | `models/website.py`, `models/sale_order.py` | CA20, CA21, CA22, CA23, CA24 |
-| **T07** | Vistas de categoria, producto (pestaña Ventas) y pedido | T02, T03, T04 | `views/product_category_views.xml`, `views/product_template_views.xml`, `views/sale_order_views.xml`, `__manifest__.py` | CA04, CA06, CA26, CA28 |
-| **T08** | `website_sale_stock_level_indicator` `1.1.0`: dependencia + helper con memoria por request | T06 | `website_sale_stock_level_indicator/__manifest__.py`, `website_sale_stock_level_indicator/models/website.py` | CA25 |
-| **T09** | `website_sale_payment_method_price` `1.4.0`: dependencia + overrides de los hooks de descuento | T05 | `website_sale_payment_method_price/__manifest__.py`, `website_sale_payment_method_price/models/sale_order.py` | CA18 |
-| **T10** | `website_sale_installation_appointment` `1.17.0`: dependencia + override de `_company_routing_validate` | T04 | `website_sale_installation_appointment/__manifest__.py`, `website_sale_installation_appointment/models/sale_order.py` | CA16 |
-| **T11** | Traduccion `es_419` (este modulo y textos nuevos de T09/T10) | T07, T09, T10 | `i18n/es_419.po` | — |
-| **T12** | Doc de los cuatro modulos + specs de los modulos ajustados en sitio + README raiz + `version` `1.0.0` == spec | T01..T11 | `README.md`, `static/description/index.html`, `__manifest__.py`, `specs/sale_website_company_routing.md`, docs y specs de T08..T10, `../README.md` | — (anti-drift + version sync) |
+| **T01** | `res.company.company_routing_excluded` (Boolean, string y help de la tabla Campos) | — | `models/res_company.py` (nuevo), `models/__init__.py` | CA31 |
+| **T02** | `_company_routing_get_groups()` devuelve `{}` con la compañia del pedido excluida (D35) | T01 | `models/sale_order.py` | CA29, CA31 |
+| **T03** | `_compute_sale_company_id()`: dependencia `order_id.company_id.company_routing_excluded` y rama de compañia excluida (D36) | T01 | `models/sale_order_line.py` | CA30 |
+| **T04** | Vista `res_company_view_form` heredando `base.view_company_form` (despues de `color`, `groups="base.group_multi_company"`) y alta en el manifest | T01 | `views/res_company_views.xml` (nuevo), `__manifest__.py` | CA32 |
+| **T05** | Traduccion `es_419` de string y help nuevos | T01 | `i18n/es_419.po` | — |
+| **T06** | README + `index.html` del modulo, `version` del manifest `1.1.0` == spec | T02, T03, T04, T05 | `README.md`, `static/description/index.html`, `__manifest__.py`, `specs/sale_website_company_routing.md` | — (anti-drift + version sync) |

@@ -253,3 +253,17 @@ msgstr "el pedido no cumple sus condiciones"
 #: code:addons/sale_website_company_routing/models/sale_order.py:0
 msgid "the program belongs to %(company)s"
 msgstr "el programa pertenece a %(company)s"
+
+#. module: sale_website_company_routing
+#: model:ir.model.fields,field_description:sale_website_company_routing.field_res_company__company_routing_excluded
+msgid "Exclude from Company Routing"
+msgstr "Excluir del ruteo entre compañías"
+
+#. module: sale_website_company_routing
+#: model:ir.model.fields,help:sale_website_company_routing.field_res_company__company_routing_excluded
+msgid ""
+"Orders of this company are confirmed whole in it: none of their lines is "
+"moved to another company."
+msgstr ""
+"Los pedidos de esta compañía se confirman enteros en ella: ninguna de sus "
+"líneas se mueve a otra compañía."

@@ -33,6 +33,11 @@ Las vistas solo muestran los campos con el grupo *Multi-compañía* (`base.group
   ancestro con valor) → estándar (la compañía del pedido / el almacén del sitio). Aplica igual a los
   dos campos.
 - Los productos ruteados siguen con `company_id` vacío, para verse en el sitio.
+- **Compañía → pestaña General Information**: *Exclude from Company Routing*
+  (`company_routing_excluded`, solo con el grupo *Multi-compañía*). Con la opción activa, los pedidos
+  de esa compañía se confirman enteros en ella (sin derivados) y la *Compañía que vende* de sus
+  líneas muestra la compañía del pedido. Útil para compañías que venden sin facturar (ej. de
+  prueba). Solo mira la compañía del pedido; apagada (default), nada cambia.
 
 ### Requisitos de configuración
 

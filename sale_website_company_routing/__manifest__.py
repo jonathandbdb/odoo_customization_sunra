@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     "name": "sale_website_company_routing",
-    "version": "1.0.1",
+    "version": "1.1.0",
     "summary": "Ruteo de lineas de pedido entre compañias al confirmar y stock web por compañia",
     "description": """
 En una base multi-compañia, un sitio web pertenece a una sola compañia y el carrito se crea siempre
@@ -17,6 +17,7 @@ el stock de la compañia que realmente lo tiene.
   promociones automaticos, y los de modulos que enganchen los hooks) se recalculan en cada pedido.
 - Cada producto (o su categoria) declara de que compañias se toma el stock que muestra el
   eCommerce: disponibilidad, tope del carrito y semaforo de stock.
+- Cada compañia puede excluirse del ruteo: sus pedidos se confirman enteros en ella.
 - Sin configurar, el comportamiento es identico al core.
     """,
     "category": "Sales/Sales",
@@ -32,6 +33,7 @@ el stock de la compañia que realmente lo tiene.
     "data": [
         "views/product_category_views.xml",
         "views/product_template_views.xml",
+        "views/res_company_views.xml",
         "views/sale_order_views.xml",
     ],
     "pre_init_hook": "pre_init_hook",
